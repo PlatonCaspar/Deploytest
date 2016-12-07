@@ -1,0 +1,29 @@
+{%- extends 'base.html' %}
+
+{% block content %}
+    <div class=container>
+        <table class="table table-striped">
+
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Project Name</th>
+                <th>Code</th>
+                <th>Link to History</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in args %}
+                <tr>
+                <td>{{ row.id }}</td>
+                <td>{{ row.project_name }}</td>
+                <td>{{ row.code }}</td>
+
+                </tr>
+
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
