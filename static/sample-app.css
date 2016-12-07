@@ -1,13 +1,20 @@
 .jumbotron {
     margin-top: 1em;
 / / add a little space
-}
-.navbar-default
 
-{
+}
+/*
+.navbar-brand {
+    width: 250px;
     background-image: url("/static/Pictures/logo.png");
-    background-size: 10%;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+.navbar-form
+{
+
+}*/
+.table {
+
 }
 
-.table {
-}

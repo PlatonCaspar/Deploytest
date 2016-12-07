@@ -7,6 +7,7 @@ import data_Structure
 import addPlatineForm
 import delPlatineForm
 import searchForm
+import flask_wtf
 from wtforms import validators
 import view
 
@@ -57,7 +58,7 @@ def del_board():
         data_Structure.db.session.object_session(dele_board).delete(dele_board)
         data_Structure.db.session.commit()
         redirect('/spitout/')
-    return render_template('addPlatineForm.html', form=board_form, search_form=searchForm.SearchForm())
+    return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
 
 
 @app.route('/search/', methods=['POST', 'GET'])
@@ -65,10 +66,10 @@ def search():
     search_form = searchForm.SearchForm(request.form)
     if request.method == 'POST':
         redirect(url_for('show_results'), data_Structure.Board.query.filter_by(search_form.search_value))
-    return render_template(request.url_rule, search_form=searchForm.SearchForm())
+    return render_template('base.html', search_form=searchForm.SearchForm())
 
 
-@app.route('/showResults/', methods=['POST','GET'])
+@app.route('/showResults/', methods=['POST', 'GET'])
 def show_results():
     return render_template('table.html', args=request.form.search_value.data, search_form=searchForm.SearchForm())
 
