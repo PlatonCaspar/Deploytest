@@ -1,12 +1,14 @@
 {%- extends "bootstrap/base.html" %}
 {% block title %}Datenbank für Platinen{% endblock %}
 {% import "bootstrap/fixes.html" as fixes %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "own_wtf.html" as wtf %}
 {% import "bootstrap/utils.html" as util %}
+
 
 {% block head %}
     {{ super() }}
     {{ fixes.ie8() }}
+
 {%- endblock %}
 
 {% block styles -%}
@@ -19,6 +21,11 @@ will disappear! #}
 
 
 {% block navbar %}
-{{ nav.frontend_top.render() }}
+
+
+    {{ nav.frontend_top.render() }}
+
+    {{ wtf.quick_form(search_form)}}
+    {{ search_form.hidden_tag }}
 {% endblock %}
 

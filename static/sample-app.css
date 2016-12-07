@@ -2,6 +2,12 @@
     margin-top: 1em;
 / / add a little space
 }
+.navbar-default
+
+{
+    background-image: url("/static/Pictures/logo.png");
+    background-size: 10%;
+}
 
 .table {
 }
