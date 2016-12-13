@@ -1,5 +1,4 @@
 {%- extends "bootstrap/base.html" %}
-{% block title %}Datenbank für Platinen{% endblock %}
 {% import "bootstrap/fixes.html" as fixes %}
 {% import "own_wtf.html" as wtf %}
 {% import "bootstrap/utils.html" as util %}
@@ -21,41 +20,25 @@ will disappear! #}
 
 
 {% block navbar %}
-    {% if messages %}
+
+
+    {{ nav.frontend_top.render() }}
+    {% if messages | safe %}
         {% if messages.error == True %}
-            <div class="errormsg">
-        {{ messages.msg }}
+
+            <div class= "alert alert-danger">
+       <span class="glyphicon glyphicon-remove"></span> <strong>{{ messages.msg }}</strong>
+
         </div>
         {% endif %}
         {% if messages.error == False %}
-            <div class="msg">
-        {{ messages.msg }}
+            <div class="alert alert-success">
+             <span class="glyphicon glyphicon-ok"></span>   <strong>{{ messages.msg }}</strong>
         </div>
         {% endif %}
     {% endif %}
-
-    {{ nav.frontend_top.render() }}
-
 
     {#    {{ wtf.quick_form(search_form)}}
     {{ search_form.hidden_tag }}#}
 {% endblock %}
 
-{% block contend %}
-
-    <div class=status-message>
-        messages
-
-        {% if messages != None %}
-            <script>
-                var messages = {{ messages}};
-                for (var i = 0; i < messages.length; i++) {
-                    alert("Achtung");
-                }
-            </script>
-        {% endif %}
-        </table>
-    </div>
-
-
-{% endblock %}

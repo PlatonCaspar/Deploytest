@@ -19,14 +19,47 @@
 
 }
 
-.errormsg
-{
-    background-color: red;
+.errormsg {
+
+    width: 100%;
+    padding-left: 3px;
+    background-color: rgba(255, 0, 0, 0.3);
+    font-weight: 700;
+
     size: 50px;
 
+    border-left: 5px solid red;
+
+    /*border-radius: 0px 0px 30px 10px;*/
+
 }
-.msg
-{
-    background-color: green;
+
+.msg {
+    width: 100%;
+    padding-left: 3px;
+    background-color: rgba(144, 245, 0, 0.3);
+    font-weight: 700;
+
     size: 50px;
+
+    border-left: 5px solid rgba(118, 173, 42, 1);
+
+    /*border-radius: 0px 0px 30px 10px;*/
+
+}
+
+.h1 {
+    padding-left: 10px;
+}
+.page-header
+{
+    padding-left: 1%;
+}
+.alert-danger
+{
+    border-left: 5px solid red;
+}
+.alert-success
+{
+    border-left: 5px solid rgba(118, 173, 42, 1);
 }

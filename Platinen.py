@@ -20,7 +20,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def start():
-    return render_template('/base.html', search_form=searchForm.SearchForm())
+    return render_template('/start.html', search_form=searchForm.SearchForm())
 
 
 @app.route('/spitout')
@@ -34,18 +34,18 @@ def add__board():
     board_form = addPlatineForm.BoardForm(request.form)
     if request.method == 'POST':
         new_board = data_Structure.Board(code=board_form.code.data, project_name=board_form.name.data)
-        # s = select([data.query_all_boards()]).where(data_Structure.Board.code == board_form.code.data)
-        print(str(data_Structure.Board.query.filter_by(code=new_board.code).scalar()) + "exists!!!!!!!???????")
-        if data_Structure.Board.query.filter_by(code=new_board.code).scalar() is not None:
-            print("Board kann nicht hinzugefügt werden, es ist bereits eines mit dem Selben identifier vorhanden.")
-            # flashes = data_Structure.db.session.get('__flashes', [])
-            # flashes.append('error', 'Board is already existing ')
+
+        if data_Structure.Board.query.filter_by(
+                code=new_board.code).scalar() is not None:  # check if board already exists
             return render_template('addPlatineForm.html', form=board_form, search_form=searchForm.SearchForm(),
                                    messages=messages.Messages(True, 'board already exists!'))
 
         data_Structure.db.session.add(new_board)
-        print(data_Structure.db.session.__class__)
         data_Structure.db.session.commit()
+        if data_Structure.Board.query.filter_by(code=new_board.code).scalar() is not None:
+            #if Board is no longer not available
+            return render_template('addPlatineForm.html', form=board_form, search_form=searchForm.SearchForm(),
+                                   messages=messages.Messages(False, 'Board was succesfully added!'))
 
         return redirect(url_for("spitOut"))
 
@@ -56,14 +56,21 @@ def add__board():
 def del_board():
     board_form = delPlatineForm.delBoardForm(request.form)
     if request.method == 'POST':
-        print(data_Structure.Board.query.filter_by(code=board_form.code.data))
-        if data_Structure.Board.query.filter_by(code=board_form.code.data) is None:
-            print('Board ist nicht vorhanden, kann also nicht gelöscht werden.')
-            return redirect(del_board)
+        if data_Structure.Board.query.filter_by(
+                code=board_form.code.data).scalar() is None:  # check if board already exists
+            return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm(),
+                                   messages=messages.Messages(True, 'Board does not exist!'))
         dele_board = data_Structure.Board.query.filter_by(code=board_form.code.data).first()
         data_Structure.db.session.object_session(dele_board).delete(dele_board)
         data_Structure.db.session.commit()
-        redirect('/spitout/')
+        if data_Structure.Board.query.filter_by(
+                code=board_form.code.data).scalar() is not None:  # check if board already exists
+            return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm(),
+                                   messages=messages.Messages(True, 'Board was not deleted!'))
+        if data_Structure.Board.query.filter_by(
+                code=board_form.code.data).scalar() is None:  # check if board already exists
+            return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm(),
+                                   messages=messages.Messages(False, 'Board was successfully deleted!'))
     return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
 
 
