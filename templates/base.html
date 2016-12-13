@@ -15,18 +15,47 @@
     {{ super() }}  {# do not forget to call super or Bootstrap's own stylesheets
 will disappear! #}
     <link rel="stylesheet" type="text/css"
-          href="{{ url_for('static', filename='sample-app.css') }}">
+          href="/static/sample-app.css">
 {% endblock %}
 
 
 
 {% block navbar %}
-
+    {% if messages %}
+        {% if messages.error == True %}
+            <div class="errormsg">
+        {{ messages.msg }}
+        </div>
+        {% endif %}
+        {% if messages.error == False %}
+            <div class="msg">
+        {{ messages.msg }}
+        </div>
+        {% endif %}
+    {% endif %}
 
     {{ nav.frontend_top.render() }}
 
 
-{#    {{ wtf.quick_form(search_form)}}
+    {#    {{ wtf.quick_form(search_form)}}
     {{ search_form.hidden_tag }}#}
 {% endblock %}
 
+{% block contend %}
+
+    <div class=status-message>
+        messages
+
+        {% if messages != None %}
+            <script>
+                var messages = {{ messages}};
+                for (var i = 0; i < messages.length; i++) {
+                    alert("Achtung");
+                }
+            </script>
+        {% endif %}
+        </table>
+    </div>
+
+
+{% endblock %}

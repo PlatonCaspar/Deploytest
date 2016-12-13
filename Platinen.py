@@ -1,12 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql.expression import exists, select
 import nav
 import data
 import data_Structure
 import addPlatineForm
 import delPlatineForm
 import searchForm
+import messages
 import flask_wtf
 from wtforms import validators
 import view
@@ -32,16 +34,20 @@ def add__board():
     board_form = addPlatineForm.BoardForm(request.form)
     if request.method == 'POST':
         new_board = data_Structure.Board(code=board_form.code.data, project_name=board_form.name.data)
-        # print(new_us.username+" "+new_us.email)
-        if data_Structure.Board.query.filter_by(code=new_board.code).first() is not None:
-            print("Board kann nicht hinzugefügt werden, es ist bereits eines mit dem Selbe identifier vorhanden.")
-            redirect(add__board)
+        # s = select([data.query_all_boards()]).where(data_Structure.Board.code == board_form.code.data)
+        print(str(data_Structure.Board.query.filter_by(code=new_board.code).scalar()) + "exists!!!!!!!???????")
+        if data_Structure.Board.query.filter_by(code=new_board.code).scalar() is not None:
+            print("Board kann nicht hinzugefügt werden, es ist bereits eines mit dem Selben identifier vorhanden.")
+            # flashes = data_Structure.db.session.get('__flashes', [])
+            # flashes.append('error', 'Board is already existing ')
+            return render_template('addPlatineForm.html', form=board_form, search_form=searchForm.SearchForm(),
+                                   messages=messages.Messages(True, 'board already exists!'))
 
         data_Structure.db.session.add(new_board)
         print(data_Structure.db.session.__class__)
         data_Structure.db.session.commit()
 
-        redirect(url_for("spitOut"))
+        return redirect(url_for("spitOut"))
 
     return render_template('addPlatineForm.html', form=board_form, search_form=searchForm.SearchForm())
 
@@ -50,10 +56,10 @@ def add__board():
 def del_board():
     board_form = delPlatineForm.delBoardForm(request.form)
     if request.method == 'POST':
-
-        if data_Structure.Board.query.filter_by(code=board_form.code.data).first() is None:
+        print(data_Structure.Board.query.filter_by(code=board_form.code.data))
+        if data_Structure.Board.query.filter_by(code=board_form.code.data) is None:
             print('Board ist nicht vorhanden, kann also nicht gelöscht werden.')
-            redirect(del_board)
+            return redirect(del_board)
         dele_board = data_Structure.Board.query.filter_by(code=board_form.code.data).first()
         data_Structure.db.session.object_session(dele_board).delete(dele_board)
         data_Structure.db.session.commit()
@@ -75,6 +81,7 @@ def show_results():
 
 
 if __name__ == '__main__':
+    # app.secret_key = 'Test'
     Bootstrap(app)
     SQLAlchemy(app)
     nav.nav.init_app(app)

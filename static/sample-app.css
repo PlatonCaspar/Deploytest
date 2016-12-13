@@ -3,6 +3,7 @@
 / / add a little space
 
 }
+
 /*
 .navbar-brand {
     width: 250px;
@@ -18,3 +19,14 @@
 
 }
 
+.errormsg
+{
+    background-color: red;
+    size: 50px;
+
+}
+.msg
+{
+    background-color: green;
+    size: 50px;
+}
