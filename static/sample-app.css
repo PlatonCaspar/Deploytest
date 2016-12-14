@@ -51,15 +51,28 @@
 .h1 {
     padding-left: 10px;
 }
-.page-header
-{
+
+.page-header {
     padding-left: 1%;
 }
-.alert-danger
-{
+
+.alert-danger {
     border-left: 5px solid red;
 }
-.alert-success
-{
+
+.alert-success {
     border-left: 5px solid rgba(118, 173, 42, 1);
+}
+
+td a {
+    display: block;
+    border: 10px;
+    padding: 10px;
+
+}
+
+td a:link {
+    color: black;
+    overflow: hidden;
+
 }

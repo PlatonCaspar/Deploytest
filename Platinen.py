@@ -20,12 +20,11 @@ app = Flask(__name__)
 
 @app.route('/')
 def start():
-    return render_template('/start.html', search_form=searchForm.SearchForm())
+    return render_template('start.html', search_form=searchForm.SearchForm())
 
 
-@app.route('/spitout')
+@app.route('/spitout/')
 def spitOut():
-    print(data.query_all_boards())
     return render_template('table.html', args=data.query_all_boards(), search_form=searchForm.SearchForm())
 
 
@@ -33,7 +32,8 @@ def spitOut():
 def add__board():
     board_form = addPlatineForm.BoardForm(request.form)
     if request.method == 'POST':
-        new_board = data_Structure.Board(code=board_form.code.data, project_name=board_form.name.data)
+        new_board = data_Structure.Board(code=board_form.code.data, project_name=board_form.name.data,
+                                         ver=board_form.ver.data, history= board_form.history.data)
 
         if data_Structure.Board.query.filter_by(
                 code=new_board.code).scalar() is not None:  # check if board already exists
@@ -43,7 +43,7 @@ def add__board():
         data_Structure.db.session.add(new_board)
         data_Structure.db.session.commit()
         if data_Structure.Board.query.filter_by(code=new_board.code).scalar() is not None:
-            #if Board is no longer not available
+            # if Board is no longer not available
             return render_template('addPlatineForm.html', form=board_form, search_form=searchForm.SearchForm(),
                                    messages=messages.Messages(False, 'Board was succesfully added!'))
 
@@ -85,6 +85,14 @@ def search():
 @app.route('/showResults/', methods=['POST', 'GET'])
 def show_results():
     return render_template('table.html', args=request.form.search_value.data, search_form=searchForm.SearchForm())
+
+
+@app.route('/boardHistory/<g_code>/', methods=['POST', 'GET', ])  # shows board History
+def show_board_history(g_code):
+    tg_board = data_Structure.Board.query.filter_by(code=g_code).first()
+    print(tg_board.history)
+
+    return render_template('boardHistory.html', g_board=tg_board)
 
 
 if __name__ == '__main__':

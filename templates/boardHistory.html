@@ -2,7 +2,22 @@
 {%- import 'own_wtf.html' as wtf %}
 
 {% block title %}
-    {% if Board %}
-    {#Hier kommt die Struktur wie die Daten aus der Datenbank angezeigt werden sollen.#}
+    {{ super() }}
+    {% if g_board | safe %}
+        {{ g_board.project_name }} {{ g_board.version }}
+        {#Hier kommt die Struktur wie die Daten aus der Datenbank angezeigt werden sollen.#}
+    {% endif %}
+
+
+{% endblock %}
+
+{% block contend %}
+    {{ super() }}
+    asdasd
+    {% if g_board | safe %}
+        <div class="container"><h1> {{ g_board.history }}</h1></div>
+
+        {#Hier kommt die Struktur wie die Daten aus der Datenbank angezeigt werden sollen.#}
     {% endif %}
 {% endblock %}
+
