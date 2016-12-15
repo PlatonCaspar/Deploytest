@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
+from flask_nav import register_renderer
 from sqlalchemy.sql.expression import exists, select
 import nav
 import data
@@ -9,6 +10,7 @@ import addPlatineForm
 import delPlatineForm
 import searchForm
 import messages
+import ownNavRenderer
 import flask_wtf
 from wtforms import validators
 import view
@@ -90,7 +92,7 @@ def show_results():
 @app.route('/boardHistory/<g_code>/', methods=['POST', 'GET', ])  # shows board History
 def show_board_history(g_code):
     tg_board = data_Structure.Board.query.filter_by(code=g_code).first()
-    print(tg_board.history)
+
 
     return render_template('boardHistory.html', g_board=tg_board)
 
@@ -100,4 +102,5 @@ if __name__ == '__main__':
     Bootstrap(app)
     SQLAlchemy(app)
     nav.nav.init_app(app)
+    register_renderer(app, 'own_nav_renderer', ownNavRenderer.own_nav_renderer)
     app.run(debug=True)

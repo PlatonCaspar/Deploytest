@@ -22,8 +22,8 @@ will disappear! #}
 {% block navbar %}
 
 
-    {{ nav.frontend_top.render() }}
-    {% if messages | safe %}
+    {{ nav.frontend_top.render('own_nav_renderer') }}
+    {% if messages %}
         {% if messages.error == True %}
 
             <div class= "alert alert-danger">
@@ -40,7 +40,4 @@ will disappear! #}
 
     {#    {{ wtf.quick_form(search_form)}}
     {{ search_form.hidden_tag }}#}
-{% endblock %}
-
-{% block contend %}
 {% endblock %}

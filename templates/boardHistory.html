@@ -1,5 +1,5 @@
-{%- extends 'base.html' %}
-{%- import 'own_wtf.html' as wtf %}
+{%- extends "base.html" %}
+{%- import 'bootstrap/wtf.html' as wtf %}
 
 {% block title %}
     {{ super() }}
@@ -9,15 +9,17 @@
     {% endif %}
 
 
-{% endblock %}
+{%- endblock %}
 
-{% block contend %}
-    {{ super() }}
-    asdasd
+
+
+{% block content -%}
+
     {% if g_board | safe %}
-        <div class="container"><h1> {{ g_board.history }}</h1></div>
+        <div class="container-fluid"><h1> {{ g_board.history | safe }}</h1></div>
 
         {#Hier kommt die Struktur wie die Daten aus der Datenbank angezeigt werden sollen.#}
     {% endif %}
-{% endblock %}
+{%- endblock %}
+
 
