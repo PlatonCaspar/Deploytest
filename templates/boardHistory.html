@@ -20,6 +20,12 @@
 
         {#Hier kommt die Struktur wie die Daten aus der Datenbank angezeigt werden sollen.#}
     {% endif %}
+
+    <br><br><br>
+    <div class=col-md-4 class=col-xs-1>
+        {{ wtf.quick_form(form) }}
+        {{ form.hidden_tag}}
+    </div>
 {%- endblock %}
 
 

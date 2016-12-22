@@ -1,23 +1,36 @@
 {%- extends 'base.html' %}
 {%- import 'own_wtf.html' as wtf %}
-
+{% block title %}
+    Add a Board
+{% endblock %}
 {% block content %}
     <div class="page-header">
         <h1>Add a Board:</h1>
     </div>
     <div class=col-md-4 class=col-xs-1>
         {{ wtf.quick_form(form) }}
-        {{ form.hidden_tag }}
+        {{ form.hidden_tag}}
 
 
     </div>
 
+
+
 {% endblock %}
 
-{% block scripts %}
+{% block head %}
+    {{ super() }}
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-    <script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap-wysiwyg.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='jquery.hotkeys.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='prettify.js') }}"></script>
+    <script src="/static/bootstrap.js"></script>
+    <script type="text/javascript" src='/static/bootstrap-wysiwyg.js'></script>
+    <script type="text/javascript" src='/static/jquery.hotkeys.js'></script>
+    <script type="text/javascript" src='/static/prettify.js'></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.0.1/ckeditor.js"></script>
+
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css" rel="stylesheet">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.js"></script>
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.2/summernote.css" rel="stylesheet">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.2/summernote.js"></script>
 {% endblock %}
+

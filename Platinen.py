@@ -162,8 +162,8 @@ def show_results():
 @app.route('/boardHistory/<g_code>/', methods=['POST', 'GET', ])  # shows board History
 def show_board_history(g_code):
     tg_board = data_Structure.Board.query.filter_by(code=g_code).first()
-
-    return render_template('boardHistory.html', g_board=tg_board)
+    addPlatineForm.ChangeBoard().history.data = 'Test'
+    return render_template('boardHistory.html', g_board=tg_board, form=addPlatineForm.ChangeBoard())
 
 
 if __name__ == '__main__':
