@@ -11,8 +11,9 @@ nav.nav.register_element("frontend_top",
                              items=(View('Data', 'spitOut'),
                                     View('Add Board', 'add__board'),
                                     View('Delete Board', 'del_board')),
-                             right_items=(View('ShowAll', 'spitOut'),
-                                          View('Add Board', 'add__board'))
+                             right_items=(View('show registered Users', 'show_registered_users'),
+                                          View('Register User', 'register_user'),
+                                          View('Delete User', 'delete_user'))
                          )
                          )
 # flask_nav.elements.View(searchForm.SearchForm(), 'search')))

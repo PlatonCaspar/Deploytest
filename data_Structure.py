@@ -1,22 +1,20 @@
-#from flask_sqlalchemy import *
 import flask_sqlalchemy
 from Platinen import app
 import sqlalchemy
-#from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker
 from flask import url_for
-
-# from contextlib import closing
-# import sqlite3
-
+import time
+from passlib.hash import pbkdf2_sha256
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///static/Database/data.sql'
 
 db = flask_sqlalchemy.SQLAlchemy(app)
-
+eng = db.create_all()
 
 metadata = sqlalchemy.MetaData(db)
-#db.echo = True
+
+
+# db.echo = True
 
 
 # counter = 0;
@@ -29,8 +27,7 @@ class Board(db.Model):
     version = db.Column(db.String(20))
     id = db.Column(db.Integer, primary_key=False)
     history = db.Column(db.Text)
-
-    # = db.Column(db.Text(120))
+    dateAdded = db.Column(db.String(10))
 
     def __init__(self, code: str, project_name: str, ver: str, history):
         self.project_name = project_name
@@ -39,12 +36,34 @@ class Board(db.Model):
         self.version = ver
         self.link = str(url_for('show_board_history', g_code=self.code))
         self.history = history
+        self.dateAdded = time.strftime("%d.%m.%Y %H:%M:%S")
+        print(self.dateAdded)
 
     def __repr__(self):
         return '<Board %r>' % self.code
 
     def __hash__(self):
         return hash(self.code)
+
+
+class User(db.Model):
+    username = db.Column(db.String(), primary_key=True)
+    password_hashed_and_salted = db.Column(db.String())
+    uid = db.Column(db.Integer(), primary_key=True)
+    email = db.Column(db.String())
+
+    def __init__(self, username: str, password: str, email: str):
+        self.username = username
+        self.uid = id(username)
+        self.email = email
+        self.password_hashed_and_salted = pbkdf2_sha256.hash(password)
+
+    def validate_user(self, username: str, password: str):
+        login_user = self.query.filter_by(username=username)
+        if login_user.password_hashed_and_salted == pbkdf2_sha256.hash(password):
+            return True
+        else:
+            return False
 
 
 eng = db.create_all()
