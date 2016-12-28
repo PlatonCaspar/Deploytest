@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from flask import url_for
 import time
 from passlib.hash import pbkdf2_sha256
+import flask
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///static/Database/data.sql'
 
@@ -28,6 +29,7 @@ class Board(db.Model):
     id = db.Column(db.Integer, primary_key=False)
     history = db.Column(db.Text)
     dateAdded = db.Column(db.String(10))
+    #addedBy = db.Column(db.String, db.ForeignKey('User.username'))
 
     def __init__(self, code: str, project_name: str, ver: str, history):
         self.project_name = project_name
@@ -37,7 +39,7 @@ class Board(db.Model):
         self.link = str(url_for('show_board_history', g_code=self.code))
         self.history = history
         self.dateAdded = time.strftime("%d.%m.%Y %H:%M:%S")
-        print(self.dateAdded)
+        self.addedBy = flask.session['User']
 
     def __repr__(self):
         return '<Board %r>' % self.code
@@ -52,6 +54,8 @@ class User(db.Model):
     uid = db.Column(db.Integer(), primary_key=True)
     email = db.Column(db.String())
 
+    # boards_Added = db.Column(db.relationship('Board', uselist=False, lazy='joined'))
+
     def __init__(self, username: str, password: str, email: str):
         self.username = username
         self.uid = id(username)
@@ -60,10 +64,28 @@ class User(db.Model):
 
     def validate_user(self, username: str, password: str):
         login_user = self.query.filter_by(username=username)
-        if login_user.password_hashed_and_salted == pbkdf2_sha256.hash(password):
+        if pbkdf2_sha256.verify(password, login_user.password_hashed_and_salted):
             return True
         else:
             return False
+
+    def is_authenticated(self):
+        if User.query.filter_by(uid=self.uid).first().scalar() is None:
+            return False
+        else:
+            return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymus(self):
+        return False
+
+    def get_id(self):
+        return self.username.encode("utf-8").decode("utf-8")
+
+    def get(us_name):
+        return User.query.filter_by(username=us_name).first()
 
 
 eng = db.create_all()

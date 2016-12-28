@@ -4,6 +4,7 @@
 {% import "bootstrap/utils.html" as util %}
 
 
+
 {% block head %}
     {{ super() }}
     {{ fixes.ie8() }}
@@ -23,6 +24,10 @@ will disappear! #}
 
 
     {{ nav.frontend_top.render('own_nav_renderer') }}
+
+
+
+
     {% if messages %}
         {% if messages.error == True %}
 

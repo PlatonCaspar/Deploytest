@@ -15,6 +15,7 @@ import ownNavRenderer
 import os
 import deleteUserForm
 from passlib.hash import pbkdf2_sha256
+from flask_login import login_user, logout_user, login_required, current_user
 import flask_wtf
 import view
 
@@ -28,6 +29,9 @@ def is_logged_in():
     else:
         return False
 
+@nav.login_manager.user_loader
+def load_user(user_id):
+    return data_Structure.User.get(user_id)
 
 @app.route('/registerUser/', methods=['GET', 'POST'])
 def register_user():
@@ -57,8 +61,35 @@ def register_user():
 
     return render_template('registerUserForm.html', form=user_to_register, search_form=searchForm.SearchForm())
 
+@app.route('/logout/')
+@login_required
+def logout():
+    logout_user()
+    return render_template('start.html', messages=messages.Messages(False, 'Logged out!'))
+
+
+@app.route('/login/', methods=['GET', 'POST'])
+def login():
+    user_form = deleteUserForm.DeleteUser(request.form)
+    if request.method == 'POST':
+        if data_Structure.User.query.filter_by(
+                username=user_form.username.data).scalar() is None:  # check if User exists
+            return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm(),
+                                   messages=messages.Messages(True, 'User does not exist!'))
+        login_to_user = data_Structure.User.query.filter_by(username=user_form.username.data).first()
+        if pbkdf2_sha256.verify(user_form.password.data, login_to_user.password_hashed_and_salted):
+            login_user(login_to_user)
+            print(login_to_user.username+' was logged in successful :D')
+        else:
+            return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm(),
+                                   messages=messages.Messages(True, 'Password was not correct!'))
+
+        return render_template('start.html', search_form=searchForm.SearchForm(),
+                               messages=messages.Messages(False, 'Login was successful!'))
+    return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
 
 @app.route('/deleteUser/', methods=['GET', 'POST'])
+@login_required
 def delete_user():
     user_form = deleteUserForm.DeleteUser(request.form)
     if request.method == 'POST':
@@ -87,6 +118,7 @@ def delete_user():
 
 @app.route('/registeredUsers/')
 def show_registered_users():
+    print(current_user)
     return render_template('userTable.html', args=data_Structure.User.query.all(), search_form=searchForm.SearchForm())
 
 
@@ -162,15 +194,23 @@ def show_results():
 @app.route('/boardHistory/<g_code>/', methods=['POST', 'GET', ])  # shows board History
 def show_board_history(g_code):
     tg_board = data_Structure.Board.query.filter_by(code=g_code).first()
-    addPlatineForm.ChangeBoard().history.data = 'Test'
+    if request.method == 'POST':
+        tg_board.history += addPlatineForm.ChangeBoard(request.form).history.data
+
     return render_template('boardHistory.html', g_board=tg_board, form=addPlatineForm.ChangeBoard())
 
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'
+
     Bootstrap(app)
     SQLAlchemy(app)
+    nav.nav_logged_in.init_app(app)
     nav.nav.init_app(app)
+
     register_renderer(app, 'own_nav_renderer', ownNavRenderer.own_nav_renderer)
     app.secret_key = os.urandom(12)
+    nav.login_manager.init_app(app)
+    # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
+    # implement more files per python file and in nav was enough space.
     app.run(debug=True)
