@@ -29,9 +29,11 @@ def is_logged_in():
     else:
         return False
 
+
 @nav.login_manager.user_loader
 def load_user(user_id):
     return data_Structure.User.get(user_id)
+
 
 @app.route('/registerUser/', methods=['GET', 'POST'])
 def register_user():
@@ -41,13 +43,13 @@ def register_user():
             new_user = data_Structure.User(username=user_to_register.username.data,
                                            password=user_to_register.password.data,
                                            email=user_to_register.email_adress.data)
-            print("the fucking pw are the same!")
+
             if data_Structure.User.query.filter_by(
                     email=new_user.email).scalar() is not None:  # check if user already exists
                 return render_template('registerUserForm.html', form=user_to_register,
                                        search_form=searchForm.SearchForm(),
                                        messages=messages.Messages(True, 'user already exists!'))
-            print("i will commit!")
+
             data_Structure.db.session.add(new_user)
             data_Structure.db.session.commit()
             if data_Structure.User.query.filter_by(email=new_user.email).scalar() is not None:
@@ -60,6 +62,7 @@ def register_user():
                                    messages=messages.Messages(True, 'The Passwords do not match!'))
 
     return render_template('registerUserForm.html', form=user_to_register, search_form=searchForm.SearchForm())
+
 
 @app.route('/logout/')
 @login_required
@@ -78,8 +81,8 @@ def login():
                                    messages=messages.Messages(True, 'User does not exist!'))
         login_to_user = data_Structure.User.query.filter_by(username=user_form.username.data).first()
         if pbkdf2_sha256.verify(user_form.password.data, login_to_user.password_hashed_and_salted):
-            login_user(login_to_user)
-            print(login_to_user.username+' was logged in successful :D')
+            if login_user(login_to_user):
+                print(login_to_user.username + ' was logged in successful :D')
         else:
             return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm(),
                                    messages=messages.Messages(True, 'Password was not correct!'))
@@ -87,6 +90,7 @@ def login():
         return render_template('start.html', search_form=searchForm.SearchForm(),
                                messages=messages.Messages(False, 'Login was successful!'))
     return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
+
 
 @app.route('/deleteUser/', methods=['GET', 'POST'])
 @login_required
@@ -137,7 +141,9 @@ def add__board():
     board_form = addPlatineForm.BoardForm(request.form)
     if request.method == 'POST':
         new_board = data_Structure.Board(code=board_form.code.data, project_name=board_form.name.data,
-                                         ver=board_form.ver.data, history=board_form.history.data)
+                                         ver=board_form.ver.data)  # ,
+        # history=data_Structure.History(history=board_form.history.data,
+        #                              board_code=board_form.code.data))
 
         if data_Structure.Board.query.filter_by(
                 code=new_board.code).scalar() is not None:  # check if board already exists
@@ -195,8 +201,9 @@ def show_results():
 def show_board_history(g_code):
     tg_board = data_Structure.Board.query.filter_by(code=g_code).first()
     if request.method == 'POST':
-        tg_board.history += addPlatineForm.ChangeBoard(request.form).history.data
-
+        tg_board.history += addPlatineForm.ChangeBoard(request.form).history.data  # Wont commit changes!!
+        # data_Structure.session.object_session(tg_board).history += addPlatineForm.ChangeBoard(request.form).history.data
+        data_Structure.db.session.commit()
     return render_template('boardHistory.html', g_board=tg_board, form=addPlatineForm.ChangeBoard())
 
 

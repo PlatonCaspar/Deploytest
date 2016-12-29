@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from flask import url_for
 import time
 from passlib.hash import pbkdf2_sha256
+from flask_login import current_user
 import flask
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///static/Database/data.sql'
@@ -27,19 +28,20 @@ class Board(db.Model):
     link = db.Column(db.String(500))
     version = db.Column(db.String(20))
     id = db.Column(db.Integer, primary_key=False)
-    history = db.Column(db.Text)
     dateAdded = db.Column(db.String(10))
-    #addedBy = db.Column(db.String, db.ForeignKey('User.username'))
+    history = db.relationship('History', backref='History', lazy='dynamic')
 
-    def __init__(self, code: str, project_name: str, ver: str, history):
+    # addedBy = db.Column(db.String, db.ForeignKey('User.username'))
+
+    def __init__(self, code: str, project_name: str, ver: str):#, history):
         self.project_name = project_name
         self.code = code
         self.id = id(code)
         self.version = ver
         self.link = str(url_for('show_board_history', g_code=self.code))
-        self.history = history
+        #self.history = history
         self.dateAdded = time.strftime("%d.%m.%Y %H:%M:%S")
-        self.addedBy = flask.session['User']
+        self.addedBy = User.get_id(current_user)
 
     def __repr__(self):
         return '<Board %r>' % self.code
@@ -53,8 +55,7 @@ class User(db.Model):
     password_hashed_and_salted = db.Column(db.String())
     uid = db.Column(db.Integer(), primary_key=True)
     email = db.Column(db.String())
-
-    # boards_Added = db.Column(db.relationship('Board', uselist=False, lazy='joined'))
+   # boards_Added = db.relationship('Board', uselist=False, lazy='dynamic')
 
     def __init__(self, username: str, password: str, email: str):
         self.username = username
@@ -86,6 +87,21 @@ class User(db.Model):
 
     def get(us_name):
         return User.query.filter_by(username=us_name).first()
+
+
+class History(db.Model):
+    board_code = db.Column(db.String(500), db.ForeignKey('board.code'))
+    id = db.Column(db.Integer, primary_key=True)
+    history = db.Column(db.Text)
+    edited_by = db.Column(db.Text)
+    time_and_date = db.Column(db.DateTime)
+
+    def __init__(self, history: str, board_code: str):
+        self.board_code = board_code
+        self.history = history
+        self.edited_by = User.get_id(current_user)
+        self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
+        self.id = id(time.strftime("%d.%m.%Y %H:%M:%S"))
 
 
 eng = db.create_all()
