@@ -204,7 +204,9 @@ def show_board_history(g_code):
         tg_board.history += addPlatineForm.ChangeBoard(request.form).history.data  # Wont commit changes!!
         # data_Structure.session.object_session(tg_board).history += addPlatineForm.ChangeBoard(request.form).history.data
         data_Structure.db.session.commit()
-    return render_template('boardHistory.html', g_board=tg_board, form=addPlatineForm.ChangeBoard())
+    return render_template('boardHistory.html', g_board=tg_board,
+                           history=data_Structure.History.query.filter_by(board_code=tg_board.history).all(),
+                           form=addPlatineForm.ChangeBoard())
 
 
 if __name__ == '__main__':

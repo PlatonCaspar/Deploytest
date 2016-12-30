@@ -16,7 +16,7 @@
 {% block content -%}
 
     {% if g_board | safe %}
-        <div class="container-fluid"><h1> {{ g_board.history | safe }}</h1></div>
+        <div class="container-fluid"><h1> {{ history.history | safe }}</h1></div>
 
         {#Hier kommt die Struktur wie die Daten aus der Datenbank angezeigt werden sollen.#}
     {% endif %}
