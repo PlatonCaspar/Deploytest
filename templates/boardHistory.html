@@ -15,17 +15,71 @@
 
 {% block content -%}
 
-    {% if g_board | safe %}
-        <div class="container-fluid"><h1> {{ history.history | safe }}</h1></div>
+    {% if g_board %}
+        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#addModal">Add History</button>
+        <br><br>
 
-        {#Hier kommt die Struktur wie die Daten aus der Datenbank angezeigt werden sollen.#}
+        {% if history %}
+            {% for row in history %}
+                <div class="panel panel-default">
+                <div class="panel-body">{{ row.history | safe }}</div>
+                <div class="panel-footer"><kbd class="footnote">{{ "added by "+row.edited_by }}</kbd>
+
+                {#<button type="button" class="btn btn-default">Default</button>#}
+                   <button type="button" class="btn btn-danger btn-xs" style="position: absolute; right: 2px  " data-toggle="modal"
+                            data-target="#editModal">Edit!
+                    </button>
+                </div>
+                <div id="editModal" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">{{ 'Add a new Story to '+g_board.code }}</h4>
+                            </div>
+                            <div class="modal-body">
+                                {{ wtf.form_field(edit_form.history) }}
+                                {{ wtf.form_field(edit_form.send) }}
+                                {{ edit_form.hidden_tag }}
+                                <div class="modal-footer">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            {% endfor %}
+            {#Hier kommt die Struktur wie die Daten aus der Datenbank angezeigt werden sollen.#}
+        {% endif %}
+
+
+
+
     {% endif %}
 
-    <br><br><br>
-    <div class=col-md-4 class=col-xs-1>
-        {{ wtf.quick_form(form) }}
-        {{ form.hidden_tag}}
+
+<div id="addModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">{{ 'Add a new Story to '+g_board.code }}</h4>
+            </div>
+            <div class="modal-body">
+                {{ wtf.quick_form(add_form) }}
+                {{ add_form.hidden_tag }}
+                <div class="modal-footer">
+                </div>
+            </div>
+
+        </div>
     </div>
+
+
+</div>
+
+</div>
 {%- endblock %}
 
 

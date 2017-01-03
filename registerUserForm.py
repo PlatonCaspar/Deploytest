@@ -8,3 +8,12 @@ class RegisterUser(Form):
     password_again = PasswordField('Please repeat your Password', [validators.required])
     hidden_tag = HiddenField('Blubb')
     submit = SubmitField('Register!')
+
+
+class LoginUser(Form):
+    username = StringField('Please enter a Username', [validators.data_required])
+
+    password = PasswordField('Pleas enter your Password', [validators.required])
+
+    hidden_tag = HiddenField('Blubb')
+    submit = SubmitField('Login')

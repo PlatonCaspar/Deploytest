@@ -1,4 +1,4 @@
-from wtforms import StringField, validators, HiddenField, SubmitField, PasswordField, Form, FormField
+from wtforms import StringField, validators, HiddenField, SubmitField, PasswordField, Form
 
 
 class DeleteUser(Form):

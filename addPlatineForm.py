@@ -20,9 +20,6 @@ class BoardForm(Form):
     code = StringField('Code', [validators.data_required])
     name = StringField('Project Name', [validators.DataRequired])
     ver = StringField('Version', [validators.data_required])
-    history = TextAreaField('Test')
-    # history = CKTextAreaField('History')
-    # body = WysiwygField('History', validators=[validators.required])
     submit = SubmitField('Create')
     hidden_tag = HiddenField('Blubb')
 
@@ -31,4 +28,10 @@ class ChangeBoard(Form):
     image = FileField('put an Image of the Board here!')
     history = StringField('Edit History')
     submit = SubmitField('Edit!')
+    hidden_tag = HiddenField('Blubb')
+
+
+class SelectChangeBoard(Form):
+    edit = SubmitField('Edit!')
+    add = SubmitField('Add a beautiful Story!')
     hidden_tag = HiddenField('Blubb')

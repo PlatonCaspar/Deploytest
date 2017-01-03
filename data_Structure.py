@@ -1,13 +1,14 @@
 import flask_sqlalchemy
-from Platinen import app
+from flask import Flask
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from flask import url_for
 import time
 from passlib.hash import pbkdf2_sha256
-from flask_login import current_user
-import flask
+from flask_login import current_user, AnonymousUserMixin
 
+# import flask
+app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///static/Database/data.sql'
 
 db = flask_sqlalchemy.SQLAlchemy(app)
@@ -30,16 +31,14 @@ class Board(db.Model):
     id = db.Column(db.Integer, primary_key=False)
     dateAdded = db.Column(db.String(10))
     history = db.relationship('History', backref='History', lazy='dynamic')
+    addedBy = db.Column(db.String, db.ForeignKey('user.username'))
 
-    # addedBy = db.Column(db.String, db.ForeignKey('User.username'))
-
-    def __init__(self, code: str, project_name: str, ver: str):#, history):
+    def __init__(self, code: str, project_name: str, ver: str):  # , history):
         self.project_name = project_name
         self.code = code
         self.id = id(code)
         self.version = ver
         self.link = str(url_for('show_board_history', g_code=self.code))
-        #self.history = history
         self.dateAdded = time.strftime("%d.%m.%Y %H:%M:%S")
         self.addedBy = User.get_id(current_user)
 
@@ -55,7 +54,8 @@ class User(db.Model):
     password_hashed_and_salted = db.Column(db.String())
     uid = db.Column(db.Integer(), primary_key=True)
     email = db.Column(db.String())
-   # boards_Added = db.relationship('Board', uselist=False, lazy='dynamic')
+
+    boards_Added = db.relationship('Board', lazy='dynamic')
 
     def __init__(self, username: str, password: str, email: str):
         self.username = username
@@ -94,14 +94,19 @@ class History(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     history = db.Column(db.Text)
     edited_by = db.Column(db.Text)
-    time_and_date = db.Column(db.DateTime)
+    time_and_date = db.Column(db.String(10))
 
     def __init__(self, history: str, board_code: str):
         self.board_code = board_code
-        self.history = history
+        self.history = history.replace('\n', "<br>")
         self.edited_by = User.get_id(current_user)
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
-        self.id = id(time.strftime("%d.%m.%Y %H:%M:%S"))
+        self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code)
+
+
+class Anonymus(AnonymousUserMixin):
+    def __init__(self):
+        self.username = 'Guest'
 
 
 eng = db.create_all()

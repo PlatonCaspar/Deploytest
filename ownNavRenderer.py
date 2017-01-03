@@ -1,5 +1,4 @@
 from dominate import tags
-from flask_nav.renderers import Renderer
 from flask_nav.elements import NavigationItem
 from flask_bootstrap.nav import BootstrapRenderer, sha1
 
@@ -14,7 +13,6 @@ class ExtendedNavbar(NavigationItem):
 
 
 class own_nav_renderer(BootstrapRenderer):
-
     def visit_ExtendedNavbar(self, node):
         # create a navbar id that is somewhat fixed, but do not leak any
         # information about memory contents to the outside
@@ -62,5 +60,5 @@ class own_nav_renderer(BootstrapRenderer):
             for item in node.right_items:
                 right_bar_list.add(self.visit(item))
 
-        return root
 
+        return root

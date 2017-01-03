@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from conda.history import History
+from flask import render_template, request, redirect, url_for, session
+
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_nav import register_renderer
-from sqlalchemy.sql.expression import exists, select
+from historyForm import HistoryForm
 import nav
 import data
 import data_Structure
@@ -16,10 +18,15 @@ import os
 import deleteUserForm
 from passlib.hash import pbkdf2_sha256
 from flask_login import login_user, logout_user, login_required, current_user
-import flask_wtf
+from data_Structure import app
+
 import view
 
-app = Flask(__name__)
+nav.login_manager.anonymous_user = data_Structure.Anonymus
+
+
+# def set_logged_user(state):
+#    logged_user = state
 
 
 # data_Structure.db.create_all()
@@ -35,8 +42,12 @@ def load_user(user_id):
     return data_Structure.User.get(user_id)
 
 
+nav.login_manager.login_view = '/login/'
+
+
 @app.route('/registerUser/', methods=['GET', 'POST'])
 def register_user():
+    nav.nav.register_element("frontend_top", view.nav_bar())
     user_to_register = registerUserForm.RegisterUser(request.form)
     if request.method == 'POST':
         if user_to_register.password.data == user_to_register.password_again.data:
@@ -67,13 +78,16 @@ def register_user():
 @app.route('/logout/')
 @login_required
 def logout():
+    nav.nav.register_element("frontend_top", view.nav_bar())
     logout_user()
+    view.logged_user = None
     return render_template('start.html', messages=messages.Messages(False, 'Logged out!'))
 
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
-    user_form = deleteUserForm.DeleteUser(request.form)
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    user_form = registerUserForm.LoginUser(request.form)
     if request.method == 'POST':
         if data_Structure.User.query.filter_by(
                 username=user_form.username.data).scalar() is None:  # check if User exists
@@ -81,20 +95,20 @@ def login():
                                    messages=messages.Messages(True, 'User does not exist!'))
         login_to_user = data_Structure.User.query.filter_by(username=user_form.username.data).first()
         if pbkdf2_sha256.verify(user_form.password.data, login_to_user.password_hashed_and_salted):
-            if login_user(login_to_user):
-                print(login_to_user.username + ' was logged in successful :D')
+            login_user(login_to_user)
         else:
             return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm(),
                                    messages=messages.Messages(True, 'Password was not correct!'))
-
-        return render_template('start.html', search_form=searchForm.SearchForm(),
-                               messages=messages.Messages(False, 'Login was successful!'))
+        view.logged_user = login_to_user.username
+        nav.nav.register_element("frontend_top", view.nav_bar())
+        return redirect(url_for('start'))
     return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
 
 
 @app.route('/deleteUser/', methods=['GET', 'POST'])
 @login_required
 def delete_user():
+    nav.nav.register_element("frontend_top", view.nav_bar())
     user_form = deleteUserForm.DeleteUser(request.form)
     if request.method == 'POST':
         if data_Structure.User.query.filter_by(
@@ -122,22 +136,40 @@ def delete_user():
 
 @app.route('/registeredUsers/')
 def show_registered_users():
+    nav.nav.register_element("frontend_top", view.nav_bar())
     print(current_user)
     return render_template('userTable.html', args=data_Structure.User.query.all(), search_form=searchForm.SearchForm())
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def start():
-    return render_template('start.html', search_form=searchForm.SearchForm())
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    search_form = searchForm.SearchForm(request.form)
+    if request.method == 'POST':
+        search_word = search_form.search_value.data
+        if search_word is "":
+            return redirect(url_for('spitOut'))
+        results = data_Structure.Board.query.filter_by(code=search_word).all()
+        results += data_Structure.Board.query.filter_by(project_name=search_word).all()
+        results += data_Structure.Board.query.filter_by(link=search_word).all()
+        results += data_Structure.Board.query.filter_by(version=search_word).all()
+        results += data_Structure.Board.query.filter_by(id=search_word).all()
+        results += data_Structure.Board.query.filter_by(dateAdded=search_word).all()
+        results += data_Structure.Board.query.filter_by(addedBy=search_word).all()
+        results = list(set(results))
+        return render_template('table.html', args=results, search_form=searchForm.SearchForm())
+    return render_template('start.html', search_form=search_form)
 
 
-@app.route('/spitout/')
+@app.route('/showAll/')
 def spitOut():
+    nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('table.html', args=data.query_all_boards(), search_form=searchForm.SearchForm())
 
 
 @app.route('/addBoard/', methods=['GET', 'POST'])
 def add__board():
+    nav.nav.register_element("frontend_top", view.nav_bar())
     board_form = addPlatineForm.BoardForm(request.form)
     if request.method == 'POST':
         new_board = data_Structure.Board(code=board_form.code.data, project_name=board_form.name.data,
@@ -164,6 +196,7 @@ def add__board():
 
 @app.route('/deleteBoard/', methods=['GET', 'POST'])
 def del_board():
+    nav.nav.register_element("frontend_top", view.nav_bar())
     board_form = delPlatineForm.delBoardForm(request.form)
     if request.method == 'POST':
         if data_Structure.Board.query.filter_by(
@@ -171,6 +204,9 @@ def del_board():
             return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm(),
                                    messages=messages.Messages(True, 'Board does not exist!'))
         dele_board = data_Structure.Board.query.filter_by(code=board_form.code.data).first()
+        for history in data_Structure.History.query.filter_by(board_code=dele_board.code).all():
+            data_Structure.db.session.object_session(history).delete(history)
+            data_Structure.db.session.commit()
         data_Structure.db.session.object_session(dele_board).delete(dele_board)
         data_Structure.db.session.commit()
         if data_Structure.Board.query.filter_by(
@@ -184,29 +220,37 @@ def del_board():
     return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
 
 
-@app.route('/search/', methods=['POST', 'GET'])
-def search():
-    search_form = searchForm.SearchForm(request.form)
-    if request.method == 'POST':
-        redirect(url_for('show_results'), data_Structure.Board.query.filter_by(search_form.search_value))
-    return render_template('base.html', search_form=searchForm.SearchForm())
+def edit_board_history(board, history_id):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+
+    return render_template()
 
 
-@app.route('/showResults/', methods=['POST', 'GET'])
-def show_results():
-    return render_template('table.html', args=request.form.search_value.data, search_form=searchForm.SearchForm())
+def add_board_history(board, history):
+    new_history = data_Structure.History(history=history, board_code=board.code)
+    data_Structure.db.session.add(new_history)
+    data_Structure.db.session.commit()
+    print(new_history.edited_by)
+
+    return redirect(url_for('show_board_history', g_code=board.code))
 
 
 @app.route('/boardHistory/<g_code>/', methods=['POST', 'GET', ])  # shows board History
 def show_board_history(g_code):
-    tg_board = data_Structure.Board.query.filter_by(code=g_code).first()
-    if request.method == 'POST':
-        tg_board.history += addPlatineForm.ChangeBoard(request.form).history.data  # Wont commit changes!!
-        # data_Structure.session.object_session(tg_board).history += addPlatineForm.ChangeBoard(request.form).history.data
-        data_Structure.db.session.commit()
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    tg_board = data_Structure.Board.query.get(g_code)
+    add_form = HistoryForm(request.form)
+    edit_form = HistoryForm(request.form)
+    print(request.method)
+    if request.method == 'POST' :
+        add_board_history(tg_board, add_form.history.data)
+    elif request.method == 'POST' and edit_form.send:
+        edit_board_history(tg_board, edit_form.history_id.data)
+    #print(data_Structure.History.query.filter_by(board_code=tg_board.code).all())
     return render_template('boardHistory.html', g_board=tg_board,
-                           history=data_Structure.History.query.filter_by(board_code=tg_board.history).all(),
-                           form=addPlatineForm.ChangeBoard())
+                           history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
+                               data_Structure.History.time_and_date).all()[::-1],
+                           form=addPlatineForm.SelectChangeBoard(), add_form=add_form,edit_form=edit_form)
 
 
 if __name__ == '__main__':

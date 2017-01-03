@@ -1,4 +1,5 @@
 {%- extends 'base.html' %}
+{%- import 'own_wtf.html' as wtf %}
 
 
 {% block title %}
@@ -7,7 +8,8 @@
 {% endblock %}
 
 {% block content %}
-    {% if current_user.is_authenticated %}
-        Hi {{ current_user.username }}!
-    {% endif %}
+    <div class="col-md-4" style="position: absolute; top: 40%; left: 30%" >
+    {{ wtf.quick_form(search_form) }}
+    {{ search_form.hidden_tag }}
+    </div>
 {% endblock %}
