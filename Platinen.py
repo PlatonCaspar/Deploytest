@@ -4,7 +4,7 @@ from flask import render_template, request, redirect, url_for, session
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_nav import register_renderer
-from historyForm import HistoryForm
+from historyForm import HistoryForm, EditHistoryForm
 import nav
 import data
 import data_Structure
@@ -16,13 +16,14 @@ import messages
 import ownNavRenderer
 import os
 import deleteUserForm
+import project_forms
 from passlib.hash import pbkdf2_sha256
 from flask_login import login_user, logout_user, login_required, current_user
 from data_Structure import app
 
 import view
 
-nav.login_manager.anonymous_user = data_Structure.Anonymus
+nav.login_manager.anonymous_user = data_Structure.Anonymous
 
 
 # def set_logged_user(state):
@@ -40,9 +41,6 @@ def is_logged_in():
 @nav.login_manager.user_loader
 def load_user(user_id):
     return data_Structure.User.get(user_id)
-
-
-nav.login_manager.login_view = '/login/'
 
 
 @app.route('/registerUser/', methods=['GET', 'POST'])
@@ -81,11 +79,16 @@ def logout():
     nav.nav.register_element("frontend_top", view.nav_bar())
     logout_user()
     view.logged_user = None
-    return render_template('start.html', messages=messages.Messages(False, 'Logged out!'))
+    return redirect(url_for('start'))
 
 
-@app.route('/login/', methods=['GET', 'POST'])
-def login():
+@app.route('/login/?next=/<last_page>/', methods=['GET', 'POST'])
+def login(last_page):
+    try:
+        url = url_for(last_page)
+    except:
+        url = None
+
     nav.nav.register_element("frontend_top", view.nav_bar())
     user_form = registerUserForm.LoginUser(request.form)
     if request.method == 'POST':
@@ -101,8 +104,14 @@ def login():
                                    messages=messages.Messages(True, 'Password was not correct!'))
         view.logged_user = login_to_user.username
         nav.nav.register_element("frontend_top", view.nav_bar())
-        return redirect(url_for('start'))
+        if url:
+            return redirect(url)
+        else:
+            return redirect(url_for('start'))
     return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
+
+
+nav.login_manager.login_view = '/login'
 
 
 @app.route('/deleteUser/', methods=['GET', 'POST'])
@@ -173,10 +182,7 @@ def add__board():
     board_form = addPlatineForm.BoardForm(request.form)
     if request.method == 'POST':
         new_board = data_Structure.Board(code=board_form.code.data, project_name=board_form.name.data,
-                                         ver=board_form.ver.data)  # ,
-        # history=data_Structure.History(history=board_form.history.data,
-        #                              board_code=board_form.code.data))
-
+                                         ver=board_form.ver.data)
         if data_Structure.Board.query.filter_by(
                 code=new_board.code).scalar() is not None:  # check if board already exists
             return render_template('addPlatineForm.html', form=board_form, search_form=searchForm.SearchForm(),
@@ -192,6 +198,41 @@ def add__board():
         return redirect(url_for("spitOut"))
 
     return render_template('addPlatineForm.html', form=board_form, search_form=searchForm.SearchForm())
+
+
+@app.route('/Projects/Boards_belonging_to/<project_name>/', methods=['POST', 'GET'])
+def show_boards_of_project(project_name):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template('table.html', args=data_Structure.Board.query.filter_by(project_name=project_name).all())
+
+
+@login_required
+@app.route('/add_Project/', methods=['POST', 'GET'])
+def add_project():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    add_project_form = project_forms.AddProjectForm(request.form)
+    if request.method == 'POST':
+        # check if Project already exists
+        if data_Structure.Project.query.get(add_project_form.project_name.data) is not None:
+            return render_template('add_project.html',
+                                   messages=messages.Messages(True,
+                                                              'Project ' +
+                                                              add_project_form.project_name.data + ' already exists!'),
+                                   add_project_form=add_project_form)
+        elif data_Structure.Project.query.get(add_project_form.project_name.data) is None:
+            image_path = None
+            # if add_project_form.project_image.data is not None:
+            #    image_data = request.FILES[add_project_form.project_image.name].read()
+            #    image_path = '/static/Pictures/' + add_project_form.project_name + '/'
+            #    open(os.path.join(image_path, add_project_form.project_image.data), 'w').write(image_data)
+            project_to_add = data_Structure.Project(project_name=add_project_form.project_name.data,
+                                                    project_description=add_project_form.project_description.data,
+                                                    project_default_image_path=image_path)
+            print(project_to_add.project_name + '  Picture_Path: ' + str(image_path))
+            data_Structure.db.session.add(project_to_add)
+            data_Structure.db.session.commit()
+            return redirect(url_for('start'))
+    return render_template('add_project.html', add_project_form=add_project_form)
 
 
 @app.route('/deleteBoard/', methods=['GET', 'POST'])
@@ -220,10 +261,11 @@ def del_board():
     return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
 
 
-def edit_board_history(board, history_id):
+def edit_board_history(board, history_id,
+                       history):  # //TODO: I Still have to implement the Edit Board History Function.
     nav.nav.register_element("frontend_top", view.nav_bar())
-
-    return render_template()
+    print(history)
+    return redirect(url_for('show_board_history', board.code))
 
 
 def add_board_history(board, history):
@@ -240,17 +282,25 @@ def show_board_history(g_code):
     nav.nav.register_element("frontend_top", view.nav_bar())
     tg_board = data_Structure.Board.query.get(g_code)
     add_form = HistoryForm(request.form)
-    edit_form = HistoryForm(request.form)
+    edit_form = EditHistoryForm(request.form)
     print(request.method)
-    if request.method == 'POST' :
+    if request.method == 'POST' and add_form.send.data:
+        print('here we are')
         add_board_history(tg_board, add_form.history.data)
-    elif request.method == 'POST' and edit_form.send:
+    elif request.method == 'POST' and edit_form.send.data:
+        print('I want to Edit')
         edit_board_history(tg_board, edit_form.history_id.data)
-    #print(data_Structure.History.query.filter_by(board_code=tg_board.code).all())
-    return render_template('boardHistory.html', g_board=tg_board,
-                           history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
-                               data_Structure.History.time_and_date).all()[::-1],
-                           form=addPlatineForm.SelectChangeBoard(), add_form=add_form,edit_form=edit_form)
+
+    if edit_form is not None:
+        return render_template('boardHistory.html', g_board=tg_board,
+                               history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
+                                   data_Structure.History.time_and_date).all()[::-1],
+                               add_form=add_form, edit_form=edit_form)
+    else:
+        return render_template('boardHistory.html', g_board=tg_board,
+                               history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
+                                   data_Structure.History.time_and_date).all()[::-1],
+                               add_form=add_form, edit_form=edit_form)
 
 
 if __name__ == '__main__':

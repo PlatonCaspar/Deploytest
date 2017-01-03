@@ -1,0 +1,24 @@
+{%- extends "base.html" %}
+{%- import 'bootstrap/wtf.html' as wtf %}
+
+{% block title %}
+    Projects
+{% endblock %}
+
+{% block content %}
+    {% if projects_query %}
+        {% for project in projects_query %}
+            <div class="row">
+            <div class="col-md-4">
+                <div class="thumbnail">
+                    <a href="{{ url_for('show_boards_of_project', project_name=project.project_name)}}"></a>
+                </div>
+            </div>
+            </div>
+
+        {% endfor %}
+
+
+    {% endif %}
+
+{% endblock %}

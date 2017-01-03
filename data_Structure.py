@@ -25,7 +25,7 @@ metadata = sqlalchemy.MetaData(db)
 
 class Board(db.Model):
     code = db.Column(db.String(500), primary_key=True)
-    project_name = db.Column(db.String(80))
+    project_name = db.Column(db.Text, db.ForeignKey('project.project_name'))
     link = db.Column(db.String(500))
     version = db.Column(db.String(20))
     id = db.Column(db.Integer, primary_key=False)
@@ -71,7 +71,7 @@ class User(db.Model):
             return False
 
     def is_authenticated(self):
-        if User.query.filter_by(uid=self.uid).first().scalar() is None:
+        if User.query.filter_by(username=self.username).first().scalar() is None:
             return False
         else:
             return True
@@ -93,20 +93,33 @@ class History(db.Model):
     board_code = db.Column(db.String(500), db.ForeignKey('board.code'))
     id = db.Column(db.Integer, primary_key=True)
     history = db.Column(db.Text)
+    added_by = db.Column(db.Text)
     edited_by = db.Column(db.Text)
     time_and_date = db.Column(db.String(10))
 
     def __init__(self, history: str, board_code: str):
         self.board_code = board_code
         self.history = history.replace('\n', "<br>")
-        self.edited_by = User.get_id(current_user)
+        self.added_by = User.get_id(current_user)
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
         self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code)
 
 
-class Anonymus(AnonymousUserMixin):
+class Anonymous(AnonymousUserMixin):
     def __init__(self):
         self.username = 'Guest'
+
+
+class Project(db.Model):  # //TODO Implement the Project Class and add relationship to Board
+    project_name = db.Column(db.Text, primary_key=True)
+    project_description = db.Column(db.Text)
+    project_default_image_path = db.Column(db.Text, default='/static/Pictures/logo.jpg')
+    project_boards = db.relationship('Board', lazy='dynamic')
+
+    def __init__(self, project_name: str, project_description: str, project_default_image_path: str):
+        self.project_name = project_name
+        self.project_description = project_description
+        self.project_default_image_path = project_default_image_path
 
 
 eng = db.create_all()
