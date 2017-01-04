@@ -112,7 +112,7 @@ def login(last_page):
     return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
 
 
-nav.login_manager.login_view = '/login/' #//TODO I have to define where to redirect when login_required is not okay
+nav.login_manager.login_view = '/login/'  # //TODO I have to define where to redirect when login_required is not okay
 
 
 @app.route('/deleteUser/', methods=['GET', 'POST'])
@@ -156,7 +156,10 @@ def start():
     nav.nav.register_element("frontend_top", view.nav_bar())
     search_form = searchForm.SearchForm(request.form)
     if request.method == 'POST':
-        search_word = search_form.search_value.data
+        if search_form.submit.data is False:
+            search_word = request.form.get('search_field')
+        else:
+            search_word = search_form.search_value.data
         if search_word is "":
             return redirect(url_for('spitOut'))
         results = data_Structure.Board.query.filter_by(code=search_word).all()
@@ -314,7 +317,7 @@ if __name__ == '__main__':
 
     Bootstrap(app)
     SQLAlchemy(app)
-    nav.nav_logged_in.init_app(app)
+    # nav.nav_logged_in.init_app(app)
     nav.nav.init_app(app)
 
     register_renderer(app, 'own_nav_renderer', ownNavRenderer.own_nav_renderer)

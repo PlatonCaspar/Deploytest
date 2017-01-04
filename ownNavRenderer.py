@@ -1,6 +1,21 @@
 from dominate import tags
-from flask_nav.elements import NavigationItem
+from flask_nav.elements import NavigationItem, RawTag
 from flask_bootstrap.nav import BootstrapRenderer, sha1
+
+
+class BetterRawTag(RawTag):
+
+    def visit_BetterRawTag(self): return False
+
+    @property
+    def active(self):
+        return False
+
+    def __getattr__(self, item):
+        print('I want to get the attr')
+        return self.visit_BetterRawTag()
+
+#setattr(BetterRawTag, 'visit_' + BetterRawTag.__name__, 'return False')
 
 
 class ExtendedNavbar(NavigationItem):
@@ -9,7 +24,6 @@ class ExtendedNavbar(NavigationItem):
         self.root_class = root_class
         self.items = items
         self.right_items = right_items
-
 
 
 class own_nav_renderer(BootstrapRenderer):
@@ -53,12 +67,15 @@ class own_nav_renderer(BootstrapRenderer):
         ))
         bar_list = bar.add(tags.ul(_class='nav navbar-nav'))
         for item in node.items:
-            bar_list.add(self.visit(item))
+
+            if item.__class__.__name__ is not 'RawTag':
+                bar_list.add(self.visit(item))
+            elif item.__class__.__name__ is 'RawTag':
+                bar_list.add(item.content)
 
         if node.right_items:
             right_bar_list = bar.add(tags.ul(_class='nav navbar-nav navbar-right'))
             for item in node.right_items:
                 right_bar_list.add(self.visit(item))
-
 
         return root
