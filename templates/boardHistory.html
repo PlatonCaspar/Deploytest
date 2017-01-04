@@ -24,7 +24,7 @@
             <div class="panel">
 
             {% for row in history %}
-            {% set modal_id= row.id %}
+                {% set modal_id= row.id %}
                 <div class="panel-default panel-collapse">
                 <div class="panel-body">{{ row.history | safe }}</div>
                 <div class="panel-footer"><kbd class="footnote">{{ "added by "+row.added_by }}</kbd>
@@ -36,7 +36,7 @@
 
                     {% endif %}
                     {% if row.edited_by %}
-                        <kbd class="footnote">{{ "last edited on "+row.time_and_date+" by "+row.edited_by }}</kbd>
+                        <kbd class="footnote" style="position: absolute; right: 40px">{{ "last edited on "+row.last_edited+" by "+row.edited_by }}</kbd>
                     {% endif %}
                     <button type="button" class="btn btn-danger btn-xs" style="position: absolute; right: 2px  "
                             data-toggle="modal"
@@ -48,12 +48,19 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                <h4 class="modal-title">{{ 'Edit Story '+row.history|safe }}</h4>
+                                <h4 class="modal-title">{{ 'Edit Story '+row.id|safe|string }}</h4>
                             </div>
                             <div class="modal-body">
-                                {{ wtf.quick_form(edit_form) }}
-                                {{ edit_form.hidden_tag }}
 
+                                {% set f=edit_form.history.process_data(row.history) %}
+                                {% set g=edit_form.history_id.process_data(row.id) %}
+                                {#{% set h=edit_form.history_id(class_='hidden') %}  #}
+                                <form action="" method="post">
+                                    {{ wtf.form_field(edit_form.history) }}
+                                    {{ wtf.form_field(edit_form.send_edit) }}
+                                    {{ edit_form.history_id(value=row.id|string) }}
+                                    {{ edit_form.hidden_tag }}
+                                </form>
                                 <div class="modal-footer">
                                 </div>
                             </div>

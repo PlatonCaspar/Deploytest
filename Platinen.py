@@ -17,6 +17,7 @@ import ownNavRenderer
 import os
 import deleteUserForm
 import project_forms
+import time
 from passlib.hash import pbkdf2_sha256
 from flask_login import login_user, logout_user, login_required, current_user
 from data_Structure import app
@@ -111,7 +112,7 @@ def login(last_page):
     return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
 
 
-nav.login_manager.login_view = '/login'
+nav.login_manager.login_view = '/login/' #//TODO I have to define where to redirect when login_required is not okay
 
 
 @app.route('/deleteUser/', methods=['GET', 'POST'])
@@ -261,11 +262,16 @@ def del_board():
     return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
 
 
-def edit_board_history(board, history_id,
-                       history):  # //TODO: I Still have to implement the Edit Board History Function.
+def edit_board_history(board, history_id, history):
     nav.nav.register_element("frontend_top", view.nav_bar())
-    print(history)
-    return redirect(url_for('show_board_history', board.code))
+
+    history_to_edit = data_Structure.History.query.get(history_id)
+    history_to_edit.history = history
+    history_to_edit.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
+    history_to_edit.edited_by = data_Structure.User.get_id(current_user)
+    data_Structure.db.session.commit()
+
+    return redirect(url_for('show_board_history', g_code=board.code))
 
 
 def add_board_history(board, history):
@@ -283,13 +289,13 @@ def show_board_history(g_code):
     tg_board = data_Structure.Board.query.get(g_code)
     add_form = HistoryForm(request.form)
     edit_form = EditHistoryForm(request.form)
-    print(request.method)
+
     if request.method == 'POST' and add_form.send.data:
-        print('here we are')
+
         add_board_history(tg_board, add_form.history.data)
-    elif request.method == 'POST' and edit_form.send.data:
-        print('I want to Edit')
-        edit_board_history(tg_board, edit_form.history_id.data)
+    elif request.method == 'POST' and edit_form.send_edit.data:
+
+        edit_board_history(board=tg_board, history=edit_form.history.data, history_id=edit_form.history_id.data)
 
     if edit_form is not None:
         return render_template('boardHistory.html', g_board=tg_board,

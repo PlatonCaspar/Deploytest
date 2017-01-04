@@ -96,12 +96,14 @@ class History(db.Model):
     added_by = db.Column(db.Text)
     edited_by = db.Column(db.Text)
     time_and_date = db.Column(db.String(10))
+    last_edited = db.Column(db.String(10))
 
     def __init__(self, history: str, board_code: str):
         self.board_code = board_code
         self.history = history.replace('\n', "<br>")
         self.added_by = User.get_id(current_user)
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
+        self.last_edited = self.time_and_date
         self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code)
 
 
