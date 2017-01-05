@@ -11,9 +11,9 @@ class RegisterUser(Form):
 
 
 class LoginUser(Form):
-    username = StringField('Please enter a Username', [validators.data_required])
+    username = StringField("Username:", validators=[validators.data_required])
 
-    password = PasswordField('Pleas enter your Password', [validators.required])
+    password = PasswordField("Password:", validators=[validators.required])
 
     hidden_tag = HiddenField('Blubb')
-    submit = SubmitField('Login')
+    # submit = SubmitField('Login')

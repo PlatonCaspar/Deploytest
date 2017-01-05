@@ -1,6 +1,4 @@
-from conda.history import History
 from flask import render_template, request, redirect, url_for, session
-
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_nav import register_renderer
@@ -147,7 +145,6 @@ def delete_user():
 @app.route('/registeredUsers/')
 def show_registered_users():
     nav.nav.register_element("frontend_top", view.nav_bar())
-    print(current_user)
     return render_template('userTable.html', args=data_Structure.User.query.all(), search_form=searchForm.SearchForm())
 
 
@@ -158,17 +155,21 @@ def start():
     if request.method == 'POST':
         if search_form.submit.data is False:
             search_word = request.form.get('search_field')
+#            request.form.get('Selector')
+            #print(current_user.active)
         else:
             search_word = search_form.search_value.data
         if search_word is "":
             return redirect(url_for('spitOut'))
-        results = data_Structure.Board.query.filter_by(code=search_word).all()
-        results += data_Structure.Board.query.filter_by(project_name=search_word).all()
-        results += data_Structure.Board.query.filter_by(link=search_word).all()
-        results += data_Structure.Board.query.filter_by(version=search_word).all()
-        results += data_Structure.Board.query.filter_by(id=search_word).all()
-        results += data_Structure.Board.query.filter_by(dateAdded=search_word).all()
-        results += data_Structure.Board.query.filter_by(addedBy=search_word).all()
+
+        results = data_Structure.db.session.query(data_Structure.Board).filter(
+            data_Structure.Board.code.contains(search_word) |
+            data_Structure.Board.project_name.contains(search_word) |
+            data_Structure.Board.link.contains(search_word) |
+            data_Structure.Board.version.contains(search_word) |
+            data_Structure.Board.id.contains(search_word) |
+            data_Structure.Board.dateAdded.contains(search_word) |
+            data_Structure.Board.addedBy.contains(search_word)).all()
         results = list(set(results))
         return render_template('table.html', args=results, search_form=searchForm.SearchForm())
     return render_template('start.html', search_form=search_form)
@@ -184,6 +185,7 @@ def spitOut():
 def add__board():
     nav.nav.register_element("frontend_top", view.nav_bar())
     board_form = addPlatineForm.BoardForm(request.form)
+    board_form.name.choices = addPlatineForm.load_choices()
     if request.method == 'POST':
         new_board = data_Structure.Board(code=board_form.code.data, project_name=board_form.name.data,
                                          ver=board_form.ver.data)
@@ -269,7 +271,7 @@ def edit_board_history(board, history_id, history):
     nav.nav.register_element("frontend_top", view.nav_bar())
 
     history_to_edit = data_Structure.History.query.get(history_id)
-    history_to_edit.history = history
+    history_to_edit.history = history.replace('\n', "<br>")
     history_to_edit.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
     history_to_edit.edited_by = data_Structure.User.get_id(current_user)
     data_Structure.db.session.commit()

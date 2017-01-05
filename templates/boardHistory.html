@@ -52,9 +52,8 @@
                             </div>
                             <div class="modal-body">
 
-                                {% set f=edit_form.history.process_data(row.history) %}
+                                {% set f=edit_form.history.process_data(row.history.replace('<br>', '\n')) %}
                                 {% set g=edit_form.history_id.process_data(row.id) %}
-                                {#{% set h=edit_form.history_id(class_='hidden') %}  #}
                                 <form action="" method="post">
                                     {{ wtf.form_field(edit_form.history) }}
                                     {{ wtf.form_field(edit_form.send_edit) }}

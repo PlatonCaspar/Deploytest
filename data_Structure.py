@@ -52,16 +52,23 @@ class Board(db.Model):
 class User(db.Model):
     username = db.Column(db.String(), primary_key=True)
     password_hashed_and_salted = db.Column(db.String())
-    uid = db.Column(db.Integer(), primary_key=True)
+    uid = db.Column(db.Integer())
     email = db.Column(db.String())
-
+    user_group = db.Column(db.Integer, db.ForeignKey('user_group.id'))
     boards_Added = db.relationship('Board', lazy='dynamic')
+    active = db.Column(db.Boolean)
 
     def __init__(self, username: str, password: str, email: str):
         self.username = username
         self.uid = id(username)
         self.email = email
         self.password_hashed_and_salted = pbkdf2_sha256.hash(password)
+
+        if User.query().all() is []:  # First user logged in must be active!
+            self.active = True
+
+        else:
+            self.active = False
 
     def validate_user(self, username: str, password: str):
         login_user = self.query.filter_by(username=username)
@@ -77,7 +84,10 @@ class User(db.Model):
             return True
 
     def is_active(self):
-        return True
+        if self.active is not None:
+            return self.active
+        else:
+            return False
 
     def is_anonymus(self):
         return False
@@ -97,6 +107,7 @@ class History(db.Model):
     edited_by = db.Column(db.Text)
     time_and_date = db.Column(db.String(10))
     last_edited = db.Column(db.String(10))
+    data_objects = db.relationship('Files', lazy='dynamic')
 
     def __init__(self, history: str, board_code: str):
         self.board_code = board_code
@@ -105,6 +116,25 @@ class History(db.Model):
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
         self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code)
+
+
+class Files(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    file_path = db.Column(db.Text)
+    description = db.Column(db.Text)
+    belongs_to_history = db.Column(db.Integer, db.ForeignKey('history.id'))
+
+    def __init__(self, history: int, file_path: str, description='None'):
+        self.belongs_to_history = history
+        self.id = id()
+        self.description = description
+        self.file_path = file_path
+
+
+class UserGroup(db.Model):
+    user_type = db.Column(db.String)
+    id = db.Column(db.Integer, primary_key=True)
+    users = db.relationship('User', lazy='dynamic')
 
 
 class Anonymous(AnonymousUserMixin):

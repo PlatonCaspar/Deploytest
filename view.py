@@ -24,15 +24,24 @@ def get_logged_user():
 
 
 def write_code_for_search_bar():
+    bar = tags.div(tags.form(tags.div(
+        tags.select(tags.option('Everywhere', value='Everywhere', Class="container-fluid panel-body"),
+                    tags.option("User", value='User', Class="container-fluid panel-body"),
+                    tags.option("Boards", value='Boards', Class="container-fluid panel-body"),
+                    tags.option("Projects", value='Projects', Class="container-fluid panel-body"),
+                    Class="form-control selectpicker",
+                    style="margin: auto data-width: auto", name="Selector"),
 
+        tags.input(Type="text", Class="form-control ", placeholder="Search", name="search_field"),
 
-    bar = tags.form(tags.div(
-        tags.input(Type="text", Class="form-control", placeholder="Search", name="search_field"),
-        tags.div(tags.button(tags.i(Class="glyphicon glyphicon-search"), Class="btn btn-default",
-                             Type="submit"), Class="input-group-btn"),
-        Class='input-group'),
-        Class="form-inline container-fluid", style="padding-top: 3%; length=50px", action='/',
-        method="post", name="nav_search_form")  # tags.html(),
+        # tags.div(
+        tags.button(tags.i(Class="glyphicon glyphicon-search"),
+                    Class="btn btn-default",
+                    Type="submit"),
+        # Class="input-group-btn"),
+        Class="form-inline", style="width: 150%;"),
+        Class="form-inline", style="padding-top: 3%;", action='/',
+        method="post", name="nav_search_form"), Class="container-fluid")  # tags.html(),
 
     return bar
 
@@ -56,9 +65,13 @@ def nav_bar():
                    ),
 
             right_items=(
-                Text(tags.span(Class="glyphicon glyphicon-user")),
+                Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px")),
                 Subgroup('Hello Guest',
-                         View('Login', 'login', last_page=request.endpoint))
+                         Separator,
+                         View(
+                             tags.div(tags.span(Class="glyphicon glyphicon-log-in", style="margin-right: 5%"), "Login"),
+                             'login',
+                             last_page=request.endpoint))
             )
 
         )
@@ -77,12 +90,14 @@ def nav_bar():
                    ),
             right_items=(
 
-                Text(tags.span(Class="glyphicon glyphicon-user", text='Hello, ' + get_logged_user())),
+                Text(tags.span(Class="glyphicon glyphicon-user container-inline", style="margin-right: -20px ")),
                 Subgroup('Hello ' + get_logged_user(),
                          View('show registered Users', 'show_registered_users'),
                          View('Register User', 'register_user'),
                          View('Delete User', 'delete_user'),
-                         View('Logout', 'logout'))
+                         Separator,
+                         View(tags.div(tags.span(Class="glyphicon glyphicon-log-out", style="margin-right: 5%"),
+                                       "Logout"), 'logout'))
             )
 
         )

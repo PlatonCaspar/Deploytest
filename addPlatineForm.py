@@ -14,17 +14,16 @@ class CKTextAreaField(TextAreaField):
     widget = CKTextAreaWidget()
 
 
-def choices():  #//TODO Select wont load the current elements... thois function is not exexutet when form is loaded...
-    choices_var = []
+def load_choices():
+    choices = []
     for choice in Project.query.all():
-        choices_var.append([choice.project_name, choice.project_name])
-        print('now we execute the coices funcion and get: '+str(choices_var))
-    return choices_var
+        choices.append([choice.project_name, choice.project_name])
+    return choices
 
 
 class BoardForm(Form):
     code = StringField('Code', [validators.data_required])
-    name = SelectField('Select Project', choices=choices())
+    name = SelectField('Select Project')
     ver = StringField('Version', [validators.data_required])
     submit = SubmitField('Create')
     hidden_tag = HiddenField('Blubb')

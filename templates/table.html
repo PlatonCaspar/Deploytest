@@ -1,7 +1,7 @@
 {%- extends 'base.html' %}
 
 {% block title %}
-Results
+    Results
 {% endblock %}
 
 {% block content %}
@@ -19,17 +19,33 @@ Results
             </thead>
             <tbody>
             {% for row in args %}
-
-                <tr>
-                    <td><a href="{{ row.link }}" data-toggle="modal">{{ row.code }}</a></td>
-                    <td><a href="{{ row.link }}" data-toggle="modal">{{ row.project_name }}</a></td>
-                    <td><a href="{{ row.link }}" data-toggle="modal">{{ row.version }}</a></td>
-                    <td><a href="{{ row.link }}" data-toggle="modal">{{ row.dateAdded }}</a></td>
-                    <td><a href="{{ row.link }}" data-toggle="modal">{{ row.addedBy }}</a></td>
+                <form action="{{ row.link }}">
 
 
-                </tr>
+                    <tr>
+                        <div class="btn-group btn-group-justified">
 
+
+                            <td class="text-justify">
+                                <button type="submit" class="btn btn-block" style="background-color: transparent">{{ row.code }}</button>
+                            </td>
+                            <td class="text-justify">
+                                <button type="submit" class="btn btn-block" style="background-color: transparent">{{ row.project_name }}</button>
+                            </td>
+                            <td class="text-justify">
+                                <button type="submit" class="btn btn-block" style="background-color: transparent">{{ row.version }}</button>
+                            </td>
+                            <td class="text-justify">
+                                <button type="submit" class="btn btn-block" style="background-color: transparent">{{ row.dateAdded }}</button>
+                            </td>
+                            <td class="text-justify">
+                                <button type="submit" class="btn btn-block btn-text-left" style="background-color: transparent"><span class="glyphicon glyphicon-user" style="padding-right: 5px"></span>{{row.addedBy }}</button>
+                            </td>
+
+                        </div>
+                    </tr>
+
+                </form>
             {% endfor %}
             </tbody>
         </table>
