@@ -1,17 +1,29 @@
 {%- extends 'base.html' %}
 {%- import 'own_wtf.html' as wtf %}
 {% block title %}
-    Add a Project
+    Create a new Project
 {% endblock %}
 {% block content %}
-    <div class="page-header">
-        <h1>Add a Board:</h1>
-    </div>
-    <div class="col-md-4 fa-history" style="position: absolute; left: 30%; top: 50%">
-        {{ wtf.quick_form(add_project_form) }}
-        {{ add_project_form.hidden_tag}}
 
 
+    <div class="col-md-4 fa-history"
+         style=" padding-bottom: 3%;position: absolute; left: 30%; border: solid 1px #e7e7e7; border-radius: 3px 3px 3px 3px">
+        <div class="page-header">
+            <h1>Create a new Project:</h1>
+        </div>
+        <form action="" method="post" enctype="multipart/form-data" name="AddProject_Form">
+            {{ wtf.form_field(add_project_form.project_name, placeholder="Project Name") }}
+            {{ wtf.form_field(add_project_form.project_description, placeholder="Project Description") }}
+            <div style="margin-bottom: 3%">
+            <label for="upfile" >Select an Image</label>
+            <input name="upfile" id="upfile" type="file" value="upload" onclick="sub(this)">
+            </div>
+
+            {{ wtf.form_field(add_project_form.GOOOOOOOOOOOOOOOOOOOOOOOOOOO, Class="btn btn-primary btn-block") }}
+
+            {{ add_project_form.hidden_tag }}
+
+        </form>
     </div>
 
 

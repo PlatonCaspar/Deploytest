@@ -19,10 +19,14 @@ import time
 from passlib.hash import pbkdf2_sha256
 from flask_login import login_user, logout_user, login_required, current_user
 from data_Structure import app
+from werkzeug.utils import secure_filename
 
 import view
 
 nav.login_manager.anonymous_user = data_Structure.Anonymous
+
+UPLOAD_FOLDER = os.path.dirname(os.path.abspath(__file__))+'\static\Pictures'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 
 # def set_logged_user(state):
@@ -82,7 +86,7 @@ def logout():
 
 
 @app.route('/login/?next=/<last_page>/', methods=['GET', 'POST'])
-def login(last_page):
+def login(last_page=None):
     try:
         url = url_for(last_page)
     except:
@@ -110,7 +114,7 @@ def login(last_page):
     return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
 
 
-nav.login_manager.login_view = '/login/'  # //TODO I have to define where to redirect when login_required is not okay
+nav.login_manager.login_view = '/'  # //TODO I have to define where to redirect when login_required is not okay
 
 
 @app.route('/deleteUser/', methods=['GET', 'POST'])
@@ -136,7 +140,7 @@ def delete_user():
         #    return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm(),
         #                          messages=messages.Messages(True, 'Board was not deleted!'))
         if data_Structure.User.query.filter_by(
-                username=user_form.username.data).scalar() is None:  # check if board already exists
+                username=user_form.username.data).scalar() is None:  # check if User exists
             return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm(),
                                    messages=messages.Messages(False, 'User deleted successfully!'))
     return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
@@ -155,8 +159,7 @@ def start():
     if request.method == 'POST':
         if search_form.submit.data is False:
             search_word = request.form.get('search_field')
-#            request.form.get('Selector')
-            #print(current_user.active)
+        # request.form.get('Selector')
         else:
             search_word = search_form.search_value.data
         if search_word is "":
@@ -226,15 +229,22 @@ def add_project():
                                                               add_project_form.project_name.data + ' already exists!'),
                                    add_project_form=add_project_form)
         elif data_Structure.Project.query.get(add_project_form.project_name.data) is None:
-            image_path = None
-            # if add_project_form.project_image.data is not None:
-            #    image_data = request.FILES[add_project_form.project_image.name].read()
-            #    image_path = '/static/Pictures/' + add_project_form.project_name + '/'
-            #    open(os.path.join(image_path, add_project_form.project_image.data), 'w').write(image_data)
+            image_path = 'NE'
+            if 'upfile' not in request.files: #//TODO I still need to  check if files are safe
+                image_path = None
+            file = request.files.get('upfile')
+            if file.filename is '':
+                image_path = None
+            elif file and image_path is 'NE':
+                filename = secure_filename(str(id(file.filename))+file.filename)
+
+                file.save(UPLOAD_FOLDER+'\\'+filename)
+                image_path = UPLOAD_FOLDER + '\\' + filename
+                print(image_path)
             project_to_add = data_Structure.Project(project_name=add_project_form.project_name.data,
                                                     project_description=add_project_form.project_description.data,
                                                     project_default_image_path=image_path)
-            print(project_to_add.project_name + '  Picture_Path: ' + str(image_path))
+
             data_Structure.db.session.add(project_to_add)
             data_Structure.db.session.commit()
             return redirect(url_for('start'))

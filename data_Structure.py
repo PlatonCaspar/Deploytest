@@ -56,7 +56,7 @@ class User(db.Model):
     email = db.Column(db.String())
     user_group = db.Column(db.Integer, db.ForeignKey('user_group.id'))
     boards_Added = db.relationship('Board', lazy='dynamic')
-    active = db.Column(db.Boolean)
+    is_active = db.Column(db.Boolean)
 
     def __init__(self, username: str, password: str, email: str):
         self.username = username
@@ -64,11 +64,11 @@ class User(db.Model):
         self.email = email
         self.password_hashed_and_salted = pbkdf2_sha256.hash(password)
 
-        if User.query().all() is []:  # First user logged in must be active!
-            self.active = True
+        if db.session.query(User).scalar() is None:  # First user logged in must be active!
+            self.is_active = True
 
         else:
-            self.active = False
+            self.is_active = False
 
     def validate_user(self, username: str, password: str):
         login_user = self.query.filter_by(username=username)
@@ -83,9 +83,9 @@ class User(db.Model):
         else:
             return True
 
-    def is_active(self):
-        if self.active is not None:
-            return self.active
+    def user_is_active(self):
+        if self.is_active is not None:
+            return self.is_active
         else:
             return False
 
@@ -108,6 +108,7 @@ class History(db.Model):
     time_and_date = db.Column(db.String(10))
     last_edited = db.Column(db.String(10))
     data_objects = db.relationship('Files', lazy='dynamic')
+    test = db.Column(db.Integer, db.ForeignKey('test.id'))
 
     def __init__(self, history: str, board_code: str):
         self.board_code = board_code
@@ -152,6 +153,13 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
         self.project_name = project_name
         self.project_description = project_description
         self.project_default_image_path = project_default_image_path
+
+
+class Test(db.Model):
+    test_name = db.Column(db.Text)
+    id = db.Column(db.Integer, primary_key=True)
+    test_description = db.Column(db.Text)
+    test_usage = db.relationship('History', lazy='dynamic')
 
 
 eng = db.create_all()

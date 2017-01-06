@@ -7,18 +7,6 @@ from flask import request, url_for
 logged_user = None
 
 
-class UserGreeting(Text):
-    def __init__(self):
-        pass
-
-    @property
-    def text(self):
-        if logged_user is not None:
-            return 'Hello, {}'.format(logged_user)
-        else:
-            return 'Hello, Guest'
-
-
 def get_logged_user():
     return logged_user
 
