@@ -13,7 +13,7 @@ def get_logged_user():
 
 def write_code_for_search_bar():
     bar = tags.div(tags.form(tags.div(
-        tags.select(tags.option('Everywhere', value='Everywhere', Class="container-fluid panel-body"),
+        tags.select(tags.option('All', value='All', Class="container-fluid panel-body"),
                     tags.option("User", value='User', Class="container-fluid panel-body"),
                     tags.option("Boards", value='Boards', Class="container-fluid panel-body"),
                     tags.option("Projects", value='Projects', Class="container-fluid panel-body"),

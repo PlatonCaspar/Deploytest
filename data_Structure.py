@@ -107,8 +107,8 @@ class History(db.Model):
     edited_by = db.Column(db.Text)
     time_and_date = db.Column(db.String(10))
     last_edited = db.Column(db.String(10))
-    data_objects = db.relationship('Files', lazy='dynamic')
-    test = db.Column(db.Integer, db.ForeignKey('test.id'))
+    data_objects = db.relationship('Files', backref='history', lazy='dynamic')
+
 
     def __init__(self, history: str, board_code: str):
         self.board_code = board_code
@@ -127,7 +127,7 @@ class Files(db.Model):
 
     def __init__(self, history: int, file_path: str, description='None'):
         self.belongs_to_history = history
-        self.id = id()
+        self.id = id(file_path)
         self.description = description
         self.file_path = file_path
 
@@ -153,13 +153,6 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
         self.project_name = project_name
         self.project_description = project_description
         self.project_default_image_path = project_default_image_path
-
-
-class Test(db.Model):
-    test_name = db.Column(db.Text)
-    id = db.Column(db.Integer, primary_key=True)
-    test_description = db.Column(db.Text)
-    test_usage = db.relationship('History', lazy='dynamic')
 
 
 eng = db.create_all()

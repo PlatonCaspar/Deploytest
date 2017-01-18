@@ -25,7 +25,7 @@ import view
 
 nav.login_manager.anonymous_user = data_Structure.Anonymous
 
-UPLOAD_FOLDER = os.path.dirname(os.path.abspath(__file__))+'\static\Pictures'
+UPLOAD_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '\static\Pictures'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 
@@ -39,6 +39,10 @@ def is_logged_in():
         return True
     else:
         return False
+
+
+def delete_project():
+    pass
 
 
 @nav.login_manager.user_loader
@@ -85,6 +89,7 @@ def logout():
     return redirect(url_for('start'))
 
 
+@app.route('/login/')
 @app.route('/login/?next=/<last_page>/', methods=['GET', 'POST'])
 def login(last_page=None):
     try:
@@ -114,7 +119,7 @@ def login(last_page=None):
     return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
 
 
-nav.login_manager.login_view = '/'  # //TODO I have to define where to redirect when login_required is not okay
+nav.login_manager.login_view = '/login/'  # //TODO I have to define where to redirect when login_required is not okay
 
 
 @app.route('/deleteUser/', methods=['GET', 'POST'])
@@ -156,25 +161,52 @@ def show_registered_users():
 def start():
     nav.nav.register_element("frontend_top", view.nav_bar())
     search_form = searchForm.SearchForm(request.form)
+    results_board = None
+    results_project = None
     if request.method == 'POST':
-        if search_form.submit.data is False:
+        if request.form.get('submit_main') is None:
             search_word = request.form.get('search_field')
-        # request.form.get('Selector')
-        else:
-            search_word = search_form.search_value.data
-        if search_word is "":
-            return redirect(url_for('spitOut'))
+            search_area = request.form.get('Selector')
 
-        results = data_Structure.db.session.query(data_Structure.Board).filter(
-            data_Structure.Board.code.contains(search_word) |
-            data_Structure.Board.project_name.contains(search_word) |
-            data_Structure.Board.link.contains(search_word) |
-            data_Structure.Board.version.contains(search_word) |
-            data_Structure.Board.id.contains(search_word) |
-            data_Structure.Board.dateAdded.contains(search_word) |
-            data_Structure.Board.addedBy.contains(search_word)).all()
-        results = list(set(results))
-        return render_template('table.html', args=results, search_form=searchForm.SearchForm())
+        else:
+            search_word = request.form.get('search_field_main')
+            print(search_word)
+            search_area = 'All'
+
+        if search_area == 'Boards' or search_area == 'All':
+            if search_word is "":
+                results_board = data_Structure.db.session.query(data_Structure.Board).all()
+            else:
+                results_board = data_Structure.db.session.query(data_Structure.Board).filter(
+                    data_Structure.Board.code.contains(search_word) |
+                    data_Structure.Board.project_name.contains(search_word) |
+                    data_Structure.Board.link.contains(search_word) |
+                    data_Structure.Board.version.contains(search_word) |
+                    data_Structure.Board.id.contains(search_word) |
+                    data_Structure.Board.dateAdded.contains(search_word) |
+                    data_Structure.Board.addedBy.contains(search_word)).all()
+
+            results_board = list(set(results_board))
+        if search_area == 'User' or search_area == 'All':
+            pass
+        if search_area == 'Projects' or search_area == 'All':
+            if search_word is "":
+                results_project = data_Structure.db.session.query(data_Structure.Project).all()
+            elif search_word is not "":
+                results_project = data_Structure.db.session.query(data_Structure.Project).filter(
+                    data_Structure.Project.project_name.contains(search_word) |
+                    data_Structure.Project.project_description.contains(search_word) |
+                    print("This " + data_Structure.Project.project_description)  # |
+                    # search_word in str(data_Structure.Project.project_name) |
+                    # search_word in str(data_Structure.Project.project_description)
+
+                ).all()
+            results_project = list(set(results_project))
+            if not results_board and not results_project:
+                return render_template('base.html', messages=messages.Messages(True, 'No results were found!'))
+
+        return render_template('table.html', args=results_board, projects=results_project,
+                               search_form=searchForm.SearchForm())
     return render_template('start.html', search_form=search_form)
 
 
@@ -230,16 +262,17 @@ def add_project():
                                    add_project_form=add_project_form)
         elif data_Structure.Project.query.get(add_project_form.project_name.data) is None:
             image_path = 'NE'
-            if 'upfile' not in request.files: #//TODO I still need to  check if files are safe
-                image_path = None
+            if 'upfile' not in request.files:  # //TODO I still need to  check if files are safe
+                image_path=None
             file = request.files.get('upfile')
             if file.filename is '':
                 image_path = None
             elif file and image_path is 'NE':
-                filename = secure_filename(str(id(file.filename))+file.filename)
+                file_id = id(file.filename)
+                filename = secure_filename(str(file_id) + file.filename)
 
-                file.save(UPLOAD_FOLDER+'\\'+filename)
-                image_path = UPLOAD_FOLDER + '\\' + filename
+                file.save(UPLOAD_FOLDER + '\\' + filename)
+                image_path = '/static/Pictures/' + filename
                 print(image_path)
             project_to_add = data_Structure.Project(project_name=add_project_form.project_name.data,
                                                     project_description=add_project_form.project_description.data,
@@ -282,19 +315,26 @@ def edit_board_history(board, history_id, history):
 
     history_to_edit = data_Structure.History.query.get(history_id)
     history_to_edit.history = history.replace('\n', "<br>")
-    history_to_edit.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
+    history_to_edit.last_edited = time.strftime("%d.%m.%Y %H:%M:%S")
     history_to_edit.edited_by = data_Structure.User.get_id(current_user)
     data_Structure.db.session.commit()
 
     return redirect(url_for('show_board_history', g_code=board.code))
 
 
-def add_board_history(board, history):
+def add_board_history(board, history, file):
     new_history = data_Structure.History(history=history, board_code=board.code)
+    if file:
+        file_id = id(file.filename)
+        filename = secure_filename(str(file_id) + file.filename)
+
+        file.save(UPLOAD_FOLDER + '\\' + filename)
+        image_path = '/static/Pictures/' + filename
+        file_to_add = data_Structure.Files(history=new_history.id, file_path=image_path)
+
     data_Structure.db.session.add(new_history)
     data_Structure.db.session.commit()
-    print(new_history.edited_by)
-
+    print(new_history.data_object.all())
     return redirect(url_for('show_board_history', g_code=board.code))
 
 
@@ -307,10 +347,18 @@ def show_board_history(g_code):
 
     if request.method == 'POST' and add_form.send.data:
 
-        add_board_history(tg_board, add_form.history.data)
+        file = request.files.get('file')
+
+
+
+        add_board_history(tg_board, add_form.history.data, file)
     elif request.method == 'POST' and edit_form.send_edit.data:
 
         edit_board_history(board=tg_board, history=edit_form.history.data, history_id=edit_form.history_id.data)
+    elif request.method == 'POST' and edit_form.delete.data:
+        history = data_Structure.History.query.get(int(edit_form.history_id.data))
+        data_Structure.db.session.delete(history)
+        data_Structure.db.session.commit()
 
     if edit_form is not None:
         return render_template('boardHistory.html', g_board=tg_board,
@@ -322,6 +370,16 @@ def show_board_history(g_code):
                                history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
                                    data_Structure.History.time_and_date).all()[::-1],
                                add_form=add_form, edit_form=edit_form)
+
+
+@app.route('/ProjectPage/<project_name>/', methods=['POST', 'GET'])
+def show_project(project_name):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    project = data_Structure.Project.query.get(project_name)
+    if project is None:
+        return render_template('start.html', messages=messages.Messages(True, 'Project was not found!!'))
+    boards_of_project = data_Structure.Board.query.filter_by(project_name=project_name)
+    return render_template('ProjectPage.html', project=project, boards=boards_of_project)
 
 
 if __name__ == '__main__':
