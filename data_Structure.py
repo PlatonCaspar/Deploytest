@@ -26,6 +26,7 @@ metadata = sqlalchemy.MetaData(db)
 class Board(db.Model):
     code = db.Column(db.String(500), primary_key=True)
     project_name = db.Column(db.Text, db.ForeignKey('project.project_name'))
+    project = db.relationship('Project', backref=db.backref('project_boards_backref', lazy='dynamic'))
     link = db.Column(db.String(500))
     version = db.Column(db.String(20))
     id = db.Column(db.Integer, primary_key=False)
@@ -107,7 +108,7 @@ class History(db.Model):
     edited_by = db.Column(db.Text)
     time_and_date = db.Column(db.String(10))
     last_edited = db.Column(db.String(10))
-    data_objects = db.relationship('Files', backref='history', lazy='dynamic')
+    data_objects = db.relationship('Files', backref=db.backref('belongs_to_history_backref', lazy='dynamic', uselist=True))
 
 
     def __init__(self, history: str, board_code: str):
@@ -123,9 +124,10 @@ class Files(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     file_path = db.Column(db.Text)
     description = db.Column(db.Text)
-    belongs_to_history = db.Column(db.Integer, db.ForeignKey('history.id'))
+    belongs_to_history_id = db.Column(db.Integer, db.ForeignKey('history.id'))
+    belongs_to_history = db.relationship('History', backref=db.backref('data_objects_backref', lazy='dynamic', uselist=True))
 
-    def __init__(self, history: int, file_path: str, description='None'):
+    def __init__(self, history, file_path: str, description='None'):
         self.belongs_to_history = history
         self.id = id(file_path)
         self.description = description
@@ -147,7 +149,7 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
     project_name = db.Column(db.Text, primary_key=True)
     project_description = db.Column(db.Text)
     project_default_image_path = db.Column(db.Text, default='/static/Pictures/logo.jpg')
-    project_boards = db.relationship('Board', lazy='dynamic')
+    project_boards = db.relationship('Board', backref=db.backref('project_backref', lazy='dynamic', uselist=True))
 
     def __init__(self, project_name: str, project_description: str, project_default_image_path: str):
         self.project_name = project_name

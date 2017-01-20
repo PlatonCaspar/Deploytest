@@ -263,7 +263,7 @@ def add_project():
         elif data_Structure.Project.query.get(add_project_form.project_name.data) is None:
             image_path = 'NE'
             if 'upfile' not in request.files:  # //TODO I still need to  check if files are safe
-                image_path=None
+                image_path = None
             file = request.files.get('upfile')
             if file.filename is '':
                 image_path = None
@@ -330,11 +330,14 @@ def add_board_history(board, history, file):
 
         file.save(UPLOAD_FOLDER + '\\' + filename)
         image_path = '/static/Pictures/' + filename
-        file_to_add = data_Structure.Files(history=new_history.id, file_path=image_path)
+        file_to_add = data_Structure.Files(history=new_history, file_path=image_path)
+        data_Structure.db.session.add(file_to_add)
 
     data_Structure.db.session.add(new_history)
+
+
     data_Structure.db.session.commit()
-    print(new_history.data_object.all())
+    print(new_history.data_objects)
     return redirect(url_for('show_board_history', g_code=board.code))
 
 
@@ -349,11 +352,9 @@ def show_board_history(g_code):
 
         file = request.files.get('file')
 
-
-
-        add_board_history(tg_board, add_form.history.data, file)
+        add_board_history(board=tg_board, history=add_form.history.data, file=file)
     elif request.method == 'POST' and edit_form.send_edit.data:
-
+        history = data_Structure.History.query.get(int(edit_form.history_id.data))
         edit_board_history(board=tg_board, history=edit_form.history.data, history_id=edit_form.history_id.data)
     elif request.method == 'POST' and edit_form.delete.data:
         history = data_Structure.History.query.get(int(edit_form.history_id.data))
