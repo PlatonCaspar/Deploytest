@@ -4,18 +4,53 @@
     Add a Board
 {% endblock %}
 {% block content %}
-    <div class="page-header" style="position: center">
-        <h1>Add a Board:</h1>
-    </div>
-    <div class="col-md-4" style="position: center">
-        <form action="" method="post">
-            {{ wtf.form_field(form.code) }}
-            {{ wtf.form_field(form.name)}}
-            {{ wtf.form_field(form.ver) }}
-            {{ wtf.form_field(form.submit) }}
-            {{ form.hidden_tag }}
+    <div class="container">
+        <div class="page-header" style="position: center">
+            <h1>Add a Board:</h1>
+        </div>
+        <div class="col-md-4 form-group" style="position: center">
+            <form action="" method="post">
+                {{ wtf.form_field(form.code) }}
+                {{ wtf.form_field(form.name) }}
+                <button class="btn btn-default btn-group" type="button" data-toggle="modal" data-target="#addProject"
+                        aria-expanded="false" aria-controls="addProject">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+                <br><br>
 
-        </form>
+                {{ wtf.form_field(form.ver) }}
+                {{ wtf.form_field(form.submit) }}
+                {{ form.hidden_tag }}
+
+            </form>
+
+            <div class="modal fade" id="addProject" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">&times;</span></button>
+                            <label for="AddProject_form">Add a Project</label>
+                            <form action="{{ url_for('add_project') }}" method="post" enctype="multipart/form-data"
+                                  name="AddProject_Form">
+                                {{ wtf.form_field(add_project_form.project_name, placeholder="Project Name") }}
+                                {{ wtf.form_field(add_project_form.project_description, placeholder="Project Description") }}
+                                <div style="margin-bottom: 3%">
+                                    <label for="upfile">Select an Image</label>
+                                    <input name="upfile" id="upfile" type="file" value="upload" onclick="sub(this)">
+                                </div>
+
+                                {{ wtf.form_field(add_project_form.GOOOOOOOOOOOOOOOOOOOOOOOOOOO, Class="btn btn-primary btn-block") }}
+
+                                {{ add_project_form.hidden_tag }}
+                                <input class="checkbox hidden" value="true" id="add_platine" name="add_platine">
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 

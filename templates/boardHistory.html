@@ -14,9 +14,9 @@
 
 
 {% block content -%}
-
     {% if g_board %}
-        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#addModal">Add History</button>
+        <button type="button" class="btn btn-default center-block" data-toggle="modal" data-target="#addModal"><span
+                class="glyphicon glyphicon-pencil "></span></button>
         <br><br>
 
         {% if history %}
@@ -25,26 +25,67 @@
 
             {% for row in history %}
                 {% set modal_id= row.id %}
+
                 <div class="panel-default panel-collapse">
-                {% if row.data_objects %}
 
-                    <div class="panel-body">
-                        <div class="row">
 
-                            <div class="thumbnail">
-                                {% set pics=row.data_objects %}
+                <div class="panel-body">
+                    <div class="row">
+                        {% if row.data_objects %}
+                            {% set pics=row.data_objects %}
 
-                                {% for pic in pics %}
-                                    <img src="{{ pic.file_path }}" style="width: 10%">
-                                {% endfor %}
+                            {% for pic in pics %}
+                                <div class=" col-xs-2 col-md-2">
 
-                            </div>
+                                    <div class="thumbnail">
+                                        <a href="{{ pic.file_path }}">
+                                            <img src="{{ pic.file_path }}" style="width: 100%">
+                                        </a>
+                                        <div class="caption">
+                                            <form class=""
+                                                  action="{{ url_for('delete_history_image', img_id=pic.id, board_id=g_board.code) }}"
+                                                  method="post">
+                                                <button class="btn btn-default btn-sm" type="button"
+                                                        data-toggle="collapse" data-target="#{{ pic.id }}"
+                                                        aria-expanded="false"
+                                                        aria-controls="{{ pic.id }}"><span
+                                                        class="glyphicon glyphicon-remove"></span></button>
+                                                <div class="collapse" id="{{ pic.id }}">
+                                                    <div class="">
+                                                        <br><br>
+                                                        <button class="btn btn-danger btn-sm btn-block"
+                                                                type="submit"><span
+                                                                class="glyphicon glyphicon-ok pull-left"></span>
+                                                            <strong>Löschen?</strong>
+                                                        </button>
+                                                    </div>
+                                                </div>
 
-                        </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        <form action="{{ url_for('board_history_add_file', history_id=row.id, board_id=g_board.code) }}"
+                              method="post" class="" enctype="multipart/form-data"
+                              id="new_upfile_form">
+
+                            <input class="hidden" name="new_upfile" id="new_upfile" accept=".xls,.xlsx,image/*"
+                                   type="file" value="upload"
+                                   onchange="document.getElementById('new_upfile_button').click()">
+                            <button class="hidden" type="submit" id="new_upfile_button"></button>
+                            <button class="btn btn-default btn-sm" type="button"
+                                    onclick="document.getElementById('new_upfile').click()"><span
+                                    class="glyphicon glyphicon-paperclip"></span></button>
+                        </form>
+
+
                     </div>
-                {% endif %}
-                <div class="panel-body">{{ row.history | safe }}</div>
-                <div class="panel-footer"><kbd class="footnote">{{ "added by "+row.added_by }}</kbd>
+                </div>
+
+                <div class="panel-body" id="{{  row.id  }}">{{ row.history | safe }}</div>
+                <div class="panel-footer" ><kbd class="footnote" href="mailto:{{ row.added_by }}?Subject=#{{ row.id }}">{{ "added by "+row.added_by|string }}</kbd>
 
                     {% if not row.edited_by %}
 

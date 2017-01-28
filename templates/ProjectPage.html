@@ -9,14 +9,47 @@
     <div class="container container-fluid">
         <div class="panel-default panel-collapse">
             <div class="panel-heading">
-                <h1>{{ project.project_name }}</h1>
+                <form class=""
+                      action="{{ url_for('delete_project', project_name=project.project_name) }}"
+                      method="post">
+                    <h1>{{ project.project_name }}
+                        <small>
+
+                                <button class="btn btn-group btn-warning btn-sm pull-right" type="button"
+                                        data-toggle="collapse" data-target="#delete_project"
+                                        aria-expanded="false"
+                                        aria-controls="delete_project"><span
+                                        class="glyphicon glyphicon-remove"></span></button>
+
+                        </small>
+                    </h1>
+
+
+                    <div class="collapse" id="delete_project">
+                        <div class="">
+                            <br><br>
+                            <button class="btn btn-danger btn-sm btn-block"
+                                    type="submit"><span
+                                    class="glyphicon glyphicon-ok pull-left"></span>
+                                <strong>Löschen?</strong>
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
             </div>
             <div class="panel-body" style="border-bottom: solid #e7e7e7 1px">
                 <img src="{{ project.project_default_image_path }}" class="img-thumbnail" alt="Project Picture"
                      style="width: 20%">
+                <form action="{{ url_for('delete_project_image',img_id=project.project_default_image_path.replace('/', '_'), project_name=project.project_name) }}"
+                      method="post">
+                    <button class="btn btn-default" type="submit">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                </form>
             </div>
             <div class="panel-body">
-                {{ project.project_description }}
+                {{ project.project_description|safe }}
             </div>
             <div class="panel-footer">
 

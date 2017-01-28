@@ -1,7 +1,7 @@
 import flask_sqlalchemy
 from flask import Flask
 import sqlalchemy
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import with_polymorphic
 from flask import url_for
 import time
 from passlib.hash import pbkdf2_sha256
@@ -12,9 +12,9 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///static/Database/data.sql'
 
 db = flask_sqlalchemy.SQLAlchemy(app)
-eng = db.create_all()
 
-metadata = sqlalchemy.MetaData(db)
+
+# metadata = sqlalchemy.MetaData(db)
 
 
 # db.echo = True
@@ -99,22 +99,31 @@ class User(db.Model):
     def get(us_name):
         return User.query.filter_by(username=us_name).first()
 
+    def super(self):
+        pass
+
 
 class History(db.Model):
     board_code = db.Column(db.String(500), db.ForeignKey('board.code'))
     id = db.Column(db.Integer, primary_key=True)
     history = db.Column(db.Text)
-    added_by = db.Column(db.Text)
-    edited_by = db.Column(db.Text)
+    edited_by_id = db.Column(db.Integer, db.ForeignKey('user.username'))
+    added_by = db.relationship('User', backref=db.backref('added_by_backref', lazy='select', uselist=False,
+                                                          enable_typechecks=False))
+
+    edited_by = db.relationship('User', backref=db.backref('edited_by_backref', lazy='select', uselist=False,
+                                                           enable_typechecks=False))
     time_and_date = db.Column(db.String(10))
     last_edited = db.Column(db.String(10))
-    data_objects = db.relationship('Files', backref=db.backref('belongs_to_history_backref', lazy='dynamic', uselist=True))
-
+    data_objects = db.relationship('Files',
+                                   backref=db.backref('belongs_to_history_backref', lazy='dynamic', uselist=True))
 
     def __init__(self, history: str, board_code: str):
         self.board_code = board_code
         self.history = history.replace('\n', "<br>")
-        self.added_by = User.get_id(current_user)
+
+        self.added_by = current_user        #/TODO Go to bed and the se how we can add the mailto link or first try to give a User.
+
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
         self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code)
@@ -125,7 +134,8 @@ class Files(db.Model):
     file_path = db.Column(db.Text)
     description = db.Column(db.Text)
     belongs_to_history_id = db.Column(db.Integer, db.ForeignKey('history.id'))
-    belongs_to_history = db.relationship('History', backref=db.backref('data_objects_backref', lazy='dynamic', uselist=True))
+    belongs_to_history = db.relationship('History',
+                                         backref=db.backref('data_objects_backref', lazy='dynamic', uselist=True))
 
     def __init__(self, history, file_path: str, description='None'):
         self.belongs_to_history = history
@@ -140,7 +150,7 @@ class UserGroup(db.Model):
     users = db.relationship('User', lazy='dynamic')
 
 
-class Anonymous(AnonymousUserMixin):
+class Anonymous(AnonymousUserMixin, User):
     def __init__(self):
         self.username = 'Guest'
 
@@ -158,5 +168,6 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
 
 
 eng = db.create_all()
-Session = sessionmaker(bind=eng)
-session = Session()
+
+
+# session = flask_sqlalchemy.SQLAlchemy.(bind=eng)
