@@ -4,7 +4,7 @@
 {% block title %}
     {{ super() }}
     {% if g_board | safe %}
-        {{ g_board.project_name }} {{ g_board.version }}
+        {{ g_board.project_name }} {{ "ver.: "+ g_board.version }}
         {#Hier kommt die Struktur wie die Daten aus der Datenbank angezeigt werden sollen.#}
     {% endif %}
 
@@ -14,21 +14,37 @@
 
 
 {% block content -%}
+
+    <div class="well well-sm">
+        <div class="media">
+            <div class="media-left media-middle"><img src="{{ g_board.project.project_default_image_path }}"
+                                         class="media-object thumbnail" alt="default_project_image"
+                                         style="width: 120px"></div>
+            <div class="media-body">
+                <div class="media-heading">
+                    <h4>{{ g_board.project.project_name }}
+
+                    </h4>
+                </div>
+                {{ g_board.project.project_description }}
+            </div>
+
+        </div>
+    </div>
     {% if g_board %}
         <button type="button" class="btn btn-default center-block" data-toggle="modal" data-target="#addModal"><span
-                class="glyphicon glyphicon-pencil "></span></button>
+                class="glyphicon glyphicon-plus "></span></button>
+
         <br><br>
 
         {% if history %}
 
             <div class="panel">
-
+            <div class="page-header"><h3>Board Comments</h3></div>
             {% for row in history %}
                 {% set modal_id= row.id %}
 
                 <div class="panel-default panel-collapse">
-
-
                 <div class="panel-body">
                     <div class="row">
                         {% if row.data_objects %}
@@ -66,6 +82,7 @@
                                     </div>
                                 </div>
                             {% endfor %}
+
                         {% endif %}
                         <form action="{{ url_for('board_history_add_file', history_id=row.id, board_id=g_board.code) }}"
                               method="post" class="" enctype="multipart/form-data"
@@ -84,8 +101,10 @@
                     </div>
                 </div>
 
-                <div class="panel-body" id="{{  row.id  }}">{{ row.history | safe }}</div>
-                <div class="panel-footer" ><kbd class="footnote" href="mailto:{{ row.added_by }}?Subject=#{{ row.id }}">{{ "added by "+row.added_by|string }}</kbd>
+                <div class="panel-body" id="{{ row.id }}">{{ row.history | safe }}</div>
+                <div class="panel-footer"><span
+                        href=""><kbd
+                        class="footnote">{{ "added by "+row.added_by.username }}</kbd></span>
 
                     {% if not row.edited_by %}
 
@@ -94,72 +113,77 @@
 
                     {% endif %}
                     {% if row.edited_by %}
-                        <kbd class="footnote"
-                             style="position: absolute; right: 40px">{{ "last edited on "+row.last_edited+" by "+row.edited_by }}</kbd>
+                        <kbd class="footnote pull-right"
+                             style="position: absolute; right: 40px">{{ "last edited on "+row.last_edited+" by "+row.edited_by.username }}</kbd>
                     {% endif %}
-                    <button type="button" class="btn btn-danger btn-xs" style="position: absolute; right: 2px  "
-                            data-toggle="modal"
-                            data-target="#{{ modal_id }}">Edit!
-                    </button>
-                </div>
-                <div id="{{ modal_id }}" class="modal fade" role="dialog">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                <h4 class="modal-title">{{ 'Edit Story '+row.id|safe|string }}</h4>
-                            </div>
-                            <div class="modal-body">
+                    {% if current_user.username!='Guest' %}
+                        <button type="button" class="btn btn-danger btn-xs" style="position: absolute; right: 2px  "
+                                data-toggle="modal"
+                                data-target="#edit{{ modal_id }}">Edit!
+                        </button>
+                    {% endif %}
 
-                                {% set f=edit_form.history.process_data(row.history.replace('<br>', '\n')) %}
-                                {% set g=edit_form.history_id.process_data(row.id) %}
-                                <form action="" method="post">
-                                    {{ wtf.form_field(edit_form.history) }}
-                                    {{ wtf.form_field(edit_form.send_edit) }}
-                                    {{ wtf.form_field(edit_form.delete, Class=' btn btn-danger') }}
-                                    {{ edit_form.history_id(value=row.id|string) }}
-                                    {{ edit_form.hidden_tag }}
-                                </form>
-                                <div class="modal-footer">
+                    <div class="container">
+                        <div id="edit{{ modal_id }}" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">{{ 'edit:' }}</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        {% set f=edit_form.history.process_data(row.history.replace('<br>', '\n')) %}
+                                        {% set g=edit_form.history_id.process_data(row.id) %}
+                                        <form action="" method="post">
+                                            {{ wtf.form_field(edit_form.history) }}
+                                            {% if current_user.username != 'Guest' %}
+                                                {{ wtf.form_field(edit_form.send_edit) }}
+                                                {{ wtf.form_field(edit_form.delete) }}
+                                            {% endif %}
+                                            {{ edit_form.history_id(value=row.id|string) }}
+                                            {{ edit_form.hidden_tag }}
+                                        </form>
+                                        <div class="modal-footer">
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
-
                         </div>
                     </div>
-
                 </div>
+
             {% endfor %}
         </div>
 
         {% endif %}
 
 
-
-
+    </div>
     {% endif %}
 
 
-<div id="addModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">{{ 'Add a new Story to '+g_board.code }}</h4>
-            </div>
-            <div class="modal-body">
-                {{ wtf.quick_form(add_form) }}
-                {{ add_form.hidden_tag }}
-                <div class="modal-footer">
+    <div id="addModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{{ 'Add a new Story to '+g_board.code }}</h4>
                 </div>
-            </div>
+                <div class="modal-body">
+                    {{ wtf.quick_form(add_form) }}
+                    {{ add_form.hidden_tag }}
+                    <div class="modal-footer">
+                    </div>
+                </div>
 
+            </div>
         </div>
+
+
     </div>
 
 
-</div>
-
-</div>
 {%- endblock %}
 
 

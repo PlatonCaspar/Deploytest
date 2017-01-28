@@ -99,8 +99,7 @@ class User(db.Model):
     def get(us_name):
         return User.query.filter_by(username=us_name).first()
 
-    def super(self):
-        pass
+
 
 
 class History(db.Model):
@@ -150,7 +149,7 @@ class UserGroup(db.Model):
     users = db.relationship('User', lazy='dynamic')
 
 
-class Anonymous(AnonymousUserMixin, User):
+class Anonymous(AnonymousUserMixin):
     def __init__(self):
         self.username = 'Guest'
 
@@ -160,6 +159,11 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
     project_description = db.Column(db.Text)
     project_default_image_path = db.Column(db.Text, default='/static/Pictures/logo.jpg')
     project_boards = db.relationship('Board', backref=db.backref('project_backref', lazy='dynamic', uselist=True))
+    sub_projects = db.relationship('Project', lazy='dynamic', uselist=True)
+    sub_projects_id = db.Column(db.Text, db.ForeignKey('project.project_name'))
+    project_history = db.relationship('History', backref=db.backref('project_history_backref', lazy='dynamic', uselist=True))
+    project_history_id = db.Column(db.Integer, db.ForeignKey('history.id'))
+
 
     def __init__(self, project_name: str, project_description: str, project_default_image_path: str):
         self.project_name = project_name

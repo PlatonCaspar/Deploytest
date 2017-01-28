@@ -406,8 +406,8 @@ def show_project(project_name):
     project = data_Structure.Project.query.get(project_name)
     if project is None:
         return render_template('start.html', messages=messages.Messages(True, 'Project was not found!!'))
-    boards_of_project = data_Structure.Board.query.filter_by(project_name=project_name)
-    return render_template('ProjectPage.html', project=project, boards=boards_of_project)
+    #boards_of_project = data_Structure.Board.query.filter_by(project_name=project_name)
+    return render_template('ProjectPage.html', project=project, boards=project.project_boards) #boards_of_project)
 
 
 @app.route('/project/delete/image/<img_id>/<project_name>/', methods=['POST'])
@@ -415,7 +415,7 @@ def delete_project_image(img_id, project_name):
     # image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
     project = data_Structure.db.session.query(data_Structure.Project).get(project_name)
     project.project_default_image_path = UPLOAD_FOLDER + '/static/Pictures/logo.jpg'
-    if not '/static/Pictures/logo.jpg' in img_id:
+    if '/static/Pictures/logo.jpg'.replace('/', '_') not in img_id:
         os.remove(str(DATA_FOLDER + img_id.replace('_', '\\')))
     # data_Structure.db.session.remove(image_to_delete)
     # data_Structure.db.session.commit()
