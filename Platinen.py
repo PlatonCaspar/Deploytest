@@ -23,7 +23,7 @@ from werkzeug.utils import secure_filename
 
 import view
 
-nav.login_manager.anonymous_user = data_Structure.Anonymous
+nav.login_manager.anonymous_user = data_Structure.User
 
 UPLOAD_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '\static\Pictures'
 DATA_FOLDER = os.path.dirname(os.path.abspath(__file__))
@@ -90,9 +90,12 @@ def logout():
     return redirect(url_for('start'))
 
 
-@app.route('/login/')
-@app.route('/login/?next=/<last_page>/', methods=['GET', 'POST'])
-def login(last_page=None):
+@app.route('/login/', methods=['GET', 'POST'])
+# @app.route('/login/?next=/<last_page>/', methods=['GET', 'POST'])
+def login():
+    last_page = request.args.get('next')
+    if last_page is None:
+        last_page = request.args.get('last_page')
     try:
         url = url_for(last_page)
     except:
@@ -406,8 +409,8 @@ def show_project(project_name):
     project = data_Structure.Project.query.get(project_name)
     if project is None:
         return render_template('start.html', messages=messages.Messages(True, 'Project was not found!!'))
-    #boards_of_project = data_Structure.Board.query.filter_by(project_name=project_name)
-    return render_template('ProjectPage.html', project=project, boards=project.project_boards) #boards_of_project)
+    # boards_of_project = data_Structure.Board.query.filter_by(project_name=project_name)
+    return render_template('ProjectPage.html', project=project, boards=project.project_boards)  # boards_of_project)
 
 
 @app.route('/project/delete/image/<img_id>/<project_name>/', methods=['POST'])

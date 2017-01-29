@@ -59,17 +59,18 @@ class User(db.Model):
     boards_Added = db.relationship('Board', lazy='dynamic')
     is_active = db.Column(db.Boolean)
 
-    def __init__(self, username: str, password: str, email: str):
+    def __init__(self, username='Guest', password=None, email=None):
         self.username = username
-        self.uid = id(username)
-        self.email = email
-        self.password_hashed_and_salted = pbkdf2_sha256.hash(password)
+        if password and email:
+            self.uid = id(username)
+            self.email = email
+            self.password_hashed_and_salted = pbkdf2_sha256.hash(password)
 
-        if db.session.query(User).scalar() is None:  # First user logged in must be active!
+        if db.session.query(User).all() is None:  # First user logged in must be active!
             self.is_active = True
 
         else:
-            self.is_active = False
+            self.is_active = True
 
     def validate_user(self, username: str, password: str):
         login_user = self.query.filter_by(username=username)
@@ -100,18 +101,14 @@ class User(db.Model):
         return User.query.filter_by(username=us_name).first()
 
 
-
-
 class History(db.Model):
     board_code = db.Column(db.String(500), db.ForeignKey('board.code'))
     id = db.Column(db.Integer, primary_key=True)
     history = db.Column(db.Text)
     edited_by_id = db.Column(db.Integer, db.ForeignKey('user.username'))
-    added_by = db.relationship('User', backref=db.backref('added_by_backref', lazy='select', uselist=False,
-                                                          enable_typechecks=False))
+    added_by = db.relationship('User', backref=db.backref('added_by_backref', lazy='dynamic'))
 
-    edited_by = db.relationship('User', backref=db.backref('edited_by_backref', lazy='select', uselist=False,
-                                                           enable_typechecks=False))
+    edited_by = db.relationship('User', backref=db.backref('edited_by_backref', lazy='dynamic'))
     time_and_date = db.Column(db.String(10))
     last_edited = db.Column(db.String(10))
     data_objects = db.relationship('Files',
@@ -120,9 +117,12 @@ class History(db.Model):
     def __init__(self, history: str, board_code: str):
         self.board_code = board_code
         self.history = history.replace('\n', "<br>")
+        if current_user is not None:
+            self.added_by = current_user  # /TODO Go to bed and the se how we can add the mailto link or first try to give a User.
+        elif current_user is None:
+            self.added_by = User.query.get('Guest')
 
-        self.added_by = current_user        #/TODO Go to bed and the se how we can add the mailto link or first try to give a User.
-
+        print("added by " + str(self.added_by))
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
         self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code)
@@ -161,9 +161,9 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
     project_boards = db.relationship('Board', backref=db.backref('project_backref', lazy='dynamic', uselist=True))
     sub_projects = db.relationship('Project', lazy='dynamic', uselist=True)
     sub_projects_id = db.Column(db.Text, db.ForeignKey('project.project_name'))
-    project_history = db.relationship('History', backref=db.backref('project_history_backref', lazy='dynamic', uselist=True))
+    project_history = db.relationship('History',
+                                      backref=db.backref('project_history_backref', lazy='dynamic', uselist=True))
     project_history_id = db.Column(db.Integer, db.ForeignKey('history.id'))
-
 
     def __init__(self, project_name: str, project_description: str, project_default_image_path: str):
         self.project_name = project_name
