@@ -110,11 +110,14 @@ def login():
                                    messages=messages.Messages(True, 'User does not exist!'))
         login_to_user = data_Structure.User.query.filter_by(username=user_form.username.data).first()
         if pbkdf2_sha256.verify(user_form.password.data, login_to_user.password_hashed_and_salted):
-            login_user(login_to_user)
+            if request.form.get('rememberMe') is True:
+                login_user(login_to_user, remember=True)
+            else:
+                login_user(login_to_user, remember=False)
         else:
             return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm(),
                                    messages=messages.Messages(True, 'Password was not correct!'))
-        view.logged_user = login_to_user.username
+
         nav.nav.register_element("frontend_top", view.nav_bar())
         if url:
             return redirect(url)
@@ -129,6 +132,7 @@ nav.login_manager.login_view = '/login/'  # //TODO I have to define where to red
 @app.route('/deleteUser/', methods=['GET', 'POST'])
 @login_required
 def delete_user():
+    view.logged_user=view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     user_form = deleteUserForm.DeleteUser(request.form)
     if request.method == 'POST':
@@ -157,12 +161,14 @@ def delete_user():
 
 @app.route('/registeredUsers/')
 def show_registered_users():
+    view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('userTable.html', args=data_Structure.User.query.all(), search_form=searchForm.SearchForm())
 
 
 @app.route('/', methods=['GET', 'POST'])
 def start():
+    view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     search_form = searchForm.SearchForm(request.form)
     results_board = None
@@ -215,12 +221,14 @@ def start():
 
 @app.route('/showAll/')
 def spitOut():
+    view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('table.html', args=data.query_all_boards(), search_form=searchForm.SearchForm())
 
 
 @app.route('/addBoard/', methods=['GET', 'POST'])
 def add__board():
+    view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     board_form = addPlatineForm.BoardForm(request.form)
     board_form.name.choices = addPlatineForm.load_choices()
@@ -252,6 +260,7 @@ def add__board():
 
 @app.route('/Projects/Boards_belonging_to/<project_name>/', methods=['POST', 'GET'])
 def show_boards_of_project(project_name):
+    view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('table.html', args=data_Structure.Board.query.filter_by(project_name=project_name).all())
 
@@ -259,6 +268,7 @@ def show_boards_of_project(project_name):
 @login_required
 @app.route('/add_Project/', methods=['POST', 'GET'])
 def add_project():
+    view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     add_project_form = project_forms.AddProjectForm(request.form)
     if request.method == 'POST':
@@ -311,6 +321,7 @@ def delete_history_all(history):
 
 @app.route('/deleteBoard/', methods=['GET', 'POST'])
 def del_board(board_delete=None):
+    view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     board_form = delPlatineForm.delBoardForm(request.form)
     if request.method == 'POST':
@@ -375,6 +386,7 @@ def add_board_history(board, history, file):
 
 @app.route('/boardHistory/<g_code>/', methods=['POST', 'GET', ])  # shows board History
 def show_board_history(g_code):
+    view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     tg_board = data_Structure.Board.query.get(g_code)
     add_form = HistoryForm(request.form)
@@ -405,6 +417,7 @@ def show_board_history(g_code):
 
 @app.route('/ProjectPage/<project_name>/', methods=['POST', 'GET'])
 def show_project(project_name):
+    view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     project = data_Structure.Project.query.get(project_name)
     if project is None:
@@ -415,6 +428,7 @@ def show_project(project_name):
 
 @app.route('/project/delete/image/<img_id>/<project_name>/', methods=['POST'])
 def delete_project_image(img_id, project_name):
+    view.logged_user = view.get_logged_user()
     # image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
     project = data_Structure.db.session.query(data_Structure.Project).get(project_name)
     project.project_default_image_path = UPLOAD_FOLDER + '/static/Pictures/logo.jpg'
@@ -428,6 +442,7 @@ def delete_project_image(img_id, project_name):
 
 @app.route('/boardHistory/delete/image/<img_id>/<board_id>/', methods=['POST'])
 def delete_history_image(img_id, board_id):
+    view.logged_user = view.get_logged_user()
     image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
     # board = data_Structure.db.session.query(data_Structure.board).get(int(board_id))
 
@@ -440,6 +455,7 @@ def delete_history_image(img_id, board_id):
 
 @app.route('/boardHistory/add/file/<history_id>/<board_id>', methods=['POST'])
 def board_history_add_file(history_id, board_id):
+    view.logged_user = view.get_logged_user()
     history = data_Structure.db.session.query(data_Structure.History).get(int(history_id))
     file = request.files.get('new_upfile')
     if file:
@@ -456,6 +472,7 @@ def board_history_add_file(history_id, board_id):
 
 @app.route('/project/delete/project/<project_name>/', methods=['POST'])
 def delete_project(project_name):
+    view.logged_user = view.get_logged_user()
     project_to_delete = data_Structure.db.session.query(data_Structure.Project).get(project_name)
 
     for board in project_to_delete.project_boards:
@@ -472,6 +489,16 @@ def delete_project(project_name):
     data_Structure.db.session.delete(project_to_delete)
     data_Structure.db.session.commit()
     return redirect(url_for('start'))
+
+
+@app.route('/my_profile/')
+def my_profile():
+    view.logged_user = view.get_logged_user()
+    if current_user.username is 'Guest':
+        return redirect(url_for('start'))
+    nav.nav.register_element("frontend_top", view.nav_bar())
+
+    return render_template('userProfile.html')
 
 
 if __name__ == '__main__':

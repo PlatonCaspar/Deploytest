@@ -3,12 +3,13 @@ import nav
 from dominate import tags
 import ownNavRenderer
 from flask import request, url_for
+from flask_login import current_user
 
 logged_user = None
 
 
 def get_logged_user():
-    return logged_user
+    return current_user
 
 
 def write_code_for_search_bar():
@@ -39,7 +40,7 @@ search_bar = RawTag(tags.li(write_code_for_search_bar()))
 
 @nav.nav.navigation()
 def nav_bar():
-    if logged_user is None:
+    if logged_user.username is 'Guest':
         return ownNavRenderer.ExtendedNavbar(
             title=View(tags.img(src='/static/Pictures/logo.png', width=200), 'start'),
             items=(View('Start', 'start'),
@@ -79,11 +80,12 @@ def nav_bar():
             right_items=(
 
                 Text(tags.span(Class="glyphicon glyphicon-user container-inline", style="margin-right: -20px ")),
-                Subgroup('Hello ' + get_logged_user(),
+                Subgroup('Hello ' + logged_user.username,
                          View('show registered Users', 'show_registered_users'),
                          View('Register User', 'register_user'),
                          View('Delete User', 'delete_user'),
                          Separator,
+                         View('My Profile', 'my_profile'),
                          View(tags.div(tags.span(Class="glyphicon glyphicon-log-out", style="margin-right: 5%"),
                                        "Logout"), 'logout'))
             )

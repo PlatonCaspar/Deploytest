@@ -1,2 +1,25 @@
 {%- extends "base.html" %}
 {%- import 'bootstrap/wtf.html' as wtf %}
+
+{% block title %}
+    {% set person = current_user %}
+    {{ person.username+" Profile" }}
+
+{% endblock %}
+
+{% block content %}
+    {% set person = current_user %}
+    <div class="container container-fluid">
+        <p class="page-header text-justify text-info"><strong>{{ person.username }}</strong></p>
+        <p>
+            <address>
+        <p class="text-justify text-info">Email: </p>
+        <p class="text-justify">{{ person.email }}
+            <button class="btn btn-default pull-right" type="button"><span class="glyphicon glyphicon-pencil"></span>
+            </button>
+        </p>
+        </address>
+        </p>
+    </div>
+
+{% endblock %}
