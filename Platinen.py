@@ -487,4 +487,4 @@ if __name__ == '__main__':
     nav.login_manager.init_app(app)
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
-    app.run(debug=False, host='0.0.0.0', port=50)
+    app.run(debug=False, port=50)

@@ -18,8 +18,8 @@
     <div class="well well-sm">
         <div class="media">
             <div class="media-left media-middle"><img src="{{ g_board.project.project_default_image_path }}"
-                                         class="media-object thumbnail" alt="default_project_image"
-                                         style="width: 120px"></div>
+                                                      class="media-object thumbnail" alt="default_project_image"
+                                                      style="width: 120px"></div>
             <div class="media-body">
                 <div class="media-heading">
                     <h4>{{ g_board.project.project_name }}
@@ -32,11 +32,12 @@
         </div>
     </div>
     {% if g_board %}
-        <button type="button" class="btn btn-default center-block" data-toggle="modal" data-target="#addModal"><span
-                class="glyphicon glyphicon-plus "></span></button>
+        {% if current_user.username!='Guest' %}
+            <button type="button" class="btn btn-default center-block" data-toggle="modal" data-target="#addModal"><span
+                    class="glyphicon glyphicon-plus "></span></button>
 
-        <br><br>
-
+            <br><br>
+        {% endif %}
         {% if history %}
 
             <div class="panel">
@@ -44,7 +45,7 @@
             {% for row in history %}
                 {% set modal_id= row.id %}
 
-                <div class="panel-default panel-collapse">
+                <div class="panel-default panel-collapse" id="comment_id{{ row.id|string }}">
                 <div class="panel-body">
                     <div class="row">
                         {% if row.data_objects %}
@@ -84,27 +85,34 @@
                             {% endfor %}
 
                         {% endif %}
-                        <form action="{{ url_for('board_history_add_file', history_id=row.id, board_id=g_board.code) }}"
-                              method="post" class="" enctype="multipart/form-data"
-                              id="new_upfile_form">
+                        {% if current_user.username!='Guest' %}
+                            <form action="{{ url_for('board_history_add_file', history_id=row.id, board_id=g_board.code) }}"
+                                  method="post" class="" enctype="multipart/form-data"
+                                  id="new_upfile_form">
 
-                            <input class="hidden" name="new_upfile" id="new_upfile" accept=".xls,.xlsx,image/*"
-                                   type="file" value="upload"
-                                   onchange="document.getElementById('new_upfile_button').click()">
-                            <button class="hidden" type="submit" id="new_upfile_button"></button>
-                            <button class="btn btn-default btn-sm" type="button"
-                                    onclick="document.getElementById('new_upfile').click()"><span
-                                    class="glyphicon glyphicon-paperclip"></span></button>
-                        </form>
+                                <input class="hidden" name="new_upfile" id="new_upfile" accept=".xls,.xlsx,image/*"
+                                       type="file" value="upload"
+                                       onchange="document.getElementById('new_upfile_button').click()">
+                                <button class="hidden" type="submit" id="new_upfile_button"></button>
+                                <button class="btn btn-default btn-sm" type="button"
+                                        onclick="document.getElementById('new_upfile').click()"><span
+                                        class="glyphicon glyphicon-paperclip"></span></button>
+                            </form>
 
-
+                        {% endif %}
                     </div>
                 </div>
 
                 <div class="panel-body" id="{{ row.id }}">{{ row.history | safe }}</div>
-                <div class="panel-footer"><span
-                        href=""><kbd
-                        class="footnote">{{ "added by "+row.added_by|string }}</kbd></span>
+                <div class="panel-footer">
+                    <span>
+                    <kbd class="footnote">
+                        <a style="color: white"
+                           href="mailto:{{ row.added_by.email }}?Subject={{ "Your comment:  "+ request.url+"#"+"comment_id"+row.id|string }}">
+                    {{ "added by "+row.added_by.username|string }}
+                    </a>
+                </kbd>
+                </span>
 
                     {% if not row.edited_by %}
 
@@ -114,7 +122,13 @@
                     {% endif %}
                     {% if row.edited_by %}
                         <kbd class="footnote pull-right"
-                             style="position: absolute; right: 40px">{{ "last edited on "+row.last_edited+" by "+row.edited_by|string }}</kbd>
+                             style="position: absolute; right: 40px">
+                            <a style="color: white"
+                               href="mailto:{{ row.edited_by.email }}?Subject={{ "Your change of  "+ request.url+"#"+"comment_id"+row.id|string }}">
+                                {{ "last edited on "+row.last_edited+" by "+row.edited_by.username|string }}
+                            </a>
+
+                        </kbd>
                     {% endif %}
                     {% if current_user.username!='Guest' %}
                         <button type="button" class="btn btn-danger btn-xs" style="position: absolute; right: 2px  "

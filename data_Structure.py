@@ -105,7 +105,7 @@ class History(db.Model):
     board_code = db.Column(db.String(500), db.ForeignKey('board.code'))
     id = db.Column(db.Integer, primary_key=True)
     history = db.Column(db.Text)
-    edited_by_id = db.Column(db.Integer, db.ForeignKey('user.username'))
+    edited_by_id = db.Column(db.Text, db.ForeignKey('user.username'))
     added_by = db.relationship('User', backref=db.backref('added_by_backref', lazy='dynamic'))
 
     edited_by = db.relationship('User', backref=db.backref('edited_by_backref', lazy='dynamic'))
@@ -120,7 +120,7 @@ class History(db.Model):
         if current_user is not None:
             self.added_by = current_user  # /TODO Go to bed and the se how we can add the mailto link or first try to give a User.
         elif current_user is None:
-            self.added_by = User.query.get('Guest')
+            self.added_by= db.session.query(User).get('Guest')
 
         print("added by " + str(self.added_by))
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
