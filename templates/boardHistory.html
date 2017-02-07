@@ -42,69 +42,72 @@
 
             <div class="panel">
             <div class="page-header"><h3>Board Comments</h3></div>
+
             {% for row in history %}
                 {% set modal_id= row.id %}
 
+
                 <div class="panel-default panel-collapse" id="comment_id{{ row.id|string }}">
-                <div class="panel-body">
-                    <div class="row">
-                        {% if row.data_objects %}
-                            {% set pics=row.data_objects %}
 
-                            {% for pic in pics %}
-                                <div class=" col-xs-2 col-md-2">
+                    <div class="panel-body">
+                        <div class="row">
+                            {% if row.data_objects %}
+                                {% set pics=row.data_objects %}
 
-                                    <div class="thumbnail">
-                                        <a href="{{ pic.file_path }}">
-                                            <img src="{{ pic.file_path }}" style="width: 100%">
-                                        </a>
-                                        <div class="caption">
-                                            <form class=""
-                                                  action="{{ url_for('delete_history_image', img_id=pic.id, board_id=g_board.code) }}"
-                                                  method="post">
-                                                <button class="btn btn-default btn-sm" type="button"
-                                                        data-toggle="collapse" data-target="#{{ pic.id }}"
-                                                        aria-expanded="false"
-                                                        aria-controls="{{ pic.id }}"><span
-                                                        class="glyphicon glyphicon-remove"></span></button>
-                                                <div class="collapse" id="{{ pic.id }}">
-                                                    <div class="">
-                                                        <br><br>
-                                                        <button class="btn btn-danger btn-sm btn-block"
-                                                                type="submit"><span
-                                                                class="glyphicon glyphicon-ok pull-left"></span>
-                                                            <strong>Löschen?</strong>
-                                                        </button>
+                                {% for pic in pics %}
+                                    <div class=" col-xs-2 col-md-2">
+
+                                        <div class="thumbnail">
+                                            <a href="{{ pic.file_path }}">
+                                                <img src="{{ pic.file_path }}" style="width: 100%">
+                                            </a>
+                                            <div class="caption">
+                                                <form class=""
+                                                      action="{{ url_for('delete_history_image', img_id=pic.id, board_id=g_board.code) }}"
+                                                      method="post">
+                                                    <button class="btn btn-default btn-sm" type="button"
+                                                            data-toggle="collapse" data-target="#{{ pic.id }}"
+                                                            aria-expanded="false"
+                                                            aria-controls="{{ pic.id }}"><span
+                                                            class="glyphicon glyphicon-remove"></span></button>
+                                                    <div class="collapse" id="{{ pic.id }}">
+                                                        <div class="">
+                                                            <br><br>
+                                                            <button class="btn btn-danger btn-sm btn-block"
+                                                                    type="submit"><span
+                                                                    class="glyphicon glyphicon-ok pull-left"></span>
+                                                                <strong>Löschen?</strong>
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                </div>
 
-                                            </form>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            {% endfor %}
+                                {% endfor %}
 
-                        {% endif %}
-                        {% if current_user.username!='Guest' %}
-                            <form action="{{ url_for('board_history_add_file', history_id=row.id, board_id=g_board.code) }}"
-                                  method="post" class="" enctype="multipart/form-data"
-                                  id="new_upfile_form">
+                            {% endif %}
+                            {% if current_user.username!='Guest' %}
+                                <form action="{{ url_for('board_history_add_file', history_id=row.id, board_id=g_board.code) }}"
+                                      method="post" class="" enctype="multipart/form-data"
+                                      id="new_upfile_form">
 
-                                <input class="hidden" name="new_upfile" id="new_upfile" accept=".xls,.xlsx,image/*"
-                                       type="file" value="upload"
-                                       onchange="document.getElementById('new_upfile_button').click()">
-                                <button class="hidden" type="submit" id="new_upfile_button"></button>
-                                <button class="btn btn-default btn-sm" type="button"
-                                        onclick="document.getElementById('new_upfile').click()"><span
-                                        class="glyphicon glyphicon-paperclip"></span></button>
-                            </form>
+                                    <input class="hidden" name="new_upfile" id="new_upfile" accept=".xls,.xlsx,image/*"
+                                           type="file" value="upload"
+                                           onchange="document.getElementById('new_upfile_button').click()">
+                                    <button class="hidden" type="submit" id="new_upfile_button"></button>
+                                    <button class="btn btn-default btn-sm" type="button"
+                                            onclick="document.getElementById('new_upfile').click()"><span
+                                            class="glyphicon glyphicon-paperclip"></span></button>
+                                </form>
 
-                        {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
 
-                <div class="panel-body" id="{{ row.id }}">{{ row.history | safe }}</div>
-                <div class="panel-footer">
+                    <div class="panel-body" id="{{ row.id }}">{{ row.history | safe }}</div>
+                    <div class="panel-footer">
                     <span>
                     <kbd class="footnote">
                         <a style="color: white"
@@ -114,61 +117,77 @@
                 </kbd>
                 </span>
 
-                    {% if not row.edited_by %}
+                        {% if not row.edited_by %}
 
-                        <kbd class="footnote"
-                             style="position: absolute; right: 40px">{{ "last edited on "+row.time_and_date }}</kbd>
+                            <kbd class="footnote"
+                                 style="position: absolute; right: 40px">{{ "last edited on "+row.time_and_date }}</kbd>
 
-                    {% endif %}
-                    {% if row.edited_by %}
-                        <kbd class="footnote pull-right"
-                             style="position: absolute; right: 40px">
-                            <a style="color: white"
-                               href="mailto:{{ row.edited_by.email }}?Subject={{ "Your change of  "+ request.url+"#"+"comment_id"+row.id|string }}">
-                                {{ "last edited on "+row.last_edited+" by "+row.edited_by.username|string }}
-                            </a>
+                        {% endif %}
+                        {% if row.edited_by %}
+                            <kbd class="footnote pull-right"
+                                 style="position: absolute; right: 40px">
+                                <a style="color: white"
+                                   href="mailto:{{ row.edited_by.email }}?Subject={{ "Your change of  "+ request.url+"#"+"comment_id"+row.id|string }}">
+                                    {{ "last edited on "+row.last_edited+" by "+row.edited_by.username|string }}
+                                </a>
 
-                        </kbd>
-                    {% endif %}
-                    {% if current_user.username!='Guest' %}
-                        <button type="button" class="btn btn-danger btn-xs" style="position: absolute; right: 2px  "
-                                data-toggle="modal"
-                                data-target="#edit{{ modal_id }}">Edit!
-                        </button>
-                    {% endif %}
+                            </kbd>
+                        {% endif %}
+                        {% if current_user.username!='Guest' %}
+                            <button type="button" class="btn btn-danger btn-xs" style="position: absolute; right: 2px  "
+                                    data-toggle="modal"
+                                    data-target="#edit{{ modal_id }}">Edit!
+                            </button>
+                        {% endif %}
 
-                    <div class="container">
-                        <div id="edit{{ modal_id }}" class="modal fade" role="dialog">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                        <h4 class="modal-title">{{ 'edit:' }}</h4>
-                                    </div>
-                                    <div class="modal-body">
-                                        {% set f=edit_form.history.process_data(row.history.replace('<br>', '\n')) %}
-                                        {% set g=edit_form.history_id.process_data(row.id) %}
-                                        <form action="" method="post">
-                                            {{ wtf.form_field(edit_form.history) }}
-                                            {% if current_user.username != 'Guest' %}
-                                                {{ wtf.form_field(edit_form.send_edit) }}
-                                                {{ wtf.form_field(edit_form.delete) }}
-                                            {% endif %}
-                                            {{ edit_form.history_id(value=row.id|string) }}
-                                            {{ edit_form.hidden_tag }}
-                                        </form>
-                                        <div class="modal-footer">
+                        <div class="container">
+                            <div id="edit{{ modal_id }}" class="modal fade" role="dialog">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">{{ 'edit:' }}</h4>
                                         </div>
-                                    </div>
+                                        <div class="modal-body">
+                                            {% set f=edit_form.history.process_data(row.history.replace('<br>', '\n')) %}
+                                            {% set g=edit_form.history_id.process_data(row.id) %}
+                                            <form action="" method="post">
+                                                {{ wtf.form_field(edit_form.history) }}
+                                                {% if current_user.username != 'Guest' %}
+                                                    {{ wtf.form_field(edit_form.send_edit) }}
+                                                    {{ wtf.form_field(edit_form.delete) }}
+                                                {% endif %}
+                                                {{ edit_form.history_id(value=row.id|string) }}
+                                                {{ edit_form.hidden_tag }}
+                                            </form>
+                                            <div class="modal-footer">
+                                            </div>
+                                        </div>
 
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
             {% endfor %}
-        </div>
+
+
+            <script> {# this script is for changing the color of the targeted div when open e.g. th elink from a mail #}
+            function change_color_when_div_is_called() {
+                var hash = window.location.hash.substr(1);
+                var myDiv = document.getElementById(hash);
+                myDiv.className = "panel panel-collapse panel-primary" //myDiv.className.replace(/(?:^|\s)panel-default(?!\S)/g , 'panel-primary');
+                myDiv.style.backgroundColor = 'rgba(46, 111, 194, 0.3)'
+
+
+            }
+
+
+            window.onload = change_color_when_div_is_called();
+
+
+            </script>
 
         {% endif %}
 
