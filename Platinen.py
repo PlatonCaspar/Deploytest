@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, session
+from flask import render_template, request, redirect, url_for, session, flash
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_nav import register_renderer
@@ -10,7 +10,6 @@ import addPlatineForm
 import delPlatineForm
 import registerUserForm
 import searchForm
-import messages
 import ownNavRenderer
 import os
 import deleteUserForm
@@ -63,20 +62,20 @@ def register_user():
 
             if data_Structure.User.query.filter_by(
                     email=new_user.email).scalar() is not None:  # check if user already exists
+                flash('User does already exist!', 'danger')
                 return render_template('registerUserForm.html', form=user_to_register,
-                                       search_form=searchForm.SearchForm(),
-                                       messages=messages.Messages(True, 'user already exists!'))
+                                       search_form=searchForm.SearchForm())
 
             data_Structure.db.session.add(new_user)
             data_Structure.db.session.commit()
             if data_Structure.User.query.filter_by(email=new_user.email).scalar() is not None:
                 # if Board is no longer not available
+                flash('User was successfully added!', 'success')
                 return render_template('registerUserForm.html', form=user_to_register,
-                                       search_form=searchForm.SearchForm(),
-                                       messages=messages.Messages(False, 'User was successfully added!'))
+                                       search_form=searchForm.SearchForm())
         else:
-            return render_template('registerUserForm.html', form=user_to_register, search_form=searchForm.SearchForm(),
-                                   messages=messages.Messages(True, 'The Passwords do not match!'))
+            flash('The Passwords do not match!', 'danger')
+            return render_template('registerUserForm.html', form=user_to_register, search_form=searchForm.SearchForm())
 
     return render_template('registerUserForm.html', form=user_to_register, search_form=searchForm.SearchForm())
 
@@ -87,6 +86,7 @@ def logout():
     nav.nav.register_element("frontend_top", view.nav_bar())
     logout_user()
     view.logged_user = None
+
     return redirect(url_for('start'))
 
 
@@ -106,17 +106,19 @@ def login():
     if request.method == 'POST':
         if data_Structure.User.query.filter_by(
                 username=user_form.username.data).scalar() is None:  # check if User exists
-            return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm(),
-                                   messages=messages.Messages(True, 'User does not exist!'))
+            flash('User does not exist!', 'danger')
+            return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
         login_to_user = data_Structure.User.query.filter_by(username=user_form.username.data).first()
         if pbkdf2_sha256.verify(user_form.password.data, login_to_user.password_hashed_and_salted):
             if request.form.get('rememberMe') is True:
                 login_user(login_to_user, remember=True)
+                flash('Hi, ' + login_to_user.username + ' - Your Login was succesfull', 'success')
             else:
                 login_user(login_to_user, remember=False)
+                flash('Hi, ' + login_to_user.username + ' - Your Login was succesfull', 'success')
         else:
-            return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm(),
-                                   messages=messages.Messages(True, 'Password was not correct!'))
+            flash('Password was not correct', 'danger')
+            return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
 
         nav.nav.register_element("frontend_top", view.nav_bar())
         if url:
@@ -132,21 +134,21 @@ nav.login_manager.login_view = '/login/'  # //TODO I have to define where to red
 @app.route('/deleteUser/', methods=['GET', 'POST'])
 @login_required
 def delete_user():
-    view.logged_user=view.get_logged_user()
+    view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     user_form = deleteUserForm.DeleteUser(request.form)
     if request.method == 'POST':
         if data_Structure.User.query.filter_by(
                 username=user_form.username.data).scalar() is None:  # check if board already exists
-            return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm(),
-                                   messages=messages.Messages(True, 'User does not exist!'))
+            flash('User does not exist!', 'danger')
+            return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
         dele_user = data_Structure.User.query.filter_by(username=user_form.username.data).first()
         if pbkdf2_sha256.verify(user_form.password.data, dele_user.password_hashed_and_salted):
             data_Structure.db.session.object_session(dele_user).delete(dele_user)
             data_Structure.db.session.commit()
         else:
-            return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm(),
-                                   messages=messages.Messages(True, 'Password was not correct!'))
+            flash('Password was incorrect!', 'danger')
+            return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
         # Skipping the next test because I never needed it until now!
         # if data_Structure.Board.query.filter_by(
         #       code=board_form.code.data).scalar() is not None:  # check if board already exists
@@ -154,8 +156,8 @@ def delete_user():
         #                          messages=messages.Messages(True, 'Board was not deleted!'))
         if data_Structure.User.query.filter_by(
                 username=user_form.username.data).scalar() is None:  # check if User exists
-            return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm(),
-                                   messages=messages.Messages(False, 'User deleted successfully!'))
+            flash('User was deleted successfully!', 'success')
+            return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
     return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
 
 
@@ -212,7 +214,8 @@ def start():
                 ).all()
             results_project = list(set(results_project))
             if not results_board and not results_project:
-                return render_template('base.html', messages=messages.Messages(True, 'No results were found!'))
+                flash('No results were found', 'warning')
+                return render_template('base.html')
 
         return render_template('table.html', args=results_board, projects=results_project,
                                search_form=searchForm.SearchForm(), search_word=search_word)
@@ -238,19 +241,19 @@ def add__board():
                                          ver=board_form.ver.data)
         if data_Structure.Board.query.filter_by(
                 code=new_board.code).scalar() is not None:  # check if board already exists
+            flash('Board does already exist in the database!', 'danger')
             return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
-                                   search_form=searchForm.SearchForm(),
-                                   messages=messages.Messages(True, 'board already exists!'))
+                                   search_form=searchForm.SearchForm())
         data_Structure.db.session.add(new_board)
         data_Structure.db.session.commit()
         project = data_Structure.db.session.query(data_Structure.Project).get(new_board.project_name)
         project.project_boards.append(new_board)
         data_Structure.db.session.commit()
         if data_Structure.Board.query.filter_by(code=new_board.code).scalar() is not None:
-            # if Board is no longer not available
+            # if Board is now available
+            flash('Board was successfully added!', 'success')
             return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
-                                   search_form=searchForm.SearchForm(),
-                                   messages=messages.Messages(False, 'Board was successfully added!'))
+                                   search_form=searchForm.SearchForm())
 
         return redirect(url_for("spitOut"))
 
@@ -265,8 +268,9 @@ def show_boards_of_project(project_name):
     return render_template('table.html', args=data_Structure.Board.query.filter_by(project_name=project_name).all())
 
 
-@login_required
+
 @app.route('/add_Project/', methods=['POST', 'GET'])
+@login_required
 def add_project():
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -274,11 +278,8 @@ def add_project():
     if request.method == 'POST':
         # check if Project already exists
         if data_Structure.Project.query.get(add_project_form.project_name.data) is not None:
-            return render_template('add_project.html',
-                                   messages=messages.Messages(True,
-                                                              'Project ' +
-                                                              add_project_form.project_name.data + ' already exists!'),
-                                   add_project_form=add_project_form)
+            flash('Project ' + add_project_form.project_name.data + ' already exists!', 'danger')
+            return render_template('add_project.html', add_project_form=add_project_form)
         elif data_Structure.Project.query.get(add_project_form.project_name.data) is None:
             image_path = 'NE'
             if 'upfile' not in request.files:  # //TODO I still need to  check if files are safe
@@ -327,8 +328,8 @@ def del_board(board_delete=None):
     if request.method == 'POST':
         if data_Structure.Board.query.filter_by(
                 code=board_form.code.data).scalar() is None:  # check if board already exists
-            return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm(),
-                                   messages=messages.Messages(True, 'Board does not exist!'))
+            flash('Board does not exist!', 'danger')
+            return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
         if board_delete is None:
             dele_board = data_Structure.Board.query.filter_by(code=board_form.code.data).first()
         elif board_delete is not None:
@@ -341,12 +342,12 @@ def del_board(board_delete=None):
         if data_Structure.Board.query.filter_by(
                 code=board_form.code.data).scalar() is not None or data_Structure.db.session.query(
             data_Structure.Board).get(dele_board.code):  # check if board still exists
-            return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm(),
-                                   messages=messages.Messages(True, 'Board was not deleted!'))
+            flash('Somehow the board could not be deleted', 'danger')
+            return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
         if data_Structure.Board.query.filter_by(
                 code=board_form.code.data).scalar() is None and board_delete is None:  # check if board already exists
-            return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm(),
-                                   messages=messages.Messages(False, 'Board was successfully deleted!'))
+            flash('Board was successfully deleted!', 'success')
+            return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
         if board_delete is not None:
             print(data_Structure.db.session.query(
                 data_Structure.Board).get(dele_board.code))
@@ -421,7 +422,8 @@ def show_project(project_name):
     nav.nav.register_element("frontend_top", view.nav_bar())
     project = data_Structure.Project.query.get(project_name)
     if project is None:
-        return render_template('start.html', messages=messages.Messages(True, 'Project was not found!!'))
+        flash('Project "' + project_name + '" was not found!', 'danger')
+        return render_template('start.html')
     # boards_of_project = data_Structure.Board.query.filter_by(project_name=project_name)
     return render_template('ProjectPage.html', project=project, boards=project.project_boards)  # boards_of_project)
 
@@ -499,6 +501,43 @@ def my_profile():
     nav.nav.register_element("frontend_top", view.nav_bar())
 
     return render_template('userProfile.html')
+
+
+@app.route('/my_profile/change/username/<uid>/', methods=['POST'])
+def change_username(uid):
+    user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
+
+    new_username = request.form.get('new_username')
+    user_to_change.username = new_username
+    data_Structure.db.session.commit()
+    return redirect(url_for('my_profile'))
+
+
+@app.route('/my_profile/change/email/<uid>/', methods=['POST'])
+def change_email(uid):
+    user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
+
+    new_email = request.form.get('new_email')
+    user_to_change.email = new_email
+    data_Structure.db.session.commit()
+    return redirect(url_for('my_profile'))
+
+
+@app.route('/my_profile/change/password/<uid>/', methods=['POST'])
+def change_password(uid):
+    user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
+
+    if pbkdf2_sha256.verify(request.form.get('old_password'), user_to_change.password_hashed_and_salted):
+        new_password_hash = pbkdf2_sha256.hash(request.form.get('new_password_1'))
+        if pbkdf2_sha256.verify(request.form.get('new_password_2'), new_password_hash):
+            user_to_change.password_hashed_and_salted = new_password_hash
+            data_Structure.db.session.commit()
+            flash('password was changed successful', 'success')
+        else:
+            flash('The new passwords did not match!', 'danger')
+    else:
+        flash('Your Password was incorrect', 'danger')
+    return redirect(url_for('my_profile'))
 
 
 if __name__ == '__main__':

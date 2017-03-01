@@ -4,8 +4,9 @@ from dominate import tags
 import ownNavRenderer
 from flask import request, url_for
 from flask_login import current_user
+import data_Structure
 
-logged_user = None
+logged_user = data_Structure.db.session.query(data_Structure.User).get('Guest')
 
 
 def get_logged_user():
@@ -40,7 +41,7 @@ search_bar = RawTag(tags.li(write_code_for_search_bar()))
 
 @nav.nav.navigation()
 def nav_bar():
-    if logged_user.username is 'Guest':
+    if current_user.username is 'Guest':
         return ownNavRenderer.ExtendedNavbar(
             title=View(tags.img(src='/static/Pictures/logo.png', width=200), 'start'),
             items=(View('Start', 'start'),
@@ -80,7 +81,7 @@ def nav_bar():
             right_items=(
 
                 Text(tags.span(Class="glyphicon glyphicon-user container-inline", style="margin-right: -20px ")),
-                Subgroup('Hello ' + logged_user.username,
+                Subgroup('Hello ' + current_user.username,
                          View('show registered Users', 'show_registered_users'),
                          View('Register User', 'register_user'),
                          View('Delete User', 'delete_user'),

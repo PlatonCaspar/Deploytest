@@ -51,13 +51,14 @@ class Board(db.Model):
 
 
 class User(db.Model):
-    username = db.Column(db.String(), primary_key=True)
+    username = db.Column(db.String(), primary_key=False)
     password_hashed_and_salted = db.Column(db.String())
-    uid = db.Column(db.Integer())
+    uid = db.Column(db.Integer(), primary_key=True)
     email = db.Column(db.String())
     user_group = db.Column(db.Integer, db.ForeignKey('user_group.id'))
     boards_Added = db.relationship('Board', lazy='dynamic')
     is_active = db.Column(db.Boolean)
+    is_authenticated = db.Column(db.Boolean)
 
     def __init__(self, username='Guest', password=None, email=None):
         self.username = username
@@ -70,7 +71,12 @@ class User(db.Model):
             self.is_active = True
 
         else:
-            self.is_active = True
+            self.is_active = True #for now every User is active
+
+        if username == 'Guest':
+            self.is_authenticated = False
+        else:
+            self.is_authenticated = True
 
     def validate_user(self, username: str, password: str):
         login_user = self.query.filter_by(username=username)
@@ -79,11 +85,15 @@ class User(db.Model):
         else:
             return False
 
-    def is_authenticated(self):
-        if User.query.filter_by(username=self.username).first().scalar() is None:
-            return False
-        else:
-            return True
+    # def is_authenticated(self):
+    #     print('okay, is_authenticated is called')
+    #     if User.query.filter_by(username=self.username).first().scalar() is None:
+    #         return False
+    #     elif self.username != 'Guest':
+    #         print(self.username)
+    #         return True
+    #     else:
+    #         return False
 
     def user_is_active(self):
         if self.is_active is not None:
@@ -92,13 +102,16 @@ class User(db.Model):
             return False
 
     def is_anonymus(self):
-        return False
+        if self.username == 'Guest':
+            return True
+        else:
+            return False
 
     def get_id(self):
-        return self.username.encode("utf-8").decode("utf-8")
+        return self.uid.encode("utf-8").decode("utf-8")
 
-    def get(us_name):
-        return User.query.filter_by(username=us_name).first()
+    def get(user_name):
+        return User.query.filter_by(username=user_name).first()
 
 
 class History(db.Model):
@@ -118,9 +131,9 @@ class History(db.Model):
         self.board_code = board_code
         self.history = history.replace('\n', "<br>")
         if current_user is not None:
-            self.added_by = current_user  # /TODO Go to bed and the se how we can add the mailto link or first try to give a User.
+            self.added_by = db.session.query(User).get(current_user.username)  # /TODO Go to bed and the se how we can add the mailto link or first try to give a User.
         elif current_user is None:
-            self.added_by= db.session.query(User).get('Guest')
+            self.added_by = db.session.query(User).get('Guest')
 
         print("added by " + str(self.added_by))
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")

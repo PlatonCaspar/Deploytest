@@ -4,7 +4,7 @@
 {% block title %}
     {{ super() }}
     {% if g_board | safe %}
-        {{ g_board.project_name }} {{ "ver.: "+ g_board.version }}
+        {{ g_board.code }} {{ "Ver: "+ g_board.version }}
         {#Hier kommt die Struktur wie die Daten aus der Datenbank angezeigt werden sollen.#}
     {% endif %}
 
@@ -32,6 +32,9 @@
         </div>
     </div>
     {% if g_board %}
+
+        <div class="panel">
+            <div class="page-header"><h3>Board Comments <small>{{ "("+g_board.code|string+")" }}</small></h3></div>
         {% if current_user.username!='Guest' %}
             <button type="button" class="btn btn-default center-block" data-toggle="modal" data-target="#addModal"><span
                     class="glyphicon glyphicon-plus "></span></button>
@@ -40,8 +43,7 @@
         {% endif %}
         {% if history %}
 
-            <div class="panel">
-            <div class="page-header"><h3>Board Comments</h3></div>
+
 
             {% for row in history %}
                 {% set modal_id= row.id %}
@@ -146,7 +148,7 @@
                                     <div class="modal-content">
                                         <div class="modal-header">
                                             <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                            <h4 class="modal-title">{{ 'edit:' }}</h4>
+                                            <h4 class="modal-title">{{ 'Edit Comment:' }}</h4>
                                         </div>
                                         <div class="modal-body">
                                             {% set f=edit_form.history.process_data(row.history.replace('<br>', '\n')) %}
@@ -192,16 +194,16 @@
         {% endif %}
 
 
-    </div>
-    {% endif %}
 
+    {% endif %}
+</div>
 
     <div id="addModal" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">{{ 'Add a new Story to '+g_board.code }}</h4>
+                    <h4 class="modal-title">{{ 'Add a new Comment to '+g_board.code }}</h4>
                 </div>
                 <div class="modal-body">
                     {{ wtf.quick_form(add_form) }}

@@ -10,16 +10,144 @@
 {% block content %}
     {% set person = current_user %}
     <div class="container container-fluid">
-        <p class="page-header text-justify text-info"><strong>{{ person.username }}</strong></p>
-        <p>
-            <address>
-        <p class="text-justify text-info">Email: </p>
-        <p class="text-justify">{{ person.email }}
-            <button class="btn btn-default pull-right" type="button"><span class="glyphicon glyphicon-pencil"></span>
-            </button>
+        <p class="page-header text-justify text-info"><strong>{{ person.username }}</strong>
+            <span><button class="btn btn-default  pull-right" type="button" data-toggle="modal"
+                          data-target="#edit_Username"><span
+                    class="glyphicon glyphicon-pencil"></span>
+            </button></span><br><br>
         </p>
+
+        <address>
+            <p>
+                <span class="text-justify text-info">Email: </span>
+                <span class="text-justify">{{ person.email }}</span>
+                <button class="btn btn-default pull-right" type="button" data-toggle="modal"
+                        data-target="#edit_email"><span
+                        class="glyphicon glyphicon-pencil"></span>
+                </button>
+                </span><br><br>
+                <span class="text-justify text-info">Password:</span>
+                <span class="text-justify"> ********** (Of course no plain text - it is not possible)</span>
+                <button class="btn btn-default pull-right" type="button" data-toggle="modal" data-target="#edit_password"><span
+                        class="glyphicon glyphicon-pencil" ></span>
+                </button>
+                </span>
+            </p>
         </address>
-        </p>
+
+        <br>
+        <br>
+        <button class="btn btn-danger" type="button"><span class="glyphicon glyphicon-erase"></span> Delete My Profile
+        </button>
     </div>
+    {# Modal for changing the Username #}
+    <div id="edit_Username" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Edit Username</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info"><p class="text text-justify">Please remember your new Username well,
+                        you'll have to login with that name the next time.</p></div>
+                    <form action="{{ url_for('change_username', uid=current_user.uid) }}" method="post">
+                        <div class="input-group">
+                            <span class="input-group-addon"><span
+                                    class="glyphicon glyphicon-user"></span> Username</span>
+                            <input id="new_username" name="new_username" type="text" class="form-control"
+                                   placeholder="Please enter your new Username" required="true">
+                        </div>
+                        <br>
+                        <button class="btn btn-success"><span class="glyphicon glyphicon-edit"></span> Edit</button>
+
+                    </form>
+
+                    <div class="modal-footer">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+    {# End Modal for Username #}
+
+    {# Modal for changing the email #}
+    <div id="edit_email" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Edit Username</h4>
+                </div>
+                <div class="modal-body">
+
+                    <form action="{{ url_for('change_email', uid=current_user.uid) }}" method="post">
+                        <div class="input-group">
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-cloud"></span> E-Mail</span>
+                            <input id="new_email" name="new_email" type="text" class="form-control"
+                                   placeholder="Please enter your new E-Mail" required="true">
+                        </div>
+                        <br>
+                        <button class="btn btn-success"><span class="glyphicon glyphicon-edit"></span> Edit</button>
+
+                    </form>
+
+                    <div class="modal-footer">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+    {# End Modal for email #}
+
+    {# Modal for changing the password #}
+    <div id="edit_password" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Edit Username</h4>
+                </div>
+                <div class="modal-body">
+
+                    <form action="{{ url_for('change_password', uid=current_user.uid) }}" method="post">
+                        <div class="input-group">
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+                            <input id="old_password" name="old_password" type="password" class="form-control"
+                                   placeholder="Please enter your current Password" required="true">
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+                            <input id="new_password_1" name="new_password_1" type="password" class="form-control"
+                                   placeholder="Please enter your new Password" required="true" >
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+                            <input id="new_password_2" name="new_password_2" type="password" class="form-control"
+                                   placeholder="Please repeat your new Password" required="true">
+                        </div>
+                        <br>
+                        <button class="btn btn-success"><span class="glyphicon glyphicon-edit"></span> Edit</button>
+
+                    </form>
+
+                    <div class="modal-footer">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+    {# End Modal for password #}
+
+
 
 {% endblock %}

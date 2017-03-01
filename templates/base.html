@@ -27,21 +27,22 @@ will disappear! #}
 
 
 
+    {% with messages = get_flashed_messages(with_categories='true') %}
+        {% if messages %}
 
-    {% if messages %}
-        {% if messages.error == True %}
+                {% for category, message in messages %}
+                    {% if category!='message' %}
+                    <li class="alert alert-{{ category }}">{{ message|safe }}</li>
+                    {% elif category=='message' %}
+                    <li class="alert alert-info">{{ message|safe }}</li>
+                    {% endif %}
 
-            <div class= "alert alert-danger">
-       <span class="glyphicon glyphicon-remove"></span> <strong>{{ messages.msg }}</strong>
 
-        </div>
+                {% endfor %}
+
         {% endif %}
-        {% if messages.error == False %}
-            <div class="alert alert-success">
-             <span class="glyphicon glyphicon-ok"></span>   <strong>{{ messages.msg }}</strong>
-        </div>
-        {% endif %}
-    {% endif %}
+    {% endwith %}
+
 
     {#    {{ wtf.quick_form(search_form)}}
     {{ search_form.hidden_tag }}#}
