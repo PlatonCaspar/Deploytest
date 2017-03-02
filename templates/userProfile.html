@@ -9,35 +9,39 @@
 
 {% block content %}
     {% set person = current_user %}
-    <div class="container container-fluid">
-        <p class="page-header text-justify text-info"><strong>{{ person.username }}</strong>
+    <div class="panel panel-default">
+        <p class="panel-heading text-justify text-info"><strong>{{ person.username }}</strong><br>
+            <small>{{ 'UID: '+person.uid|string }}</small>
             <span><button class="btn btn-default  pull-right" type="button" data-toggle="modal"
                           data-target="#edit_Username"><span
                     class="glyphicon glyphicon-pencil"></span>
             </button></span><br><br>
         </p>
 
-        <address>
-            <p>
-                <span class="text-justify text-info">Email: </span>
-                <span class="text-justify">{{ person.email }}</span>
-                <button class="btn btn-default pull-right" type="button" data-toggle="modal"
-                        data-target="#edit_email"><span
-                        class="glyphicon glyphicon-pencil"></span>
-                </button>
-                </span><br><br>
-                <span class="text-justify text-info">Password:</span>
-                <span class="text-justify"> ********** (Of course no plain text - it is not possible)</span>
-                <button class="btn btn-default pull-right" type="button" data-toggle="modal" data-target="#edit_password"><span
-                        class="glyphicon glyphicon-pencil" ></span>
-                </button>
-                </span>
-            </p>
-        </address>
-
+        <div class="panel-body">
+            <address>
+                <p>
+                    <span class="text-justify text-info">Email: </span>
+                    <span class="text-justify">{{ person.email }}</span>
+                    <button class="btn btn-default pull-right" type="button" data-toggle="modal"
+                            data-target="#edit_email"><span
+                            class="glyphicon glyphicon-pencil"></span>
+                    </button>
+                    </span><br><br>
+                    <span class="text-justify text-info">Password:</span>
+                    <span class="text-justify"> ********** (Of course no plain text - it is not possible)</span>
+                    <button class="btn btn-default pull-right" type="button" data-toggle="modal"
+                            data-target="#edit_password"><span
+                            class="glyphicon glyphicon-pencil"></span>
+                    </button>
+                    </span>
+                </p>
+            </address>
+        </div>
         <br>
         <br>
-        <button class="btn btn-danger" type="button"><span class="glyphicon glyphicon-erase"></span> Delete My Profile
+        <button class="btn btn-danger" type="button" data-toggle="modal" data-target="#remove_user">
+            <span class="glyphicon glyphicon-erase"></span> Delete My Profile
         </button>
     </div>
     {# Modal for changing the Username #}
@@ -59,7 +63,8 @@
                                    placeholder="Please enter your new Username" required="true">
                         </div>
                         <br>
-                        <button class="btn btn-success"><span class="glyphicon glyphicon-edit"></span> Edit</button>
+                        <button class="btn btn-success btn-block"><span class="glyphicon glyphicon-edit"></span> Edit
+                        </button>
 
                     </form>
 
@@ -80,18 +85,20 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Edit Username</h4>
+                    <h4 class="modal-title">Edit E-Mail</h4>
                 </div>
                 <div class="modal-body">
 
                     <form action="{{ url_for('change_email', uid=current_user.uid) }}" method="post">
                         <div class="input-group">
-                            <span class="input-group-addon"><span class="glyphicon glyphicon-cloud"></span> E-Mail</span>
+                            <span class="input-group-addon"><span
+                                    class="glyphicon glyphicon-envelope"></span> E-Mail</span>
                             <input id="new_email" name="new_email" type="text" class="form-control"
                                    placeholder="Please enter your new E-Mail" required="true">
                         </div>
                         <br>
-                        <button class="btn btn-success"><span class="glyphicon glyphicon-edit"></span> Edit</button>
+                        <button class="btn btn-success btn-block"><span class="glyphicon glyphicon-edit"></span> Edit
+                        </button>
 
                     </form>
 
@@ -112,7 +119,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Edit Username</h4>
+                    <h4 class="modal-title">Change Password</h4>
                 </div>
                 <div class="modal-body">
 
@@ -122,10 +129,11 @@
                             <input id="old_password" name="old_password" type="password" class="form-control"
                                    placeholder="Please enter your current Password" required="true">
                         </div>
+                        <br>
                         <div class="input-group">
                             <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
                             <input id="new_password_1" name="new_password_1" type="password" class="form-control"
-                                   placeholder="Please enter your new Password" required="true" >
+                                   placeholder="Please enter your new Password" required="true">
                         </div>
                         <div class="input-group">
                             <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
@@ -133,7 +141,8 @@
                                    placeholder="Please repeat your new Password" required="true">
                         </div>
                         <br>
-                        <button class="btn btn-success"><span class="glyphicon glyphicon-edit"></span> Edit</button>
+                        <button class="btn btn-success btn-block"><span class="glyphicon glyphicon-edit"></span> Edit
+                        </button>
 
                     </form>
 
@@ -147,6 +156,47 @@
 
     </div>
     {# End Modal for password #}
+
+    {# Modal for removing user #}
+    <div id="remove_user" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Delete My User</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger"><span class="glyphicon glyphicon-fire"></span> Pleas be aware that after deleting your User you wont have any more access to the editing functions of this Page.
+
+                </div>
+                    <form action="{{ url_for('delete_myself') }}" method="post">
+                        <div class="input-group">
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+                            <input id="password_1" name="password_1" type="password" class="form-control"
+                                   placeholder="Please enter your current Password" required="true">
+                        </div>
+                        <br>
+                        <div class="input-group">
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+                            <input id="password_2" name="password_2" type="password" class="form-control"
+                                   placeholder="Please confirm your Password" required="true">
+                        </div>
+                        <br>
+                        <button class="btn btn-danger btn-block"><span class="glyphicon glyphicon-remove"></span> Bye!
+                        </button>
+
+                    </form>
+
+                    <div class="modal-footer">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+    {# End Modal for removing user #}
 
 
 

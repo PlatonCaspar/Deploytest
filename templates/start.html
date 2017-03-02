@@ -4,7 +4,7 @@
 
 {% block title %}
     {{ super() }}
-    Datenbank für Platinen, Startseite
+    Board Database - Start
 {% endblock %}
 
 {% block content %}
@@ -22,5 +22,20 @@
                 </div>
             </div>
         </form>
+    </div>
+
+    <div class="container" style="position: absolute; top: 70%; left: 25%">
+
+        <div class="alert alert-info center-block col-xs-6 col-md-6">
+            <p>Hello {{ current_user.username }}.<br>Thank you for using this application. If you find any errors,
+                things you don't like or just want to chat with the developer. Please write
+                <a href="mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application"
+                   style="color: blueviolet">
+                    Stefan Steinmüller
+                </a>
+                an E-Mail and will answer you sooner or later.
+            </p>
+        </div>
+
     </div>
 {% endblock %}

@@ -17,9 +17,10 @@
 
     <div class="well well-sm">
         <div class="media">
-            <div class="media-left media-middle"><img src="{{ g_board.project.project_default_image_path|replace('\\','/') }}"
-                                                      class="media-object thumbnail" alt="default_project_image"
-                                                      style="width: 120px"></div>
+            <div class="media-left media-middle"><img
+                    src="{{ g_board.project.project_default_image_path|replace('\\','/') }}"
+                    class="media-object thumbnail" alt="default_project_image"
+                    style="width: 120px"></div>
             <div class="media-body">
                 <div class="media-heading">
                     <h4>{{ g_board.project.project_name }}
@@ -34,62 +35,123 @@
     {% if g_board %}
 
         <div class="panel">
-            <div class="page-header"><h3>Board Comments <small>{{ "("+g_board.code|string+")" }}</small></h3></div>
-        {% if current_user.username!='Guest' %}
-            <button type="button" class="btn btn-default center-block" data-toggle="modal" data-target="#addModal"><span
-                    class="glyphicon glyphicon-plus "></span></button>
+            <div class="page-header">
+                <h3>Board Comments
+                    <small>{{ "("+g_board.code|string+")" }}</small>
+                </h3>
+            </div>
+            {% if current_user.username!='Guest' %}
+                <button type="button" class="btn btn-default center-block" data-toggle="modal"
+                        data-target="#addModal"><span
+                        class="glyphicon glyphicon-comment "></span></button>
 
-            <br><br>
-        {% endif %}
-        {% if history %}
+                <br><br>
+            {% endif %}
+            {% if history %}
 
 
 
-            {% for row in history %}
-                {% set modal_id= row.id %}
+                {% for row in history %}
+                    {% set modal_id= row.id %}
 
 
-                <div class="panel-default panel-collapse" id="comment_id{{ row.id|string }}">
+                    <div class="panel-default panel-collapse" id="comment_id{{ row.id|string }}">
 
-                    <div class="panel-body">
-                        <div class="row">
-                            {% if row.data_objects %}
-                                {% set pics=row.data_objects %}
+                        <div class="panel-body">
+                            <div class="row">
+                                {% if row.data_objects %}
+                                    {% set pics=row.data_objects %}
 
-                                {% for pic in pics %}
-                                    <div class=" col-xs-2 col-md-2">
+                                    {% for pic in pics %}
+                                        {% if '.jpg' in pic.file_path or '.jpeg' in pic.file_path or '.bmp' in pic.file_path %}
+                                            <div class=" col-xs-2 col-md-2">
 
-                                        <div class="thumbnail">
-                                            <a href="{{ pic.file_path }}">
-                                                <img src="{{ pic.file_path }}" style="width: 100%">
-                                            </a>
-                                            <div class="caption">
-                                                <form class=""
-                                                      action="{{ url_for('delete_history_image', img_id=pic.id, board_id=g_board.code) }}"
-                                                      method="post">
-                                                    <button class="btn btn-default btn-sm" type="button"
-                                                            data-toggle="collapse" data-target="#{{ pic.id }}"
-                                                            aria-expanded="false"
-                                                            aria-controls="{{ pic.id }}"><span
-                                                            class="glyphicon glyphicon-remove"></span></button>
-                                                    <div class="collapse" id="{{ pic.id }}">
-                                                        <div class="">
-                                                            <br><br>
-                                                            <button class="btn btn-danger btn-sm btn-block"
-                                                                    type="submit"><span
-                                                                    class="glyphicon glyphicon-ok pull-left"></span>
-                                                                <strong>Löschen?</strong>
-                                                            </button>
-                                                        </div>
+                                                <div class="thumbnail">
+                                                    <a href="{{ pic.file_path }}">
+                                                        <img src="{{ pic.file_path }}" style="width: 100%">
+                                                    </a>
+                                                    <div class="caption">
+                                                        {% if current_user.is_authenticated %}
+                                                            <form class=""
+                                                                  action="{{ url_for('delete_history_image', img_id=pic.id, board_id=g_board.code) }}"
+                                                                  method="post">
+                                                                <button class="btn btn-default btn-sm" type="button"
+                                                                        data-toggle="collapse"
+                                                                        data-target="#{{ pic.id }}"
+                                                                        aria-expanded="false"
+                                                                        aria-controls="{{ pic.id }}"><span
+                                                                        class="glyphicon glyphicon-remove"></span>
+                                                                </button>
+                                                                <div class="collapse" id="{{ pic.id }}">
+                                                                    <div class="">
+                                                                        <br><br>
+                                                                        <button class="btn btn-danger btn-sm btn-block"
+                                                                                type="submit"><span
+                                                                                class="glyphicon glyphicon-ok pull-left"></span>
+                                                                            <strong>Delete?</strong>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+
+                                                            </form>
+                                                        {% endif %}
                                                     </div>
-
-                                                </form>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
 
-                            {% endif %}
+                                        {% else %}
+
+                                            <div class=" col-xs-2 col-md-2">
+
+                                                <div class="thumbnail">
+                                                    <a href="{{ pic.file_path }}">
+                                                        <img src="/static/Pictures/index_file_picture.jpg"
+                                                             style="width: 100%">
+
+                                                        <div class="caption">
+                                                            {% set filename=pic.file_path.split('/') %}
+                                                            <button class="btn btn-block btn-default"
+                                                                    id="file_id{{ pic.id }}"
+                                                                    type="button"
+                                                                    style="white-space: normal; word-break: break-all">
+                                                            <span class="text-justify">
+                                                                {{ filename[filename|length-1] }}
+                                                            </span>
+                                                            </button>
+                                                            <br>
+
+
+                                                    </a>
+                                                    {% if current_user.is_authenticated %}
+                                                        <form class=""
+                                                              action="{{ url_for('delete_history_image', img_id=pic.id, board_id=g_board.code) }}"
+                                                              method="post">
+                                                            <button class="btn btn-default btn-sm" type="button"
+                                                                    data-toggle="collapse" data-target="#{{ pic.id }}"
+                                                                    aria-expanded="false"
+                                                                    aria-controls="{{ pic.id }}"><span
+                                                                    class="glyphicon glyphicon-remove"></span></button>
+                                                            <div class="collapse" id="{{ pic.id }}">
+                                                                <div class="">
+                                                                    <br><br>
+                                                                    <button class="btn btn-danger btn-sm btn-block"
+                                                                            type="submit"><span
+                                                                            class="glyphicon glyphicon-ok pull-left"></span>
+                                                                        <strong>Delete?</strong>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                        </form>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            </div>
+
+                                        {% endif %}
+                                    {% endfor %}
+
+                                {% endif %}
                             {% if current_user.username!='Guest' %}
                                 <form action="{{ url_for('board_history_add_file', history_id=row.id, board_id=g_board.code) }}"
                                       method="post" class="" enctype="multipart/form-data"
@@ -171,32 +233,32 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            {% endfor %}
+                    </div>
+                {% endfor %}
 
 
-            <script> {# this script is for changing the color of the targeted div when open e.g. th elink from a mail #}
-            function change_color_when_div_is_called() {
-                var hash = window.location.hash.substr(1);
-                var myDiv = document.getElementById(hash);
-                myDiv.className = "panel panel-collapse panel-primary" //myDiv.className.replace(/(?:^|\s)panel-default(?!\S)/g , 'panel-primary');
-                myDiv.style.backgroundColor = 'rgba(46, 111, 194, 0.3)'
+                <script> {# this script is for changing the color of the targeted div when open e.g. th elink from a mail #}
+                function change_color_when_div_is_called() {
+                    var hash = window.location.hash.substr(1);
+                    var myDiv = document.getElementById(hash);
+                    myDiv.className = "panel panel-collapse panel-primary" //myDiv.className.replace(/(?:^|\s)panel-default(?!\S)/g , 'panel-primary');
+                    myDiv.style.backgroundColor = 'rgba(46, 111, 194, 0.3)'
 
 
-            }
+                }
 
 
-            window.onload = change_color_when_div_is_called();
+                window.onload = change_color_when_div_is_called();
 
 
-            </script>
+                </script>
 
-        {% endif %}
+            {% endif %}
 
 
 
     {% endif %}
-</div>
+    </div>
 
     <div id="addModal" class="modal fade" role="dialog">
         <div class="modal-dialog">

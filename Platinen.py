@@ -60,11 +60,14 @@ def register_user():
                                            password=user_to_register.password.data,
                                            email=user_to_register.email_adress.data)
 
-            if data_Structure.User.query.filter_by(
-                    email=new_user.email).scalar() is not None:  # check if user already exists
+            if data_Structure.User.query.filter_by(username=new_user.username).all() != []:
+                # check if user already exists
                 flash('User does already exist!', 'danger')
                 return render_template('registerUserForm.html', form=user_to_register,
                                        search_form=searchForm.SearchForm())
+            if data_Structure.User.query.filter_by(email=new_user.email).all() != []:
+                flash('There is already somone registered with the same Email adress!', 'danger')
+                return redirect(url_for('register_user'))
 
             data_Structure.db.session.add(new_user)
             data_Structure.db.session.commit()
@@ -86,21 +89,35 @@ def logout():
     nav.nav.register_element("frontend_top", view.nav_bar())
     logout_user()
     view.logged_user = None
-
+    flash('you were logged out successfully!', 'success')
     return redirect(url_for('start'))
 
 
 @app.route('/login/', methods=['GET', 'POST'])
-# @app.route('/login/?next=/<last_page>/', methods=['GET', 'POST'])
-def login():
+@app.route('/login/<last_page_1>/', methods=['GET', 'POST'])
+def login(last_page_1=None):
     last_page = request.args.get('next')
+
+    no_url_for = False
+    url = None
     if last_page is None:
-        last_page = request.args.get('last_page')
+        last_page = last_page_1
+        if last_page:
+            last_page = last_page.replace('_', '/')  # [1:len(last_page) - 2]
+
     try:
+        # print(last_page)
         url = url_for(last_page)
     except:
-        url = None
+        no_url_for = True
+        try:
+            redirect(last_page)
 
+        except:
+            last_page = None
+            url = None
+            no_url_for = False
+    url = last_page
     nav.nav.register_element("frontend_top", view.nav_bar())
     user_form = registerUserForm.LoginUser(request.form)
     if request.method == 'POST':
@@ -112,10 +129,10 @@ def login():
         if pbkdf2_sha256.verify(user_form.password.data, login_to_user.password_hashed_and_salted):
             if request.form.get('rememberMe') is True:
                 login_user(login_to_user, remember=True)
-                flash('Hi, ' + login_to_user.username + ' - Your Login was succesfull', 'success')
+                flash('Hi ' + login_to_user.username + ' - Your Login was succesfull', 'success')
             else:
                 login_user(login_to_user, remember=False)
-                flash('Hi, ' + login_to_user.username + ' - Your Login was succesfull', 'success')
+                flash('Hi ' + login_to_user.username + ' - Your Login was succesfull', 'success')
         else:
             flash('Password was not correct', 'danger')
             return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
@@ -138,24 +155,23 @@ def delete_user():
     nav.nav.register_element("frontend_top", view.nav_bar())
     user_form = deleteUserForm.DeleteUser(request.form)
     if request.method == 'POST':
-        if data_Structure.User.query.filter_by(
-                username=user_form.username.data).scalar() is None:  # check if board already exists
+        if data_Structure.User.query.get(
+                user_form.uid.data) is None:  # check if board already exists
             flash('User does not exist!', 'danger')
-            return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
-        dele_user = data_Structure.User.query.filter_by(username=user_form.username.data).first()
+            return redirect(url_for('delete_user'))
+        dele_user = data_Structure.User.query.get(user_form.uid.data)
         if pbkdf2_sha256.verify(user_form.password.data, dele_user.password_hashed_and_salted):
             data_Structure.db.session.object_session(dele_user).delete(dele_user)
             data_Structure.db.session.commit()
         else:
             flash('Password was incorrect!', 'danger')
-            return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
+            return redirect(url_for('delete_user'))
         # Skipping the next test because I never needed it until now!
         # if data_Structure.Board.query.filter_by(
         #       code=board_form.code.data).scalar() is not None:  # check if board already exists
         #    return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm(),
         #                          messages=messages.Messages(True, 'Board was not deleted!'))
-        if data_Structure.User.query.filter_by(
-                username=user_form.username.data).scalar() is None:  # check if User exists
+        if data_Structure.User.query.get(user_form.uid.data) is None:  # check if User exists
             flash('User was deleted successfully!', 'success')
             return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
     return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
@@ -224,9 +240,6 @@ def start():
         return render_template('table.html', args=results_board, projects=results_project,
                                search_form=searchForm.SearchForm(), search_word=search_word)
     return render_template('start.html', search_form=search_form)
-
-
-
 
 
 @app.route('/addBoard/', methods=['GET', 'POST'])
@@ -434,7 +447,7 @@ def delete_project_image(project_name):
     img_id = project.project_default_image_path
     project.project_default_image_path = '/static/Pictures/logo.jpg'
     if '/static/Pictures/logo.jpg' not in img_id or '\\static\\Pictures\\logo.jpg' not in img_id:
-        os.remove(str(DATA_FOLDER+img_id.replace('_', '\\')))
+        os.remove(str(DATA_FOLDER + img_id.replace('_', '\\')))
 
     # data_Structure.db.session.remove(image_to_delete)
     data_Structure.db.session.commit()
@@ -454,7 +467,7 @@ def edit_project_image(project_name):
         if ".jpg" in filename or ".jpeg" in filename or ".bmp" in filename:
             file.save(UPLOAD_FOLDER + '\\' + filename)
             os.remove(str(DATA_FOLDER + project.project_default_image_path))
-            project.project_default_image_path ='\\static\\Pictures'+'\\' + filename
+            project.project_default_image_path = '\\static\\Pictures' + '\\' + filename
             data_Structure.db.session.commit()
             flash('Picture was changed successfully!', 'success')
         else:
@@ -565,6 +578,24 @@ def change_password(uid):
     else:
         flash('Your Password was incorrect', 'danger')
     return redirect(url_for('my_profile'))
+
+
+@app.route('/my_profile/delete/me_myself_and_i/and_really_me_so_i_wont_be_able_to_visit_this_site_anymore/',
+           methods=['POST'])
+def delete_myself():
+    user_to_delete = data_Structure.db.session.query(data_Structure.User).get(current_user.uid)
+    password_1 = request.form.get('password_1')
+    password_2 = request.form.get('password_2')
+    if pbkdf2_sha256.verify(password_1, user_to_delete.password_hashed_and_salted)\
+        and pbkdf2_sha256.verify(password_2,user_to_delete.password_hashed_and_salted):
+        logout_user()
+        data_Structure.db.session.delete(user_to_delete)
+        data_Structure.db.session.commit()
+        flash('User ' +str(user_to_delete.username)+' was succesfully deleted')
+        return redirect(url_for('start'))
+    else:
+        flash('Wrong Password(s)', 'danger')
+        return redirect(url_for('my_profile'))
 
 
 if __name__ == '__main__':
