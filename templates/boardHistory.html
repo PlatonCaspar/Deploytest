@@ -17,7 +17,7 @@
 
     <div class="well well-sm">
         <div class="media">
-            <div class="media-left media-middle"><img src="{{ g_board.project.project_default_image_path }}"
+            <div class="media-left media-middle"><img src="{{ g_board.project.project_default_image_path|replace('\\','/') }}"
                                                       class="media-object thumbnail" alt="default_project_image"
                                                       style="width: 120px"></div>
             <div class="media-body">

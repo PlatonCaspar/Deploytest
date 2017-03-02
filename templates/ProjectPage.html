@@ -14,13 +14,13 @@
                       method="post">
                     <h1>{{ project.project_name }}
                         <small>
-
-                                <button class="btn btn-group btn-warning btn-sm pull-right" type="button"
-                                        data-toggle="collapse" data-target="#delete_project"
-                                        aria-expanded="false"
-                                        aria-controls="delete_project"><span
-                                        class="glyphicon glyphicon-remove"></span></button>
-
+                            {% if current_user.is_authenticated %}
+                            <button class="btn btn-group btn-warning btn-sm pull-right" type="button"
+                                    data-toggle="collapse" data-target="#delete_project"
+                                    aria-expanded="false"
+                                    aria-controls="delete_project"><span
+                                    class="glyphicon glyphicon-remove"></span></button>
+                            {% endif %}
                         </small>
                     </h1>
 
@@ -31,7 +31,7 @@
                             <button class="btn btn-danger btn-sm btn-block"
                                     type="submit"><span
                                     class="glyphicon glyphicon-ok pull-left"></span>
-                                <strong>Löschen?</strong>
+                                <strong>Delete?</strong>
                             </button>
                         </div>
                     </div>
@@ -39,14 +39,59 @@
                 </form>
             </div>
             <div class="panel-body" style="border-bottom: solid #e7e7e7 1px">
-                <img src="{{ project.project_default_image_path }}" class="img-thumbnail" alt="Project Picture"
-                     style="width: 20%">
-                <form action="{{ url_for('delete_project_image',img_id=project.project_default_image_path.replace('/', '_'), project_name=project.project_name) }}"
-                      method="post">
-                    <button class="btn btn-default" type="submit">
-                        <span class="glyphicon glyphicon-remove"></span>
-                    </button>
-                </form>
+                <div class="row">
+                    <div class="col-xs-3 col-md-3">
+                        <div class="thumbnail">
+                            <img src="{{ project.project_default_image_path|replace('\\','/') }}"
+                                 alt="Project Picture"
+                                 style="width: 100%">
+                            {% if current_user.is_authenticated %}
+                            <div class="caption">
+                                <p>
+                                <div class="row">
+                                    <div class="col-xs-6 col-md-6">
+                                        <button class="btn btn-default btn-block" type="button" data-toggle="collapse"
+                                                data-target="#delete_project_picture">
+                                            <span class="glyphicon glyphicon-remove"></span>
+                                        </button>
+                                    </div>
+                                    <form action="{{ url_for('edit_project_image',project_name=project.project_name) }}"
+                                          method="post" class="" enctype="multipart/form-data"
+                                          id="new_upfile_form">
+
+                                        <input class="hidden" name="new_upfile" id="new_upfile" accept="image/*"
+                                               type="file" value="upload"
+                                               onchange="document.getElementById('new_upfile_button').click()">
+                                        <button class="hidden" type="submit" id="new_upfile_button"></button>
+                                        <div class="col-xs-6 col-md-6">
+                                            <button class="btn btn-default btn-block" type="button"
+                                                    onclick="document.getElementById('new_upfile').click()"><span
+                                                    class="glyphicon glyphicon-paperclip"></span></button>
+                                        </div>
+                                    </form>
+                                </div>
+                                </p>
+                            </div>
+                            {% endif %}
+                            {% set img_id=project.project_default_image_path|replace('/','_') %}
+
+                            <form action="{{ url_for('delete_project_image', project_name=project.project_name) }}"
+                                  method="post">
+
+                                <div class="collapse" id="delete_project_picture">
+                                    <div class="">
+                                        <br><br>
+                                        <button class="btn btn-danger"
+                                                type="submit"><span
+                                                class="glyphicon glyphicon-ok pull-left"></span>
+                                            <strong>Delete?</strong>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="panel-body">
                 {{ project.project_description|safe }}
@@ -100,7 +145,7 @@
                                             <button type="submit" class="btn btn-block btn-text-left"
                                                     style="background-color: transparent"><span
                                                     class="glyphicon glyphicon-user"
-                                                    style="padding-right: 5px"></span>{{ row.addedBy }}
+                                                    style="padding-right: 5px"></span>{{ row.addedBy.username }}
                                             </button>
                                         </td>
 

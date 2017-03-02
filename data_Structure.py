@@ -32,7 +32,8 @@ class Board(db.Model):
     id = db.Column(db.Integer, primary_key=False)
     dateAdded = db.Column(db.String(10))
     history = db.relationship('History', backref='History', lazy='dynamic')
-    addedBy = db.Column(db.String, db.ForeignKey('user.username'))
+    addedBy_id = db.Column(db.String, db.ForeignKey('user.uid'))
+    addedBy = db.relationship('User', backref='user_board', uselist=False)
 
     def __init__(self, code: str, project_name: str, ver: str):  # , history):
         self.project_name = project_name
@@ -41,7 +42,7 @@ class Board(db.Model):
         self.version = ver
         self.link = str(url_for('show_board_history', g_code=self.code))
         self.dateAdded = time.strftime("%d.%m.%Y %H:%M:%S")
-        self.addedBy = User.get_id(current_user)
+        self.addedBy = current_user
 
     def __repr__(self):
         return '<Board %r>' % self.code
@@ -108,17 +109,17 @@ class User(db.Model):
             return False
 
     def get_id(self):
-        return self.uid.encode("utf-8").decode("utf-8")
-
-    def get(user_name):
-        return User.query.filter_by(username=user_name).first()
+        return str(self.uid).encode("utf-8").decode("utf-8")
+    #//TODO Here was everything returning the username as primary key
+    def get(uid):
+        return User.query.filter_by(uid=uid).first()
 
 
 class History(db.Model):
     board_code = db.Column(db.String(500), db.ForeignKey('board.code'))
     id = db.Column(db.Integer, primary_key=True)
     history = db.Column(db.Text)
-    edited_by_id = db.Column(db.Text, db.ForeignKey('user.username'))
+    edited_by_id = db.Column(db.Text, db.ForeignKey('user.uid'))
     added_by = db.relationship('User', backref=db.backref('added_by_backref', lazy='dynamic'))
 
     edited_by = db.relationship('User', backref=db.backref('edited_by_backref', lazy='dynamic'))
@@ -131,14 +132,14 @@ class History(db.Model):
         self.board_code = board_code
         self.history = history.replace('\n', "<br>")
         if current_user is not None:
-            self.added_by = db.session.query(User).get(current_user.username)  # /TODO Go to bed and the se how we can add the mailto link or first try to give a User.
+            self.added_by = db.session.query(User).get(current_user.uid)  # /TODO Go to bed and the se how we can add the mailto link or first try to give a User.
         elif current_user is None:
             self.added_by = db.session.query(User).get('Guest')
 
-        print("added by " + str(self.added_by))
+
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
-        self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code)
+        self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code+str(current_user.uid))
 
 
 class Files(db.Model):

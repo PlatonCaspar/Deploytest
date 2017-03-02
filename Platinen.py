@@ -24,7 +24,7 @@ import view
 
 nav.login_manager.anonymous_user = data_Structure.User
 
-UPLOAD_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '\static\Pictures'
+UPLOAD_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '\\static\\Pictures'
 DATA_FOLDER = os.path.dirname(os.path.abspath(__file__))
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
@@ -162,6 +162,7 @@ def delete_user():
 
 
 @app.route('/registeredUsers/')
+@login_required
 def show_registered_users():
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -184,7 +185,9 @@ def start():
             search_word = request.form.get('search_field_main')
 
             search_area = 'All'
-
+        if data_Structure.db.session.query(data_Structure.Board).get(search_word) is not None:
+            return redirect(url_for('show_board_history',
+                                    g_code=data_Structure.db.session.query(data_Structure.Board).get(search_word).code))
         if search_area == 'Boards' or search_area == 'All':
             if search_word is "":
                 results_board = data_Structure.db.session.query(data_Structure.Board).all()
@@ -195,8 +198,9 @@ def start():
                     data_Structure.Board.link.contains(search_word) |
                     data_Structure.Board.version.contains(search_word) |
                     data_Structure.Board.id.contains(search_word) |
-                    data_Structure.Board.dateAdded.contains(search_word) |
-                    data_Structure.Board.addedBy.contains(search_word)).all()
+                    data_Structure.Board.dateAdded.contains(search_word)  # |
+                    #    data_Structure.Board.addedBy.username.contains(search_word)
+                ).all()
 
             results_board = list(set(results_board))
         if search_area == 'User' or search_area == 'All':
@@ -222,14 +226,11 @@ def start():
     return render_template('start.html', search_form=search_form)
 
 
-@app.route('/showAll/')
-def spitOut():
-    view.logged_user = view.get_logged_user()
-    nav.nav.register_element("frontend_top", view.nav_bar())
-    return render_template('table.html', args=data.query_all_boards(), search_form=searchForm.SearchForm())
+
 
 
 @app.route('/addBoard/', methods=['GET', 'POST'])
+@login_required
 def add__board():
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -237,13 +238,14 @@ def add__board():
     board_form.name.choices = addPlatineForm.load_choices()
     add_project_form = project_forms.AddProjectForm(request.form)
     if request.method == 'POST':
-        new_board = data_Structure.Board(code=board_form.code.data, project_name=board_form.name.data,
-                                         ver=board_form.ver.data)
+
         if data_Structure.Board.query.filter_by(
-                code=new_board.code).scalar() is not None:  # check if board already exists
+                code=board_form.code.data).scalar() is not None:  # check if board already exists
             flash('Board does already exist in the database!', 'danger')
             return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
                                    search_form=searchForm.SearchForm())
+        new_board = data_Structure.Board(code=board_form.code.data, project_name=board_form.name.data,
+                                         ver=board_form.ver.data)
         data_Structure.db.session.add(new_board)
         data_Structure.db.session.commit()
         project = data_Structure.db.session.query(data_Structure.Project).get(new_board.project_name)
@@ -266,7 +268,6 @@ def show_boards_of_project(project_name):
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('table.html', args=data_Structure.Board.query.filter_by(project_name=project_name).all())
-
 
 
 @app.route('/add_Project/', methods=['POST', 'GET'])
@@ -301,7 +302,6 @@ def add_project():
             data_Structure.db.session.add(project_to_add)
             data_Structure.db.session.commit()
 
-            print('add_platine ' + str(request.form.get('add_platine')))
             if str(request.form.get('add_platine')) in 'true':
                 return redirect(url_for('add__board'))
             return redirect(url_for('start'))
@@ -321,6 +321,7 @@ def delete_history_all(history):
 
 
 @app.route('/deleteBoard/', methods=['GET', 'POST'])
+@login_required
 def del_board(board_delete=None):
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -348,10 +349,6 @@ def del_board(board_delete=None):
                 code=board_form.code.data).scalar() is None and board_delete is None:  # check if board already exists
             flash('Board was successfully deleted!', 'success')
             return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
-        if board_delete is not None:
-            print(data_Structure.db.session.query(
-                data_Structure.Board).get(dele_board.code))
-            return
     return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
 
 
@@ -428,21 +425,46 @@ def show_project(project_name):
     return render_template('ProjectPage.html', project=project, boards=project.project_boards)  # boards_of_project)
 
 
-@app.route('/project/delete/image/<img_id>/<project_name>/', methods=['POST'])
-def delete_project_image(img_id, project_name):
+@app.route('/project/delete/image/<project_name>/', methods=['POST'])
+@login_required
+def delete_project_image(project_name):
     view.logged_user = view.get_logged_user()
     # image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
     project = data_Structure.db.session.query(data_Structure.Project).get(project_name)
-    project.project_default_image_path = UPLOAD_FOLDER + '/static/Pictures/logo.jpg'
-    if '/static/Pictures/logo.jpg'.replace('/', '_') not in img_id:
-        os.remove(str(DATA_FOLDER + img_id.replace('_', '\\')))
+    img_id = project.project_default_image_path
+    project.project_default_image_path = '/static/Pictures/logo.jpg'
+    if '/static/Pictures/logo.jpg' not in img_id or '\\static\\Pictures\\logo.jpg' not in img_id:
+        os.remove(str(DATA_FOLDER+img_id.replace('_', '\\')))
+
     # data_Structure.db.session.remove(image_to_delete)
-    # data_Structure.db.session.commit()
+    data_Structure.db.session.commit()
 
     return redirect(url_for('show_project', project_name=project_name))
 
 
+@app.route('/project/edit/image/<project_name>', methods=['POST'])
+@login_required
+def edit_project_image(project_name):
+    view.logged_user = view.get_logged_user()
+    project = data_Structure.db.session.query(data_Structure.Project).get(project_name)
+    file = request.files.get('new_upfile')
+    if file:
+        file_id = id(file.filename)
+        filename = secure_filename(str(file_id) + file.filename)
+        if ".jpg" in filename or ".jpeg" in filename or ".bmp" in filename:
+            file.save(UPLOAD_FOLDER + '\\' + filename)
+            os.remove(str(DATA_FOLDER + project.project_default_image_path))
+            project.project_default_image_path ='\\static\\Pictures'+'\\' + filename
+            data_Structure.db.session.commit()
+            flash('Picture was changed successfully!', 'success')
+        else:
+            flash('Your uploaded File was propably not a Picture. Pleas use only JPEG or JPG or BMP Pictures!',
+                  'danger')
+    return redirect(url_for('show_project', project_name=project_name))
+
+
 @app.route('/boardHistory/delete/image/<img_id>/<board_id>/', methods=['POST'])
+@login_required
 def delete_history_image(img_id, board_id):
     view.logged_user = view.get_logged_user()
     image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
@@ -456,6 +478,7 @@ def delete_history_image(img_id, board_id):
 
 
 @app.route('/boardHistory/add/file/<history_id>/<board_id>', methods=['POST'])
+@login_required
 def board_history_add_file(history_id, board_id):
     view.logged_user = view.get_logged_user()
     history = data_Structure.db.session.query(data_Structure.History).get(int(history_id))
@@ -473,6 +496,7 @@ def board_history_add_file(history_id, board_id):
 
 
 @app.route('/project/delete/project/<project_name>/', methods=['POST'])
+@login_required
 def delete_project(project_name):
     view.logged_user = view.get_logged_user()
     project_to_delete = data_Structure.db.session.query(data_Structure.Project).get(project_name)
@@ -504,6 +528,7 @@ def my_profile():
 
 
 @app.route('/my_profile/change/username/<uid>/', methods=['POST'])
+@login_required
 def change_username(uid):
     user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
 
@@ -514,6 +539,7 @@ def change_username(uid):
 
 
 @app.route('/my_profile/change/email/<uid>/', methods=['POST'])
+@login_required
 def change_email(uid):
     user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
 
@@ -524,6 +550,7 @@ def change_email(uid):
 
 
 @app.route('/my_profile/change/password/<uid>/', methods=['POST'])
+@login_required
 def change_password(uid):
     user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
 
