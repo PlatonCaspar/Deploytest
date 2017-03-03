@@ -12,7 +12,7 @@
 
             <form action="" method="post">
                 {{ wtf.form_field(form.code) }}
-                {{ wtf.form_field(form.name) }}
+                {{ wtf.form_field(form.name, required='true') }}
                 <button class="btn btn-default btn-group" type="button" data-toggle="modal" data-target="#addProject"
                         aria-expanded="false" aria-controls="addProject">
                     <span class="glyphicon glyphicon-plus"></span>
