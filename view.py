@@ -43,7 +43,7 @@ search_bar = RawTag(tags.li(write_code_for_search_bar()))
 def nav_bar():
     if current_user.username is 'Guest':
         return ownNavRenderer.ExtendedNavbar(
-            title=View(tags.img(src='/static/Pictures/logo.png', width=200), 'start'),
+            title=View(tags.img(src='/static/staticPictures/logo.png', width=200), 'start'),
             items=(View('Start', 'start'),
                    search_bar
                    ),
@@ -61,7 +61,7 @@ def nav_bar():
         )
     else:
         return ownNavRenderer.ExtendedNavbar(
-            title=View(tags.img(src='/static/Pictures/logo.png', width=200), 'start'),
+            title=View(tags.img(src='/static/staticPictures/logo.png', width=200), 'start'),
             items=(View('Start', 'start'),
                    View('New Board', 'add__board'),
 

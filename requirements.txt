@@ -1,10 +1,10 @@
 flask
 flask_bootstrap
-flasq_sqlalchemy
+flask_sqlalchemy
 flask_nav
 passlib
 flask_login
 werkzeug
 flask_wtf
-wtfforms
+wtforms
 dominate

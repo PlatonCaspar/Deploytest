@@ -17,10 +17,19 @@
 
     <div class="well well-sm">
         <div class="media">
-            <div class="media-left media-middle"><img
+            <div class="media-left media-middle">
+                {% if g_board.project.project_default_image_path is none %}
+                <img
+                    src="/static/staticPictures/logo.jpg"
+                    class="media-object thumbnail" alt="default_project_image"
+                    style="width: 120px">
+                {% else %}
+                <img
                     src="{{ g_board.project.project_default_image_path|replace('\\','/') }}"
                     class="media-object thumbnail" alt="default_project_image"
-                    style="width: 120px"></div>
+                    style="width: 120px">
+                {% endif %}
+            </div>
             <div class="media-body">
                 <div class="media-heading">
                     <h4>{{ g_board.project.project_name }}
@@ -63,12 +72,12 @@
                                     {% set pics=row.data_objects %}
 
                                     {% for pic in pics %}
-                                        {% if '.jpg' in pic.file_path or '.jpeg' in pic.file_path or '.bmp' in pic.file_path %}
+                                        {% if '.jpg' in pic.file_path|lower or '.jpeg' in pic.file_path|lower or '.bmp' in pic.file_path|lower %}
                                             <div class=" col-xs-2 col-md-2">
 
                                                 <div class="thumbnail">
-                                                    <a href="{{ pic.file_path }}">
-                                                        <img src="{{ pic.file_path }}" style="width: 100%">
+                                                    <a href="/static/Pictures/{{ pic.file_path }}">
+                                                        <img src="/static/Pictures/{{ pic.file_path }}" style="width: 100%">
                                                     </a>
                                                     <div class="caption">
                                                         {% if current_user.is_authenticated %}
@@ -104,8 +113,8 @@
                                             <div class=" col-xs-2 col-md-2">
 
                                                 <div class="thumbnail">
-                                                    <a href="{{ pic.file_path }}">
-                                                        <img src="/static/Pictures/index_file_picture.jpg"
+                                                    <a href="/static/Pictures/{{ pic.file_path }}">
+                                                        <img src="/static/staticPictures/index_file_picture.jpg"
                                                              style="width: 100%">
 
                                                         <div class="caption">
@@ -157,7 +166,7 @@
                                       method="post" class="" enctype="multipart/form-data"
                                       id="new_upfile_form">
 
-                                    <input class="hidden" name="new_upfile" id="new_upfile" accept=".xls,.xlsx,image/*"
+                                    <input class="hidden" name="new_upfile" id="new_upfile"
                                            type="file" value="upload"
                                            onchange="document.getElementById('new_upfile_button').click()">
                                     <button class="hidden" type="submit" id="new_upfile_button"></button>

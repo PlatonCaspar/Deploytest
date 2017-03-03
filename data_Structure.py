@@ -171,7 +171,7 @@ class Anonymous(AnonymousUserMixin):
 class Project(db.Model):  # //TODO Implement the Project Class and add relationship to Board
     project_name = db.Column(db.Text, primary_key=True)
     project_description = db.Column(db.Text)
-    project_default_image_path = db.Column(db.Text, default='/static/Pictures/logo.jpg')
+    project_default_image_path = db.Column(db.Text, default=None)
     project_boards = db.relationship('Board', backref=db.backref('project_backref', lazy='dynamic', uselist=True))
     sub_projects = db.relationship('Project', lazy='dynamic', uselist=True)
     sub_projects_id = db.Column(db.Text, db.ForeignKey('project.project_name'))

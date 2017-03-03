@@ -42,9 +42,15 @@
                 <div class="row">
                     <div class="col-xs-3 col-md-3">
                         <div class="thumbnail">
+                            {% if project.project_default_image_path is none %}
+                            <img src="/static/staticPictures/logo.jpg"
+                                 alt="Project Picture"
+                                 style="width: 100%">
+                            {% else %}
                             <img src="{{ project.project_default_image_path|replace('\\','/') }}"
                                  alt="Project Picture"
                                  style="width: 100%">
+                            {% endif %}
                             {% if current_user.is_authenticated %}
                             <div class="caption">
                                 <p>

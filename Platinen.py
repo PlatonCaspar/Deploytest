@@ -24,10 +24,10 @@ import view
 
 nav.login_manager.anonymous_user = data_Structure.User
 
-UPLOAD_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '\\static\\Pictures'
+RELATIVE_PICTURE_PATH = 'static/Pictures'
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), RELATIVE_PICTURE_PATH )
 DATA_FOLDER = os.path.dirname(os.path.abspath(__file__))
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-
 
 # def set_logged_user(state):
 #    logged_user = state
@@ -296,6 +296,7 @@ def add_project():
             return render_template('add_project.html', add_project_form=add_project_form)
         elif data_Structure.Project.query.get(add_project_form.project_name.data) is None:
             image_path = 'NE'
+            filename = None
             if 'upfile' not in request.files:  # //TODO I still need to  check if files are safe
                 image_path = None
             file = request.files.get('upfile')
@@ -305,12 +306,12 @@ def add_project():
                 file_id = id(file.filename)
                 filename = secure_filename(str(file_id) + file.filename)
 
-                file.save(UPLOAD_FOLDER + '\\' + filename)
-                image_path = '/static/Pictures/' + filename
+                image_path = os.path.join(UPLOAD_FOLDER, filename)
+                file.save( image_path )
 
             project_to_add = data_Structure.Project(project_name=add_project_form.project_name.data,
                                                     project_description=add_project_form.project_description.data,
-                                                    project_default_image_path=image_path)
+                                                    project_default_image_path=filename)
 
             data_Structure.db.session.add(project_to_add)
             data_Structure.db.session.commit()
@@ -326,7 +327,7 @@ def delete_history_all(history):
         image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(obj.id))
         # board = data_Structure.db.session.query(data_Structure.board).get(int(board_id))
 
-        os.remove(str(DATA_FOLDER + image_to_delete.file_path.replace('/', '\\')))
+        os.remove(os.path.join(UPLOAD_FOLDER, image_to_delete.file_path))
         data_Structure.db.session.delete(image_to_delete)
         data_Structure.db.session.commit()
     data_Structure.db.session.delete(history)
@@ -384,9 +385,9 @@ def add_board_history(board, history, file):
         file_id = id(file.filename)
         filename = secure_filename(str(file_id) + file.filename)
 
-        file.save(UPLOAD_FOLDER + '\\' + filename)
-        image_path = '/static/Pictures/' + filename
-        file_to_add = data_Structure.Files(history=new_history, file_path=image_path)
+        image_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save( image_path )
+        file_to_add = data_Structure.Files(history=new_history, file_path=filename)
         data_Structure.db.session.add(file_to_add)
 
     data_Structure.db.session.add(new_history)
@@ -444,10 +445,11 @@ def delete_project_image(project_name):
     view.logged_user = view.get_logged_user()
     # image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
     project = data_Structure.db.session.query(data_Structure.Project).get(project_name)
-    img_id = project.project_default_image_path
-    project.project_default_image_path = '/static/Pictures/logo.jpg'
-    if '/static/Pictures/logo.jpg' not in img_id or '\\static\\Pictures\\logo.jpg' not in img_id:
-        os.remove(str(DATA_FOLDER + img_id.replace('_', '\\')))
+    # img_id = project.project_default_image_path
+    img_id = None
+    project.project_default_image_path = '/static/staticPictures/logo.jpg'
+    if '/static/staticPictures/logo.jpg' not in img_id or '\\static\\staticPictures\\logo.jpg' not in img_id:
+        os.remove(os.path.join(UPLOAD_FOLDER, img_id.replace('_', '\\')))
 
     # data_Structure.db.session.remove(image_to_delete)
     data_Structure.db.session.commit()
@@ -464,9 +466,9 @@ def edit_project_image(project_name):
     if file:
         file_id = id(file.filename)
         filename = secure_filename(str(file_id) + file.filename)
-        if ".jpg" in filename or ".jpeg" in filename or ".bmp" in filename:
-            file.save(UPLOAD_FOLDER + '\\' + filename)
-            os.remove(str(DATA_FOLDER + project.project_default_image_path))
+        if ".jpg" in filename.lower() or ".jpeg" in filename.lower() or ".bmp" in filename.lower():
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            os.remove(os.path.join(UPLOAD_FOLDER, project.project_default_image_path))
             project.project_default_image_path = '\\static\\Pictures' + '\\' + filename
             data_Structure.db.session.commit()
             flash('Picture was changed successfully!', 'success')
@@ -483,7 +485,8 @@ def delete_history_image(img_id, board_id):
     image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
     # board = data_Structure.db.session.query(data_Structure.board).get(int(board_id))
 
-    os.remove(str(DATA_FOLDER + image_to_delete.file_path.replace('/', '\\')))
+    os.remove(os.path.join(UPLOAD_FOLDER, image_to_delete.file_path))
+    # os.remove(str(DATA_FOLDER + image_to_delete.file_path.replace('/', '\\')))
     data_Structure.db.session.delete(image_to_delete)
     data_Structure.db.session.commit()
 
@@ -500,9 +503,9 @@ def board_history_add_file(history_id, board_id):
         file_id = id(file.filename)
         filename = secure_filename(str(file_id) + file.filename)
 
-        file.save(UPLOAD_FOLDER + '\\' + filename)
-        image_path = '/static/Pictures/' + filename
-        file_to_add = data_Structure.Files(history=history, file_path=image_path)
+        image_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save( image_path )
+        file_to_add = data_Structure.Files(history=history, file_path=filename)
         data_Structure.db.session.add(file_to_add)
         data_Structure.db.session.commit()
     return redirect(url_for('show_board_history', g_code=board_id))
@@ -517,14 +520,14 @@ def delete_project(project_name):
     for board in project_to_delete.project_boards:
         for history in board.history:
             for file in history.data_objects:
-                os.remove(DATA_FOLDER + file.file_path)
+                os.remove(os.path.join(UPLOAD_FOLDER, file.file_path))
                 data_Structure.db.session.delete(file)
 
             data_Structure.db.session.delete(history)
         data_Structure.db.session.delete(board)
     data_Structure.db.session.commit()
     if 'logo.jpg' not in project_to_delete.project_default_image_path:
-        os.remove(DATA_FOLDER + project_to_delete.project_default_image_path)
+        os.remove(os.path.join(UPLOAD_FOLDER, project_to_delete.project_default_image_path))
     data_Structure.db.session.delete(project_to_delete)
     data_Structure.db.session.commit()
     return redirect(url_for('start'))
@@ -611,4 +614,5 @@ if __name__ == '__main__':
     nav.login_manager.init_app(app)
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
-    app.run(debug=False, port=50)
+    app.run(debug=True, port=80, host='0.0.0.0')
+    # app.run(debug=False, port=80, host='0.0.0.0')
