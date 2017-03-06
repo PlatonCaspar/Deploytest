@@ -25,7 +25,7 @@
                     style="width: 120px">
                 {% else %}
                 <img
-                    src="{{ g_board.project.project_default_image_path|replace('\\','/') }}"
+                    src="/static/Pictures/{{ g_board.project.project_default_image_path|replace('\\','/') }}"
                     class="media-object thumbnail" alt="default_project_image"
                     style="width: 120px">
                 {% endif %}
