@@ -164,14 +164,14 @@
                             {% if current_user.username!='Guest' %}
                                 <form action="{{ url_for('board_history_add_file', history_id=row.id, board_id=g_board.code) }}"
                                       method="post" class="" enctype="multipart/form-data"
-                                      id="new_upfile_form">
+                                      id="{{row.id|string+'new_upfile_form'}}">
 
-                                    <input class="hidden" name="new_upfile" id="new_upfile"
+                                    <input class="hidden" name="{{row.id|string+'new_upfile'}}" id="{{row.id|string+'new_upfile'}}"
                                            type="file" value="upload"
-                                           onchange="document.getElementById('new_upfile_button').click()">
-                                    <button class="hidden" type="submit" id="new_upfile_button"></button>
+                                           onchange="document.getElementById('{{row.id|string+'new_upfile_button'}}').click()">
+                                    <button class="hidden" type="submit" id="{{row.id|string+'new_upfile_button'}}"></button>
                                     <button class="btn btn-default btn-sm" type="button"
-                                            onclick="document.getElementById('new_upfile').click()"><span
+                                            onclick="document.getElementById('{{row.id|string+'new_upfile'}}').click()"><span
                                             class="glyphicon glyphicon-paperclip"></span></button>
                                 </form>
 
