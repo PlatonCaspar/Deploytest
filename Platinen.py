@@ -307,6 +307,7 @@ def add_project():
                 file_id = id(file.filename)
                 filename = secure_filename(str(file_id) + file.filename)
 
+
                 image_path = os.path.join(UPLOAD_FOLDER, filename)
                 file.save(image_path)
 
@@ -446,10 +447,10 @@ def delete_project_image(project_name):
     view.logged_user = view.get_logged_user()
     # image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
     project = data_Structure.db.session.query(data_Structure.Project).get(project_name)
-    # img_id = project.project_default_image_path
-    img_id = None
-    project.project_default_image_path = '/static/staticPictures/logo.jpg'
-    if '/static/staticPictures/logo.jpg' not in img_id or '\\static\\staticPictures\\logo.jpg' not in img_id:
+    img_id = project.project_default_image_path
+    #img_id = None
+    project.project_default_image_path = None
+    if img_id is not None:
         os.remove(os.path.join(UPLOAD_FOLDER, img_id.replace('_', '\\')))
 
     # data_Structure.db.session.remove(image_to_delete)
@@ -531,7 +532,7 @@ def delete_project(project_name):
             data_Structure.db.session.delete(history)
         data_Structure.db.session.delete(board)
     data_Structure.db.session.commit()
-    if 'logo.jpg' not in project_to_delete.project_default_image_path:
+    if project_to_delete.project_default_image_path is not None:
         os.remove(os.path.join(UPLOAD_FOLDER, project_to_delete.project_default_image_path))
     data_Structure.db.session.delete(project_to_delete)
     data_Structure.db.session.commit()
@@ -610,8 +611,8 @@ def delete_myself():
 @login_required
 def user_forgot_password():
     nav.nav.register_element("frontend_top", view.nav_bar())
-    flash('Pleas enter the uid, you can find it if you look for the user at ' + '<a href:="' + url_for(
-        'show_registered_users') + '">Registered Users</a>', 'info')
+    flash('Pleas enter the uid, you can find it if you look for the user at ' + '<a href="' + url_for(
+        'show_registered_users')+'">Registered Users</a>', 'info')
     return render_template('forgot_password.html')
 
 
@@ -619,15 +620,15 @@ def user_forgot_password():
 @app.route('/user_forgot_password/change_password/', methods=['POST'])
 @login_required
 def user_forgot_change_password():
-    logged_user = data_Structure.db.session.get(current_user.uid)
+    logged_user = data_Structure.db.session.query(data_Structure.User).get(current_user.uid)
     dumb_user_id = request.form.get('uid')
     dumb_user = None
     if dumb_user_id:
-        dumb_user = data_Structure.db.session.get(int(dumb_user_id))
+        dumb_user = data_Structure.db.session.query(data_Structure.User).get(int(dumb_user_id))
     if not dumb_user:
         flash('User does not exist! (UID: ' + str(dumb_user_id) + ')', 'danger')
         return redirect(url_for(user_forgot_password))
-    if pbkdf2_sha256.verify(request.form.get('current_user_password'), logged_user.password_hshed_and_salted):
+    if pbkdf2_sha256.verify(request.form.get('current_user_password'), logged_user.password_hashed_and_salted):
         new_password = pbkdf2_sha256.hash(request.form.get('new_password_1'))
         if pbkdf2_sha256.verify(request.form.get('new_password_2'), new_password):
             dumb_user.password_hashed_and_salted = new_password
@@ -655,5 +656,5 @@ if __name__ == '__main__':
     nav.login_manager.init_app(app)
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
-    app.run(debug=True, port=80, host='0.0.0.0')
+    app.run(debug=False, port=80)#, host='0.0.0.0')
 # app.run(debug=False, port=80, host='0.0.0.0')

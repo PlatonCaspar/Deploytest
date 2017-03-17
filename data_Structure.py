@@ -1,11 +1,11 @@
 import flask_sqlalchemy
 from flask import Flask
-import sqlalchemy
-from sqlalchemy.orm import with_polymorphic
+from os import urandom
 from flask import url_for
 import time
 from passlib.hash import pbkdf2_sha256
 from flask_login import current_user, AnonymousUserMixin
+import datetime
 
 # import flask
 app = Flask(__name__)
@@ -72,7 +72,7 @@ class User(db.Model):
             self.is_active = True
 
         else:
-            self.is_active = True #for now every User is active
+            self.is_active = True  # for now every User is active
 
         if username == 'Guest':
             self.is_authenticated = False
@@ -110,7 +110,8 @@ class User(db.Model):
 
     def get_id(self):
         return str(self.uid).encode("utf-8").decode("utf-8")
-    #//TODO Here was everything returning the username as primary key
+
+    # //TODO Here was everything returning the username as primary key
     def get(uid):
         return User.query.filter_by(uid=uid).first()
 
@@ -132,14 +133,14 @@ class History(db.Model):
         self.board_code = board_code
         self.history = history.replace('\n', "<br>")
         if current_user is not None:
-            self.added_by = db.session.query(User).get(current_user.uid)  # /TODO Go to bed and the se how we can add the mailto link or first try to give a User.
+            self.added_by = db.session.query(User).get(
+                current_user.uid)
         elif current_user is None:
             self.added_by = db.session.query(User).get('Guest')
 
-
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
-        self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code+str(current_user.uid))
+        self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code + str(current_user.uid) + str(urandom(5)))
 
 
 class Files(db.Model):
@@ -179,10 +180,18 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
                                       backref=db.backref('project_history_backref', lazy='dynamic', uselist=True))
     project_history_id = db.Column(db.Integer, db.ForeignKey('history.id'))
 
+
     def __init__(self, project_name: str, project_description: str, project_default_image_path: str):
         self.project_name = project_name
         self.project_description = project_description
         self.project_default_image_path = project_default_image_path
+
+
+
+##EXB-List from now on
+
+
+
 
 
 eng = db.create_all()

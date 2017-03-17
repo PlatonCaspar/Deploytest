@@ -19,12 +19,16 @@
 
                 <tr>
 
-                    <td>{{ row.username}}</td>
-                    <td>{{row.uid}}</td>
-                    <td>{{ row.email}}</td>
+                    <td>{{ row.username }}</td>
+                    <td>{{ row.uid }}</td>
+                    <td>{{ row.email }}</td>
 
 
                 </tr>
+
+                <ul class="pager">
+                    <li><a href={{ url_for('user_forgot_password') }}>Back</a></li>
+                </ul>
 
             {% endfor %}
             </tbody>
