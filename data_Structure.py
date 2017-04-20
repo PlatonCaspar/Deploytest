@@ -7,11 +7,10 @@ from passlib.hash import pbkdf2_sha256
 from flask_login import current_user, AnonymousUserMixin
 from migrate.versioning import api
 
-
 import datetime
 
 DATA_FOLDER = path.dirname(__file__)
-print(DATA_FOLDER)
+#print(DATA_FOLDER)
 # import flask
 app = Flask(__name__)
 
@@ -188,6 +187,7 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
     project_component_id = db.Column(db.Integer, db.ForeignKey('component.id'))
     project_components = db.relationship('Component', backref='project_component_bacckref', lazy='dynamic',
                                          uselist=True)
+    reservations = db.relationship('Reservation', backref=db.backref('project_reservations_backref', lazy='dynamic', uselist=True))
 
     def __init__(self, project_name: str, project_description: str, project_default_image_path: str):
         self.project_name = project_name
@@ -205,6 +205,7 @@ booking_types = [("Purchase", "Purchase"), ("Removal", "Removal"), ("Inventory",
 
 class Exb(db.Model):
     exb_number = db.Column(db.Text, primary_key=True)
+    associated_components_id = db.Column(db.Integer, db.ForeignKey('component.id'))
     associated_components = db.relationship('Component', backref='associated_components_exb', lazy='dynamic',
                                             uselist=True)
 
@@ -213,7 +214,7 @@ class Exb(db.Model):
 
 
 class A5E(db.Model):
-    #__table_name__ = 'a5e'
+    # __table_name__ = 'a5e'
     a5e_number = db.Column(db.Text, primary_key=True)
     associated_components_id = db.Column(db.Integer, db.ForeignKey('component.id'))
     associated_components = db.relationship('Component', backref='associated_components_a5e', lazy='dynamic',
@@ -225,13 +226,14 @@ class A5E(db.Model):
 
 class Component(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    manufacturer_id = db.Column(db.Text)
     type = db.Column(db.Text)
     value = db.Column(db.Integer)
     unit = db.Column(db.String(10))
     manufacturer = db.Column(db.String)
     packaging_type = db.Column(db.String)
-    #a5e_number = db.Column(db.Text, db.ForeignKey('A5E.a5e_number'))
-    exb_number = db.Column(db.Text, db.ForeignKey('exb.exb_number'))
+    a5e_number = db.relationship('A5E', backref='associated_a5e_number', lazy='dynamic', uselist=True)
+    exb_number = db.relationship('Exb', backref='associated_exb_number', lazy='dynamic', uselist=True)
     # storage_place = db.Column()
 
 
@@ -254,7 +256,10 @@ class Booking(db.Model):
     quantity = db.Column(db.Integer)
     deprecated = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer)
+    user_mail = db.Column(db.Text)
     booking_type = db.Column(db.String)
+    project_name = db.Column(db.Text, db.ForeignKey('project.project_name'))
+    project = db.relationship('Project', backref='booked_for_project', uselist=False)
 
     def __init__(self, qty: int, booking_type: str):
         self.id = id(str(urandom(15)) + str(qty))
@@ -266,6 +271,7 @@ class Booking(db.Model):
         self.booking_type = booking_type
         self.user_id = int(current_user.uid)
         self.date_time = datetime.datetime.now()
+        self.user_mail = current_user.email
 
     def date(self):
         if self.date_time:
@@ -273,14 +279,17 @@ class Booking(db.Model):
         else:
             return None
 
-    def user(self):
-        return db.session.query(User).get(self.user_id)
+        if db.session.query(User).get(self.user_id) is not None:
+            return db.session.query(User).get(self.user_id)
+        else:
+            return User(username=str(self.user_id), email=self.user_mail)
 
 
 class Reservation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date_time = db.Column(db.DateTime)
     user_id = db.Column(db.Integer)
+    user_mail = db.Column(db.Text)
     component_id = db.Column(db.Integer, db.ForeignKey('component.id'))
     component = db.relationship('Component', backref='reserved_component', uselist=False)
     quantity = db.Column(db.Integer)
@@ -291,6 +300,7 @@ class Reservation(db.Model):
         self.id = id(str(urandom(15)) + str(qty))
         self.date_time = datetime.datetime.now()
         self.user_id = current_user.uid
+        self.user_mail = current_user.email
 
     def date(self):
 
@@ -300,18 +310,41 @@ class Reservation(db.Model):
             return None
 
     def user(self):
-        return db.session.query(User).get(self.user_id)
+        if db.session.query(User).get(self.user_id) is not None:
+            return db.session.query(User).get(self.user_id)
+        else:
+            return User(username=str(self.user_id), email=self.user_mail)
+        # moved to db_migrate
+        # eng = db.create_all()
+        # create_databases()
 
-    # moved to db_migrate
-    # eng = db.create_all()
-    # create_databases()
+
+SQLALCHEMY_MIGRATE_REPO = path.join(DATA_FOLDER, "static/Database")
 
 
+#v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
+#migration = SQLALCHEMY_MIGRATE_REPO + ('/versions/%03d_migration.py' % (v+1))
+#tmp_module = imp.new_module('old_model')
+#old_model = api.create_model(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
+#exec(old_model, tmp_module.__dict__)
+#script = api.make_update_script_for_model(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO, tmp_module.meta, db.metadata)
+#open(migration, "wt").write(script)
+#api.upgrade(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
+#v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
+#print('New migration saved as ' + migration)
+#print('Current database version: ' + str(v))
 
-SQLALCHEMY_MIGRATE_REPO = path.join(DATA_FOLDER, "/static/Database/database_rep/")
-db.create_all()
-api.upgrade(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-print('Current database version: ' + str(v))
+
+#db.create_all()
+#if not path.exists(SQLALCHEMY_MIGRATE_REPO):
+#    api.create(SQLALCHEMY_MIGRATE_REPO, 'database_repository')
+#    api.version_control(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
+#else:
+#    api.version_control(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO, api.version(SQLALCHEMY_MIGRATE_REPO))
+#api.upgrade(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
+#v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
+#print('Current database version: ' + str(v))
 
 # session = flask_sqlalchemy.SQLAlchemy.(bind=eng)
+
+

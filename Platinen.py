@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from passlib.hash import pbkdf2_sha256
 from werkzeug.utils import secure_filename
 
+
 import addPlatineForm
 import data_Structure
 import delPlatineForm
@@ -19,8 +20,9 @@ import project_forms
 import registerUserForm
 import searchForm
 import view
-from data_Structure import app
+from data_Structure import app, db
 from historyForm import HistoryForm, EditHistoryForm
+
 
 nav.login_manager.anonymous_user = data_Structure.User
 
@@ -474,7 +476,7 @@ def edit_project_image(project_name):
             if project.project_default_image_path is not None:
                 os.remove(os.path.join(UPLOAD_FOLDER, project.project_default_image_path))
             project.project_default_image_path = filename
-            print(filename)
+            #print(filename)
             data_Structure.db.session.commit()
             flash('Picture was changed successfully!', 'success')
         else:
@@ -654,6 +656,7 @@ if __name__ == '__main__':
     register_renderer(app, 'own_nav_renderer', ownNavRenderer.own_nav_renderer)
     app.secret_key = os.urandom(12)
     nav.login_manager.init_app(app)
+
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
     app.run(debug=False, port=80)#, host='0.0.0.0')
