@@ -279,6 +279,7 @@ class Booking(db.Model):
         else:
             return None
 
+    def user(self):
         if db.session.query(User).get(self.user_id) is not None:
             return db.session.query(User).get(self.user_id)
         else:
