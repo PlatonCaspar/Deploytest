@@ -644,6 +644,11 @@ def user_forgot_change_password():
         flash(current_user.username + ' your password was not correct!', 'danger')
         return redirect(url_for(user_forgot_password))
 
+@app.route('/component/add/', methods=['GET'])
+def add_component():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template('add_component.html')
+
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'

@@ -1,0 +1,102 @@
+{%- extends 'base.html' %}
+{%- import 'own_wtf.html' as wtf %}
+{% block title %}
+    New Component
+{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-4 col-md-4"></div>
+        {# New component form #}
+        <div class="container container-fluid col-xs-4 col-md-4">
+            <div class="page-header">
+                <h2>
+                    <small><span class="glyphicon glyphicon-asterisk"></span></small>
+                    New Component
+                </h2>
+            </div>
+            <form action="" method="">
+
+                {# select category #}
+                <div>
+                    {# <label for="select_category">Please choose a category</label> #}
+                    <select class="form-control" id="select_category" required="required" name="select_category">
+                        <option value="0">Please select a category</option>
+                        <optgroup label="Active Components">
+                            <optgroup label="Semiconductor">
+                                <option value="1">Diode</option>
+                                <option value="2">Transistor</option>
+                                <option value="3">Integrated circuit</option>
+                                <option value="4">Optoelectronic device</option>
+                            </optgroup>
+                            <option value="5">Display</option>
+                            <option value="6">Vacum tube</option>
+                            <option value="7">Discharge device</option>
+                            <option value="8">Power source</option>
+                        </optgroup>
+                        <optgroup label="Passive Component">
+                            <option value="9">Resistor</option>
+                            <option value="10">Capacitor</option>
+                            <optgroup label="Magnetic (inductive) devices">
+                                <option value="11">Inductor</option>
+                                <option value="12">Saturable inductor</option>
+                                <option value="13">Transformer</option>
+                                <option value="14">Magnetic amplifier (toroid)</option>
+                                <option value="15">Ferrite impedance, beads</option>
+                                <option value="16">Motor / Generator</option>
+                                <option value="17">Solenoid</option>
+                                <option value="18">Loudspeaker / Microphone</option>
+                            </optgroup>
+                            <option value="19">Memristor</option>
+                            <option value="20">RC/LC Network</option>
+                            <option value="21">Transducer, sensor, detector</option>
+                            <option value="22">Antenna</option>
+                            <option value="23">Filter</option>
+                            <option value="24">Prototyping aid</option>
+                        </optgroup>
+                        <optgroup label="Electromechanical">
+                            <option value="25">Piezoelectric device, crystal, resonator</option>
+                            <option value="26">Terminals and Connectors</option>
+                            <option value="27">Cable assembly</option>
+                            <option value="28">Switch</option>
+                            <option value="29">Protection device</option>
+                            <option value="30">Mechanical accesories (Heat sink, Fan, etc...)</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <br>
+                {# EXB input #}
+                <div class="input-group">
+                    <span class="input-group-addon">Exb</span>
+                    <input id="exb_number" type="text" class="form-control" required="required" name="exb_number"
+                           placeholder="Please enter the Exb number here...">
+                </div>
+                <br>
+                <div class="input-group">
+                    <span class="input-group-addon">Description</span>
+                    <input id="description" type="text" required="required" class="form-control" name="description"
+                           placeholder="Please enter a description here...">
+                </div>
+                <br>
+                <div class="form-inline">
+                    <div class="input-group">
+                        <span class="input-group-addon">Housing</span>
+                        <select class="form-control" id="select_housing" name="select_housing" required="required">
+                            <option value="0">NA</option>
+                            <option value="1">TO</option>
+                            {# //TODO: Enter the housings to the html! #}
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Chip Form</span>
+                        <input class="form-control" id="chip-form" name="chip_form" type="text" placeholder="eg. 0402 or 0603">
+                    </div>
+                </div>
+
+
+            </form>
+        </div>
+
+    </div>
+
+{% endblock %}

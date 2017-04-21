@@ -10,7 +10,7 @@ from migrate.versioning import api
 import datetime
 
 DATA_FOLDER = path.dirname(__file__)
-#print(DATA_FOLDER)
+# print(DATA_FOLDER)
 # import flask
 app = Flask(__name__)
 
@@ -187,7 +187,8 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
     project_component_id = db.Column(db.Integer, db.ForeignKey('component.id'))
     project_components = db.relationship('Component', backref='project_component_bacckref', lazy='dynamic',
                                          uselist=True)
-    reservations = db.relationship('Reservation', backref=db.backref('project_reservations_backref', lazy='dynamic', uselist=True))
+    reservations = db.relationship('Reservation',
+                                   backref=db.backref('project_reservations_backref', lazy='dynamic', uselist=True))
 
     def __init__(self, project_name: str, project_description: str, project_default_image_path: str):
         self.project_name = project_name
@@ -199,8 +200,29 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
 
 
 packaging_types = [("Cut Tape", "Cut Tape"), ("Reel", "Reel"), ("Tray", "Tray"), ("Tube", "Tube"), ("Bulk", "Bulk")]
-component_types = []
+
 booking_types = [("Purchase", "Purchase"), ("Removal", "Removal"), ("Inventory", "Inventory")]
+
+# be sure to change the categories in the html file as well!
+categories = [(1, "Diode"), (2, "Transistor"), (3, "Integrated circuit"), (4, "Optoelectronic device"), (5, "Display"),
+              (6, "Vacuum Tube"), (7, "Discharge device"), (8, "Power source"), (9, "Resistor"), (10, "Capacitor"),
+              (11, "Inductor"),
+              (12, "Saturable inductor"), (13, "Transformer"), (14, "Magnetic amplifier (toroid)"),
+              (15, "Ferrite impedance, bedas"),
+              (16, "Motor / Generator"), (17, "Solenoid"), (18, "Loudspeaker / Microphone"), (19, "Memristor"),
+              (20, "RC / LC Network"),
+              (21, "Transducer, seonsor, detector"), (22, "Antenna"), (23, "Filter"), (24, "Prototyping aid"),
+              (25, "Piezoelectric device, crystal, resonator"),
+              (26, "Terminals and Connectors"), (27, "Cable assembly"), (28, "Switch"), (29, "Protection device"),
+              (30, "Mechanical accesories (Heat sink, Fan, etc...)")]
+#be sure to change the housings in the html as well!
+housings = [(0, "NA"), (1, "TO"), (2, "PFM"), (3, "SIP"), (4, "ZIP"), (5, "DIL"), (6, "DIP"),
+            (7, "DPAK/TO"), (8, "SOD"), (9, "DFP"), (10, "TFP"), (11, "QFP"),
+            (12, "QFN (MLF/MFP)"), (13, "SOP"), (14, "SOIC"), (15, "SOJ"), (16, "LGA"),
+            (17, "PGA"), (18, "BGA"), (19, "TCP")]
+
+#String of Chip forms:
+chip_forms = "010050201040205040603080509071008120612101411151516081812182520102220231325122515271628241917292031113931401840404320433543494424452745404723482555505727614565617565"
 
 
 class Exb(db.Model):
@@ -226,6 +248,10 @@ class A5E(db.Model):
 
 class Component(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.Text)
+    smd = db.Column(db.Boolean)
+    housing_id = db.Column(db.Integer)
+    category_id = db.Column(db.Integer)
     manufacturer_id = db.Column(db.Text)
     type = db.Column(db.Text)
     value = db.Column(db.Integer)
@@ -315,37 +341,35 @@ class Reservation(db.Model):
             return db.session.query(User).get(self.user_id)
         else:
             return User(username=str(self.user_id), email=self.user_mail)
-        # moved to db_migrate
-        # eng = db.create_all()
-        # create_databases()
+            # moved to db_migrate
+            # eng = db.create_all()
+            # create_databases()
 
 
 SQLALCHEMY_MIGRATE_REPO = path.join(DATA_FOLDER, "static/Database")
 
 
-#v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-#migration = SQLALCHEMY_MIGRATE_REPO + ('/versions/%03d_migration.py' % (v+1))
-#tmp_module = imp.new_module('old_model')
-#old_model = api.create_model(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-#exec(old_model, tmp_module.__dict__)
-#script = api.make_update_script_for_model(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO, tmp_module.meta, db.metadata)
-#open(migration, "wt").write(script)
-#api.upgrade(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-#v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-#print('New migration saved as ' + migration)
-#print('Current database version: ' + str(v))
+# v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
+# migration = SQLALCHEMY_MIGRATE_REPO + ('/versions/%03d_migration.py' % (v+1))
+# tmp_module = imp.new_module('old_model')
+# old_model = api.create_model(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
+# exec(old_model, tmp_module.__dict__)
+# script = api.make_update_script_for_model(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO, tmp_module.meta, db.metadata)
+# open(migration, "wt").write(script)
+# api.upgrade(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
+# v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
+# print('New migration saved as ' + migration)
+# print('Current database version: ' + str(v))
 
 
-#db.create_all()
-#if not path.exists(SQLALCHEMY_MIGRATE_REPO):
+# db.create_all()
+# if not path.exists(SQLALCHEMY_MIGRATE_REPO):
 #    api.create(SQLALCHEMY_MIGRATE_REPO, 'database_repository')
 #    api.version_control(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-#else:
+# else:
 #    api.version_control(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO, api.version(SQLALCHEMY_MIGRATE_REPO))
-#api.upgrade(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-#v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-#print('Current database version: ' + str(v))
+# api.upgrade(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
+# v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
+# print('Current database version: ' + str(v))
 
 # session = flask_sqlalchemy.SQLAlchemy.(bind=eng)
-
-
