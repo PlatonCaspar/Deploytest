@@ -5,17 +5,18 @@
 {% endblock %}
 {% block content %}
 
+
     <div class="row">
-        <div class="col-xs-4 col-md-4"></div>
+        <div class="col-xs-2 col-md-2"></div>
         {# New component form #}
-        <div class="container container-fluid col-xs-4 col-md-4">
+        <div class="container container-fluid col-xs-6 col-md-6">
             <div class="page-header">
                 <h2>
                     <small><span class="glyphicon glyphicon-asterisk"></span></small>
                     New Component
                 </h2>
             </div>
-            <form action="" method="">
+            <form action="{{ url_for("create_component") }}" method="POST" enctype=multipart/form-data>
 
                 {# select category #}
                 <div>
@@ -68,8 +69,14 @@
                 {# EXB input #}
                 <div class="input-group">
                     <span class="input-group-addon">Exb</span>
-                    <input id="exb_number" type="text" class="form-control" required="required" name="exb_number"
+                    <input id="exb_number" type="text" class="form-control" name="exb_number"
                            placeholder="Please enter the Exb number here...">
+                </div>
+                <br>
+                <div class="input-group">
+                    <span class="input-group-addon">Please select the division the component should belong to</span>
+                    <label class="btn btn-default input-group-addon " type="button"><input class="radio-inline" id="division_select" name="division_select" value="SDI" type="radio">SDI</label>
+                    <label class="btn btn-default input-group-addon" type="button"><input class="radio-inline" id="division_select" name="division_select" value="IPE" type="radio">IPE</label>
                 </div>
                 <br>
                 <div class="input-group">
@@ -81,22 +88,163 @@
                 <div class="form-inline">
                     <div class="input-group">
                         <span class="input-group-addon">Housing</span>
-                        <select class="form-control" id="select_housing" name="select_housing" required="required">
-                            <option value="0">NA</option>
+                        <select class="form-control" id="select_housing" name="select_housing">
+                            <option value="0">-- NA --</option>
                             <option value="1">TO</option>
-                            {# //TODO: Enter the housings to the html! #}
+                            <option value="2">PFM</option>
+                            <option value="3">SIP</option>
+                            <option value="4">ZIP</option>
+                            <option value="5">DIL</option>
+                            <option value="6">DIP</option>
+                            <option value="7">DPAK/TO</option>
+                            <option value="8">SOD</option>
+                            <option value="9">DFP</option>
+                            <option value="10">TFP</option>
+                            <option value="11">QFP</option>
+                            <option value="12">QFN (MLF/MFP)</option>
+                            <option value="13">SOP</option>
+                            <option value="14">SOIC</option>
+                            <option value="15">SOJ</option>
+                            <option value="16">LGA</option>
+                            <option value="17">PGA</option>
+                            <option value="18">BGA</option>
+                            <option value="19">TCP</option>
+                            <option value="20">PLCC</option>
+
                         </select>
                     </div>
                     <div class="input-group">
                         <span class="input-group-addon">Chip Form</span>
-                        <input class="form-control" id="chip-form" name="chip_form" type="text" placeholder="eg. 0402 or 0603">
+                        <input class="form-control" id="chip-form" name="chip_form" type="text"
+                               placeholder="eg. 0402 or 0603">
+                    </div>
+                    <div class="form-inline input-group">
+                        <span class="input-group-addon">SMD/THD</span>
+                        <select class="form-control" id="select_smd_thd" name="select_smd_thd">
+                            <option value="SMD">SMD</option>
+                            <option value="THD">THD</option>
+                            <option value="NA">-- NA --</option>
+                        </select>
+                    </div>
+                    <div class="form-inline input-group">
+                        <span class="input-group-addon">Packaging Type</span>
+                        <select class="form-control" id="packaging_type" name="packaging_type">
+                            <option value="4">Bulk</option>
+                            <option value="0">Cut Tape</option>
+                            <option value="1">Reel</option>
+                            <option value="2">Tray</option>
+                            <option value="3">Tube</option>
+
+                        </select>
                     </div>
                 </div>
+                <br>
+                <div class="input-group">
+                    <span class="input-group-addon">Manufacturer Identification</span>
+                    <input class="form-control" id="man_id" name="man_id" type="text" required="required"
+                           placeholder="Please enter the Manufacturer ID of the component....">
+                </div>
+                <br>
+                <div class="input-group">
+                    <span class="input-group-addon">Manufacturer</span>
+                    <input class="form-control" id="manufacturer" name="manufacurer" type="text" required="required"
+                           placeholder="Please enter the Manufacturer's name of the component....">
+                </div>
+                <br>
+                <div class="form-inline">
+                    <div class="input-group">
+                        <span class="input-group-addon">Scale</span>
+                        <select class="form-control" id="scale" name="scale">
+                            <option value="0">-- NA --</option>
+                            <option value="1">G</option>
+                            <option value="2">M</option>
+                            <option value="3">k</option>
+                            <option value="4">m</option>
+                            <option value="5">µ</option>
+                            <option value="6">n</option>
+                            <option value="7">p</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Unit</span>
+                        <select class="form-control" id="unit" name="unit">
+                            <option value="0">-- NA --</option>
+                            <option value="1">Ohm</option>
+                            <option value="2">Farad</option>
+                            <option value="3">Henry</option>
+                            <option value="4">dB</option>
 
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Value</span>
+                        <input class="form-control" type="text" id="value" name="value"
+                               placeholder="Please enter the value here...">
+                    </div>
+
+
+                    <div class="input-group">
+                        <label class="input-group-btn">
+                            <span class="btn btn-default">
+                            <input id="datasheet" name="datasheet" type="file"
+                                   onchange="change_file_input(this)" style="display: none;">Select datasheet...
+                            </span>
+                        </label>
+                        <input type="text" placeholder="Select a datasheet..." class="form-control" id="datasheet_name"
+                               readonly>
+                        {# Clear button for datasheet input #}
+                        <div class="input-group-btn">
+                            <button id="clear_file_btn" type="button" onclick="clear_file_input(this)"
+                                    class="btn btn-danger disabled">
+                                <span class="glyphicon glyphicon-remove"></span>
+                            </button>
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <br>
+                <button class="btn btn-success btn-block" type="submit">Create</button>
 
             </form>
+
+
         </div>
 
-    </div>
+
+        <script>
+
+            //More beautiful select field :)
+            function change_file_input(file_input) {
+                var text_box = document.getElementById("datasheet_name");
+                //var file_path = document.getElementById("datasheet");
+                var file_path = file_input.value;
+                var file_btn = document.getElementById("clear_file_btn");
+                //print(file_path);
+                if (file_path) {
+                    var startIndex = (file_path.indexOf('\\') >= 0 ? file_path.lastIndexOf('\\') : file_path.lastIndexOf('/'));
+                    var filename = file_path.substring(startIndex);
+                    if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
+                        filename = filename.substring(1);
+                    }
+                    //filename = "Hallo"
+                    text_box.value=filename;//(name = "value", value = filename);
+                    file_btn.setAttribute("class", "btn btn-danger")
+                }
+
+            }
+
+            //clear button action
+            function clear_file_input(clear_btn) {
+                var file_input = document.getElementById("datasheet");
+                file_input.value = "";
+                var file_name_box = document.getElementById("datasheet_name");
+                file_name_box.value = "";
+                if (file_input.value === "") {
+                    clear_btn.setAttribute("class", "btn btn-danger disabled");
+                }
+            }
+        </script>
 
 {% endblock %}

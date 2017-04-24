@@ -9,7 +9,6 @@ from flask_sqlalchemy import SQLAlchemy
 from passlib.hash import pbkdf2_sha256
 from werkzeug.utils import secure_filename
 
-
 import addPlatineForm
 import data_Structure
 import delPlatineForm
@@ -23,12 +22,14 @@ import view
 from data_Structure import app, db
 from historyForm import HistoryForm, EditHistoryForm
 
-
 nav.login_manager.anonymous_user = data_Structure.User
 
 RELATIVE_PICTURE_PATH = 'static/Pictures'
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), RELATIVE_PICTURE_PATH)
 DATA_FOLDER = os.path.dirname(os.path.abspath(__file__))
+
+RELATIVE_DATA_UPLOAD_FOLDER = 'static/data_folder'
+DATA_UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), RELATIVE_DATA_UPLOAD_FOLDER)
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 
@@ -309,7 +310,6 @@ def add_project():
                 file_id = id(file.filename)
                 filename = secure_filename(str(file_id) + file.filename)
 
-
                 image_path = os.path.join(UPLOAD_FOLDER, filename)
                 file.save(image_path)
 
@@ -450,7 +450,7 @@ def delete_project_image(project_name):
     # image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
     project = data_Structure.db.session.query(data_Structure.Project).get(project_name)
     img_id = project.project_default_image_path
-    #img_id = None
+    # img_id = None
     project.project_default_image_path = None
     if img_id is not None:
         os.remove(os.path.join(UPLOAD_FOLDER, img_id.replace('_', '\\')))
@@ -476,7 +476,7 @@ def edit_project_image(project_name):
             if project.project_default_image_path is not None:
                 os.remove(os.path.join(UPLOAD_FOLDER, project.project_default_image_path))
             project.project_default_image_path = filename
-            #print(filename)
+            # print(filename)
             data_Structure.db.session.commit()
             flash('Picture was changed successfully!', 'success')
         else:
@@ -614,7 +614,7 @@ def delete_myself():
 def user_forgot_password():
     nav.nav.register_element("frontend_top", view.nav_bar())
     flash('Pleas enter the uid, you can find it if you look for the user at ' + '<a href="' + url_for(
-        'show_registered_users')+'">Registered Users</a>', 'info')
+        'show_registered_users') + '">Registered Users</a>', 'info')
     return render_template('forgot_password.html')
 
 
@@ -635,7 +635,7 @@ def user_forgot_change_password():
         if pbkdf2_sha256.verify(request.form.get('new_password_2'), new_password):
             dumb_user.password_hashed_and_salted = new_password
             data_Structure.db.session.commit()
-            flash('password of '+dumb_user.username+' was changed successfully', 'success')
+            flash('password of ' + dumb_user.username + ' was changed successfully', 'success')
             return redirect(url_for('start'))
         else:
             flash('The new passwords did not match!', 'danger')
@@ -644,10 +644,68 @@ def user_forgot_change_password():
         flash(current_user.username + ' your password was not correct!', 'danger')
         return redirect(url_for(user_forgot_password))
 
+
 @app.route('/component/add/', methods=['GET'])
 def add_component():
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('add_component.html')
+
+
+@app.route('/component/add/do/create/', methods=['POST'])
+def create_component():
+    # flash("create_component was called!", "danger")
+    print(request.form)
+    print(request.files)
+
+    if request.form.get('description'):
+        description = request.form.get('description')
+    else:
+        description = None
+        flash('The field description is required!', "danger")
+        return redirect(url_for('add_component'))
+
+    if request.form.get('select_smd_thd') == 'SMD':
+        smd = True
+    else:
+        smd = False
+
+    if request.form.get('select_housing') is not '':
+        housing_id = int(request.form.get('select_housing'))
+    else:
+        housing_id = None
+        flash(
+            "you did something interesting. please remember your action and mail to" +
+            " <a href=\"mailto:stefan.steinmueller@siemens.com?Subject=create_component_error\">Stefan Steinmueller</a>",
+            "danger")
+        return redirect(url_for('add_component'))
+
+    if request.form.get('select_category') is not '0':
+        category_id = int(request.form.get('select_category'))
+    elif request.form.get('select_category') is '0':
+        category_id = 0
+        flash("Please select a category!", "warning")
+        return redirect(url_for('add_component'))
+
+    if request.form.get('man_id') is not '':
+        man_id = request.form.get('man_id')
+    else:
+        flash("Please enter the manufacturer ID", "warning")
+        return redirect(url_for('add_component'))
+    if request.form.get('manufacturer') is not '':
+        manufacturer = request.form.get('manufacturer')
+    else:
+        flash("Please enter the name of a manufacturer!")
+        return redirect(url_for('add_component'))
+    if request.form.get('packaging_type') is not '':
+        packaging_id = int(request.form.get('packaging_type'))
+    else:
+        flash("you did something interesting. please remember your action and mail to" +
+              " <a href=\"mailto:stefan.steinmueller@siemens.com?Subject=create_component_error_packaging_type\">Stefan Steinmueller</a>",
+              "danger")
+        return redirect(url_for('add_component'))
+
+
+    return redirect(url_for('add_component'))
 
 
 if __name__ == '__main__':
@@ -664,5 +722,5 @@ if __name__ == '__main__':
 
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
-    app.run(debug=False, port=80)#, host='0.0.0.0')
+    app.run(debug=False, port=80)  # , host='0.0.0.0')
 # app.run(debug=False, port=80, host='0.0.0.0')

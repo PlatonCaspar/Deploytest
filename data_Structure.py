@@ -199,7 +199,7 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
 ##EXB-List from now on
 
 
-packaging_types = [("Cut Tape", "Cut Tape"), ("Reel", "Reel"), ("Tray", "Tray"), ("Tube", "Tube"), ("Bulk", "Bulk")]
+packaging_types = [("0", "Cut Tape"), ("1", "Reel"), ("2", "Tray"), ("3", "Tube"), ("4", "Bulk")]
 
 booking_types = [("Purchase", "Purchase"), ("Removal", "Removal"), ("Inventory", "Inventory")]
 
@@ -215,14 +215,19 @@ categories = [(1, "Diode"), (2, "Transistor"), (3, "Integrated circuit"), (4, "O
               (25, "Piezoelectric device, crystal, resonator"),
               (26, "Terminals and Connectors"), (27, "Cable assembly"), (28, "Switch"), (29, "Protection device"),
               (30, "Mechanical accesories (Heat sink, Fan, etc...)")]
-#be sure to change the housings in the html as well!
+# be sure to change the housings in the html as well!
 housings = [(0, "NA"), (1, "TO"), (2, "PFM"), (3, "SIP"), (4, "ZIP"), (5, "DIL"), (6, "DIP"),
             (7, "DPAK/TO"), (8, "SOD"), (9, "DFP"), (10, "TFP"), (11, "QFP"),
             (12, "QFN (MLF/MFP)"), (13, "SOP"), (14, "SOIC"), (15, "SOJ"), (16, "LGA"),
-            (17, "PGA"), (18, "BGA"), (19, "TCP")]
+            (17, "PGA"), (18, "BGA"), (19, "TCP"), (20, "PLCC")]
 
-#String of Chip forms:
+# String of Chip forms:
 chip_forms = "010050201040205040603080509071008120612101411151516081812182520102220231325122515271628241917292031113931401840404320433543494424452745404723482555505727614565617565"
+
+# Units
+unit = [(0, ""), (1, "Ohm"), (2, "Farad"), (3, "Henry"), (4, "dB")]
+# unit scale
+scale = [(0, ""), (1, "G"), (2, "M"), (3, "k"), (4, "m"), (5, "µ"), (6, "n"), (7, "p")]
 
 
 class Exb(db.Model):
@@ -254,12 +259,14 @@ class Component(db.Model):
     category_id = db.Column(db.Integer)
     manufacturer_id = db.Column(db.Text)
     type = db.Column(db.Text)
-    value = db.Column(db.Integer)
-    unit = db.Column(db.String(10))
+    value = db.Column(db.Text)
+    # unit = db.Column(db.String(10))
     manufacturer = db.Column(db.String)
     packaging_type = db.Column(db.String)
     a5e_number = db.relationship('A5E', backref='associated_a5e_number', lazy='dynamic', uselist=True)
     exb_number = db.relationship('Exb', backref='associated_exb_number', lazy='dynamic', uselist=True)
+    datasheet_id = db.Column(db.Integer, db.ForeignKey('documents.id'))
+    datasheet = db.relationship('Documents', backref='associated_datasheet', uselist=False)
     # storage_place = db.Column()
 
 
