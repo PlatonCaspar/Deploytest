@@ -1,0 +1,25 @@
+{%- extends 'base.html' %}
+
+{% block title %}
+    {{ component.exb_number.exb_number }}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-xs-4 col-md-4">
+        <div class="container">
+            <span class="page-header"><h3>{{ component.exb_number.exb_number }}</h3></span>
+            <address>
+                Description: {{ component.description }}<br>
+                Category: {{ component.category() }}<br>
+                Value: {{ component.value }}<br><br>
+                Manufacturer: {{ component.manufacturer }} // Manufacturer ID: {{ component.manufacturer_id }}<br>
+                Package: {{ component.package() }}<br>
+
+            </address>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

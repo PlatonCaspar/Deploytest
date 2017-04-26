@@ -199,53 +199,75 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
 ##EXB-List from now on
 
 
-packaging_types = [("0", "Cut Tape"), ("1", "Reel"), ("2", "Tray"), ("3", "Tube"), ("4", "Bulk")]
+packaging_types = dict([("0", "Cut Tape"), ("1", "Reel"), ("2", "Tray"), ("3", "Tube"), ("4", "Bulk")])
 
-booking_types = [("Purchase", "Purchase"), ("Removal", "Removal"), ("Inventory", "Inventory")]
+booking_types = dict([("Purchase", "Purchase"), ("Removal", "Removal"), ("stocktaking", "Stocktaking")])
 
 # be sure to change the categories in the html file as well!
-categories = [(1, "Diode"), (2, "Transistor"), (3, "Integrated circuit"), (4, "Optoelectronic device"), (5, "Display"),
-              (6, "Vacuum Tube"), (7, "Discharge device"), (8, "Power source"), (9, "Resistor"), (10, "Capacitor"),
-              (11, "Inductor"),
-              (12, "Saturable inductor"), (13, "Transformer"), (14, "Magnetic amplifier (toroid)"),
-              (15, "Ferrite impedance, bedas"),
-              (16, "Motor / Generator"), (17, "Solenoid"), (18, "Loudspeaker / Microphone"), (19, "Memristor"),
-              (20, "RC / LC Network"),
-              (21, "Transducer, seonsor, detector"), (22, "Antenna"), (23, "Filter"), (24, "Prototyping aid"),
-              (25, "Piezoelectric device, crystal, resonator"),
-              (26, "Terminals and Connectors"), (27, "Cable assembly"), (28, "Switch"), (29, "Protection device"),
-              (30, "Mechanical accesories (Heat sink, Fan, etc...)")]
+categories = dict(
+    [(1, "Diode"), (2, "Transistor"), (3, "Integrated circuit"), (4, "Optoelectronic device"), (5, "Display"),
+     (6, "Vacuum Tube"), (7, "Discharge device"), (8, "Power source"), (9, "Resistor"), (10, "Capacitor"),
+     (11, "Inductor"),
+     (12, "Saturable inductor"), (13, "Transformer"), (14, "Magnetic amplifier (toroid)"),
+     (15, "Ferrite impedance, bedas"),
+     (16, "Motor / Generator"), (17, "Solenoid"), (18, "Loudspeaker / Microphone"), (19, "Memristor"),
+     (20, "RC / LC Network"),
+     (21, "Transducer, seonsor, detector"), (22, "Antenna"), (23, "Filter"), (24, "Prototyping aid"),
+     (25, "Piezoelectric device, crystal, resonator"),
+     (26, "Terminals and Connectors"), (27, "Cable assembly"), (28, "Switch"), (29, "Protection device"),
+     (30, "Mechanical accesories (Heat sink, Fan, etc...)")])
 # be sure to change the housings in the html as well!
-housings = [(0, "NA"), (1, "TO"), (2, "PFM"), (3, "SIP"), (4, "ZIP"), (5, "DIL"), (6, "DIP"),
-            (7, "DPAK/TO"), (8, "SOD"), (9, "DFP"), (10, "TFP"), (11, "QFP"),
-            (12, "QFN (MLF/MFP)"), (13, "SOP"), (14, "SOIC"), (15, "SOJ"), (16, "LGA"),
-            (17, "PGA"), (18, "BGA"), (19, "TCP"), (20, "PLCC")]
+housings = dict([(0, "NA"), (1, "TO"), (2, "PFM"), (3, "SIP"), (4, "ZIP"), (5, "DIL"), (6, "DIP"),
+                 (7, "DPAK/TO"), (8, "SOD"), (9, "DFP"), (10, "TFP"), (11, "QFP"),
+                 (12, "QFN (MLF/MFP)"), (13, "SOP"), (14, "SOIC"), (15, "SOJ"), (16, "LGA"),
+                 (17, "PGA"), (18, "BGA"), (19, "TCP"), (20, "PLCC")])
 
 # String of Chip forms:
 chip_forms = "010050201040205040603080509071008120612101411151516081812182520102220231325122515271628241917292031113931401840404320433543494424452745404723482555505727614565617565"
 
 # Units
-unit = [(0, ""), (1, "Ohm"), (2, "Farad"), (3, "Henry"), (4, "dB")]
+unit = dict([(0, ""), (1, "Ohm"), (2, "Farad"), (3, "Henry"), (4, "dB")])
 # unit scale
-scale = [(0, ""), (1, "G"), (2, "M"), (3, "k"), (4, "m"), (5, "µ"), (6, "n"), (7, "p")]
+scale = dict([(0, ""), (1, "G"), (2, "M"), (3, "k"), (4, "m"), (5, "µ"), (6, "n"), (7, "p")])
 
 
 class Exb(db.Model):
     exb_number = db.Column(db.Text, primary_key=True)
     associated_components_id = db.Column(db.Integer, db.ForeignKey('component.id'))
-    associated_components = db.relationship('Component', backref='associated_components_exb', lazy='dynamic',
-                                            uselist=True)
+    associated_components = db.relationship('Component', backref='associated_components_exb',
+                                            uselist=False)
 
-    def __init__(self, exb_number):
-        self.exb_number = exb_number
+    def __init__(self, exb_number=None, division=None):
+
+        if exb_number is not None:
+            self.exb_number = exb_number
+
+        elif division is not None and exb_number is None:
+            if division == 'SDI':
+                all_exb_sdi = db.session.query(Exb).filter(Exb.exb_number.contains("EXB01")).all()
+                biggest = 0
+                for exb in all_exb_sdi:
+                    if biggest < int(exb.exb_number.split("EXB01")[1]):
+                        biggest = int(exb.exb_number.split("EXB01")[1])
+                new_exb_numer_counter = biggest + 1
+                self.exb_number = "EXB01" + str(new_exb_numer_counter).zfill(4)
+                print(self.exb_number)
+            elif division == 'IPE':
+                all_exb_ipe = db.session.query(Exb).filter(Exb.exb_number.contains("EXB00")).all()
+                biggest = 0
+                for exb in all_exb_ipe:
+                    if biggest < int(exb.exb_number.split("EXB00")[1]):
+                        biggest = int(exb.exb_number.split("EXB00")[1])
+                new_exb_numer_counter = biggest + 1
+                self.exb_number = "EXB00" + str(new_exb_numer_counter).zfill(4)
 
 
 class A5E(db.Model):
     # __table_name__ = 'a5e'
     a5e_number = db.Column(db.Text, primary_key=True)
     associated_components_id = db.Column(db.Integer, db.ForeignKey('component.id'))
-    associated_components = db.relationship('Component', backref='associated_components_a5e', lazy='dynamic',
-                                            uselist=True)
+    associated_components = db.relationship('Component', backref='associated_components_a5e',
+                                            uselist=False)
 
     def __init(self, a5e_number):
         self.a5e_number = a5e_number
@@ -258,27 +280,58 @@ class Component(db.Model):
     housing_id = db.Column(db.Integer)
     category_id = db.Column(db.Integer)
     manufacturer_id = db.Column(db.Text)
-    type = db.Column(db.Text)
+    chip_form_id = db.Column(db.Text)
     value = db.Column(db.Text)
     # unit = db.Column(db.String(10))
     manufacturer = db.Column(db.String)
-    packaging_type = db.Column(db.String)
-    a5e_number = db.relationship('A5E', backref='associated_a5e_number', lazy='dynamic', uselist=True)
-    exb_number = db.relationship('Exb', backref='associated_exb_number', lazy='dynamic', uselist=True)
+    packaging_id = db.Column(db.Integer)
+    a5e_number = db.relationship('A5E', backref='associated_a5e_number', uselist=False)
+    exb_number = db.relationship('Exb', backref='associated_exb_number', uselist=False)
     datasheet_id = db.Column(db.Integer, db.ForeignKey('documents.id'))
     datasheet = db.relationship('Documents', backref='associated_datasheet', uselist=False)
+    taken_out = db.Column(db.Boolean, default=False)
+
     # storage_place = db.Column()
+
+    def __init__(self):
+        self.id = id(urandom(10))
+
+    def housing(self):
+        return housings[self.housing_id]
+
+    def category(self):
+        return categories[self.category_id]
+
+    def package(self):
+        return packaging_types[str(self.packaging_id)]
+
+    def stock(self):
+        qty_stock = 0
+        bookings = Booking.query.filter_by(
+            deprecated=False, component_id=self.id).all()
+        for booking in bookings:
+            qty_stock += booking.quantity
+        return qty_stock
+
+
+
+    def reserved(self):
+        qty_stock = 0
+        bookings = db.session.query(Reservation).join(Component, Component.id == Reservation.component_id).all()
+        for booking in bookings:
+            qty_stock += booking.quantity
+        return qty_stock
 
 
 class Documents(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    file_path = db.Column(db.Text)
+    file_name = db.Column(db.Text)
     description = db.Column(db.Text)
 
-    def __init__(self, file_path: str, description='None'):
-        self.id = id(file_path + str(urandom(5)))
+    def __init__(self, file_name: str, description='None'):
+        self.id = id(file_name + str(urandom(5)))
         self.description = description
-        self.file_path = file_path
+        self.file_name = file_name
 
 
 class Booking(db.Model):

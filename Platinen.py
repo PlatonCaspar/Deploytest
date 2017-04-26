@@ -49,6 +49,13 @@ def delete_project():
     pass
 
 
+def clean_exb_scan(exb_scan):
+    exb_scan = exb_scan.split('@')
+    exb_scan = exb_scan[1].split('P')[1]
+
+    return exb_scan
+
+
 @nav.login_manager.user_loader
 def load_user(user_id):
     return data_Structure.User.get(user_id)
@@ -654,31 +661,32 @@ def add_component():
 @app.route('/component/add/do/create/', methods=['POST'])
 def create_component():
     # flash("create_component was called!", "danger")
-    print(request.form)
-    print(request.files)
-
+    # print(request.form)
+    # print(request.files)
+    new_component = data_Structure.Component()
     if request.form.get('description'):
         description = request.form.get('description')
+
     else:
         description = None
         flash('The field description is required!', "danger")
         return redirect(url_for('add_component'))
-
+    new_component.description = description
     if request.form.get('select_smd_thd') == 'SMD':
         smd = True
     else:
         smd = False
-
+    new_component.smd = smd
     if request.form.get('select_housing') is not '':
         housing_id = int(request.form.get('select_housing'))
     else:
-        housing_id = None
+        # housing_id = None
         flash(
             "you did something interesting. please remember your action and mail to" +
             " <a href=\"mailto:stefan.steinmueller@siemens.com?Subject=create_component_error\">Stefan Steinmueller</a>",
             "danger")
         return redirect(url_for('add_component'))
-
+    new_component.housing_id = housing_id
     if request.form.get('select_category') is not '0':
         category_id = int(request.form.get('select_category'))
     elif request.form.get('select_category') is '0':
@@ -686,26 +694,146 @@ def create_component():
         flash("Please select a category!", "warning")
         return redirect(url_for('add_component'))
 
+    new_component.category_id = category_id
     if request.form.get('man_id') is not '':
         man_id = request.form.get('man_id')
     else:
         flash("Please enter the manufacturer ID", "warning")
         return redirect(url_for('add_component'))
+    new_component.manufacturer_id = man_id
     if request.form.get('manufacturer') is not '':
         manufacturer = request.form.get('manufacturer')
+        new_component.manufacturer = manufacturer
     else:
         flash("Please enter the name of a manufacturer!")
         return redirect(url_for('add_component'))
+    new_component.manufacturer = manufacturer
     if request.form.get('packaging_type') is not '':
         packaging_id = int(request.form.get('packaging_type'))
     else:
+        packaging_id = None
         flash("you did something interesting. please remember your action and mail to" +
               " <a href=\"mailto:stefan.steinmueller@siemens.com?Subject=create_component_error_packaging_type\">Stefan Steinmueller</a>",
               "danger")
+    new_component.packaging_id = packaging_id
+    value = ''
+
+    if request.form.get('value') is not '':
+        value += str(request.form.get('value'))
+
+    if request.form.get('scale') is not '':
+        value += str(data_Structure.scale[int(request.form.get('scale'))])
+    if request.form.get('unit') is not '':
+        value += str(data_Structure.unit[int(request.form.get('unit'))])
+        # print("value  : " + value)
+    new_component.value = value
+    if request.form.get('chip_form') is not '':
+        chip_form = request.form.get('chip_form')
+        if chip_form not in data_Structure.chip_forms:
+
+            new_component.chip_form = ''
+        else:
+            new_component.chip_form = chip_form
+
+    # datasheet = None
+    if 'datasheet' not in request.files:
+        flash('No datasheet was selected!', "warning")
+
+    elif 'datasheet' in request.files:
+        file = request.files['datasheet']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No datasheet was selected!', "warning")
+
+        if file:
+            filename = str(id(os.urandom(6))) + secure_filename(file.filename)
+            filepath = os.path.join(DATA_UPLOAD_FOLDER, filename)
+            file.save(filepath)
+            datasheet = data_Structure.Documents(filename)
+            data_Structure.db.session.add(datasheet)
+            new_component.datasheet = datasheet
+
+    ## EXB Number
+
+    exb = request.form.get('exb_number')
+    if '@' in exb:
+        exb = clean_exb_scan(exb)
+    else:
+        exb = data_Structure.Exb()
+    # print("exb :" + exb)
+    if exb is '':
+        if request.form.get('division_select') is None:
+            flash("Please enter either a EXB number or your division!", "warning")
+            return redirect(url_for('add_component'))
+            # print('new_exb should be called!')
+        exb_number = data_Structure.Exb(division=request.form.get('division_select'))
+    elif data_Structure.db.session.query(data_Structure.Exb).get(exb) is None:
+        exb_number = data_Structure.Exb(exb_number=exb)
+
+
+    else:
+        flash("The Exb Number does already exist. Please take another one!", "warning")
         return redirect(url_for('add_component'))
+    data_Structure.db.session.add(exb_number)
+    new_component.exb_number = exb_number
 
-
+    data_Structure.db.session.add(new_component)
+    data_Structure.db.session.commit()
     return redirect(url_for('add_component'))
+
+
+@app.route('/component/show/', methods=['GET'])
+def show_all_components():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    all_components = data_Structure.db.session.query(data_Structure.Component).all()
+    return render_template('component_table.html', components=all_components)
+
+
+@app.route('/components/show/<component_id>/', methods=['GET'])
+def show_component(component_id):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    component = data_Structure.Component.query.get(component_id)
+    return render_template('component.html', component=component)
+
+
+@app.route('/component/stocktaking/stock/', methods=['GET'])
+@app.route('/component/stocktaking/stock/<component_id>/', methods=['GET'])
+def stocktaking_stock(component_id=None):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template('stocktaking.html')
+
+
+@login_required
+@app.route('/component/stocktaking/stock/post/', methods=['POST'])
+def stocktaking_stock_do():
+    exb_number = request.form.get('exb_number')
+    if '@' in exb_number:
+        exb_number = clean_exb_scan(exb_number)
+    component = data_Structure.db.session.query(data_Structure.Exb).get(exb_number)
+
+    if component is None:
+        flash("Some error occured, maybe your EXB number is invalid?")
+        return redirect(url_for('stocktaking_stock'))
+    else:
+        component = component.associated_components
+    if component.taken_out:  # if this component is taken out, it is not very good to count it while its away
+        flash("Component was taken out by " + data_Structure.db.session.query(data_Structure.Booking).filter_by(
+            component_id=component.id).order_by(data_Structure.Booking.date_time).first().user().username, "danger")
+        return redirect(url_for('stocktaking_stock'))
+    for b in data_Structure.Booking.query.filter_by(deprecated=False).join(data_Structure.Component,
+                                                                           data_Structure.Booking.component_id == component.id).all():
+        b.deprecated = True
+    booking = data_Structure.Booking(int(request.form.get('qty')), "Stocktaking")
+    booking.component = component
+    data_Structure.db.session.add(booking)
+    data_Structure.db.session.commit()
+    return redirect(url_for('stocktaking_stock'))
+
+
+@app.route('/component/stocktaking/lab/<component_id>/', methods=['GET'])
+def stocktaking_lab(component_id=None):
+    pass
 
 
 if __name__ == '__main__':
