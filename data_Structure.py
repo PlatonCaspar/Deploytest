@@ -294,7 +294,7 @@ class Component(db.Model):
     # storage_place = db.Column()
 
     def __init__(self):
-        self.id = id(urandom(10))
+        self.id = id(str(urandom(10))+datetime.datetime.now().strftime('%m.%d.%y %H:%M:%S'))
 
     def housing(self):
         return housings[self.housing_id]

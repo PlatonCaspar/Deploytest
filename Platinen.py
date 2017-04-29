@@ -449,6 +449,15 @@ def show_project(project_name):
     # boards_of_project = data_Structure.Board.query.filter_by(project_name=project_name)
     return render_template('ProjectPage.html', project=project, boards=project.project_boards)  # boards_of_project)
 
+@app.route('/project/change/description/<project_name>/', methods=['POST'])
+@login_required
+def change_project_description(project_name):
+    project = data_Structure.Project.query.get(project_name)
+    new_description = request.form.get('project_description_form')
+    project.project_description = new_description
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_project', project_name=project_name))
+
 
 @app.route('/project/delete/image/<project_name>/', methods=['POST'])
 @login_required
@@ -702,12 +711,14 @@ def create_component():
         return redirect(url_for('add_component'))
     new_component.manufacturer_id = man_id
     if request.form.get('manufacturer') is not '':
+        print('manufacturer is not none')
         manufacturer = request.form.get('manufacturer')
         new_component.manufacturer = manufacturer
+        print(new_component.manufacturer)
     else:
         flash("Please enter the name of a manufacturer!")
         return redirect(url_for('add_component'))
-    new_component.manufacturer = manufacturer
+    # new_component.manufacturer = manufacturer
     if request.form.get('packaging_type') is not '':
         packaging_id = int(request.form.get('packaging_type'))
     else:
@@ -759,10 +770,9 @@ def create_component():
     exb = request.form.get('exb_number')
     if '@' in exb:
         exb = clean_exb_scan(exb)
-    else:
-        exb = data_Structure.Exb()
+
     # print("exb :" + exb)
-    if exb is '':
+    if exb is '' or exb is None:
         if request.form.get('division_select') is None:
             flash("Please enter either a EXB number or your division!", "warning")
             return redirect(url_for('add_component'))
@@ -790,7 +800,7 @@ def show_all_components():
     return render_template('component_table.html', components=all_components)
 
 
-@app.route('/components/show/<component_id>/', methods=['GET'])
+@app.route('/component/show/<component_id>/', methods=['GET'])
 def show_component(component_id):
     nav.nav.register_element("frontend_top", view.nav_bar())
     component = data_Structure.Component.query.get(component_id)
@@ -799,13 +809,14 @@ def show_component(component_id):
 
 @app.route('/component/stocktaking/stock/', methods=['GET'])
 @app.route('/component/stocktaking/stock/<component_id>/', methods=['GET'])
+@login_required
 def stocktaking_stock(component_id=None):
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('stocktaking.html')
 
 
-@login_required
 @app.route('/component/stocktaking/stock/post/', methods=['POST'])
+@login_required
 def stocktaking_stock_do():
     exb_number = request.form.get('exb_number')
     if '@' in exb_number:
@@ -835,6 +846,30 @@ def stocktaking_stock_do():
 def stocktaking_lab(component_id=None):
     pass
 
+@app.route('/component/edit/datasheet/<component_id>/', methods=['POST'])
+def upload_datasheet(component_id):
+    component = data_Structure.Component.query.get(int(component_id))
+    print(request.files)
+    if 'datasheet' in request.files:
+        file = request.files['datasheet']
+
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No datasheet was selected!', "warning")
+
+        if file:
+            filename = str(id(os.urandom(6))) + secure_filename(file.filename)
+            filepath = os.path.join(DATA_UPLOAD_FOLDER, filename)
+            file.save(filepath)
+            datasheet = data_Structure.Documents(filename)
+            data_Structure.db.session.add(datasheet)
+            component.datasheet = datasheet
+            data_Structure.db.session.commit()
+    elif not 'datasheet' in request.files:
+        flash('No datasheet was selected!', "warning")
+
+    return redirect(url_for('show_component', component_id=component_id))
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'
