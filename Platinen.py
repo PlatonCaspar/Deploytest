@@ -1,6 +1,8 @@
 import os
 import time
+import urllib
 
+from markupsafe import Markup
 from flask import render_template, request, redirect, url_for, session, flash
 from flask_bootstrap import Bootstrap
 from flask_login import login_user, logout_user, login_required, current_user
@@ -35,6 +37,15 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 # def set_logged_user(state):
 #    logged_user = state
+
+@app.template_filter('urlencode')
+def urlencode_filter(s):
+    if type(s) == 'Markup':
+        s = s.unescape()
+    s = s.encode('utf8')
+    s = urllib.parse.quote(s)
+
+    return Markup(s)
 
 
 # data_Structure.db.create_all()
@@ -212,6 +223,16 @@ def start():
             search_word = request.form.get('search_field_main')
 
             search_area = 'All'
+        if "EXB" in search_word and "Q" in search_word:
+            print('Yes it contans EXB')
+            search_word = clean_exb_scan(search_word)
+            exb_number = data_Structure.Exb.query.get(search_word)
+            component = exb_number.associated_components
+            return redirect(url_for('show_component', component_id=component.id))
+        elif "EXB" in search_word:
+            exb_number = data_Structure.Exb.query.get(search_word)
+            component = exb_number.associated_components
+            return redirect(url_for('show_component', component_id=component.id))
         if data_Structure.db.session.query(data_Structure.Board).get(search_word) is not None:
             return redirect(url_for('show_board_history',
                                     g_code=data_Structure.db.session.query(data_Structure.Board).get(search_word).code))
@@ -448,6 +469,7 @@ def show_project(project_name):
         return render_template('start.html')
     # boards_of_project = data_Structure.Board.query.filter_by(project_name=project_name)
     return render_template('ProjectPage.html', project=project, boards=project.project_boards)  # boards_of_project)
+
 
 @app.route('/project/change/description/<project_name>/', methods=['POST'])
 @login_required
@@ -832,8 +854,8 @@ def stocktaking_stock_do():
         flash("Component was taken out by " + data_Structure.db.session.query(data_Structure.Booking).filter_by(
             component_id=component.id).order_by(data_Structure.Booking.date_time).first().user().username, "danger")
         return redirect(url_for('stocktaking_stock'))
-    for b in data_Structure.Booking.query.filter_by(deprecated=False).join(data_Structure.Component,
-                                                                           data_Structure.Booking.component_id == component.id).all():
+    for b in data_Structure.Booking.query.filter_by(deprecated=False, lab=False).join(data_Structure.Component,
+                                                                                      data_Structure.Booking.component_id == component.id).all():
         b.deprecated = True
     booking = data_Structure.Booking(int(request.form.get('qty')), "Stocktaking")
     booking.component = component
@@ -841,10 +863,6 @@ def stocktaking_stock_do():
     data_Structure.db.session.commit()
     return redirect(url_for('stocktaking_stock'))
 
-
-@app.route('/component/stocktaking/lab/<component_id>/', methods=['GET'])
-def stocktaking_lab(component_id=None):
-    pass
 
 @app.route('/component/edit/datasheet/<component_id>/', methods=['POST'])
 def upload_datasheet(component_id):
@@ -862,14 +880,60 @@ def upload_datasheet(component_id):
             filename = str(id(os.urandom(6))) + secure_filename(file.filename)
             filepath = os.path.join(DATA_UPLOAD_FOLDER, filename)
             file.save(filepath)
-            datasheet = data_Structure.Documents(filename)
+            datasheet = data_Structure.Documents(document_type="Datasheet", file_name=filename)
             data_Structure.db.session.add(datasheet)
-            component.datasheet = datasheet
+            component.documents.append(datasheet)
             data_Structure.db.session.commit()
     elif not 'datasheet' in request.files:
         flash('No datasheet was selected!', "warning")
 
     return redirect(url_for('show_component', component_id=component_id))
+
+
+@app.route('/ccmponent/stocktakiing/lab/do/<component_id>/', methods=['POST'])
+def stocktaking_lab(component_id):
+    component = data_Structure.Component.query.get(int(component_id))
+    for b in data_Structure.Booking.query.filter_by(component_id=component_id, lab=True).all():
+        b.deprecated = True
+
+    new_booking = data_Structure.Booking(booking_type="purchase", qty=int(request.form.get('stock_lab')))
+    new_booking.lab = True
+    new_booking.component = component
+
+    data_Structure.db.session.add(new_booking)
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_component', component_id=component_id))
+
+
+@app.route('/component/take/lab/do/<component_id>/', methods=['POST'])
+def take_lab(component_id):
+    component = data_Structure.Component.query.get(int(component_id))
+    new_booking = data_Structure.Booking(booking_type="removal", qty=int(request.form.get('qty_lab_out')))
+    new_booking.lab = True
+    new_booking.component = component
+
+    data_Structure.db.session.add(new_booking)
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_component', component_id=component_id))
+
+
+@app.route('/component/datasheet/delete/<component_id>/do/', methods=['POST'])
+def delete_datasheet(component_id):
+    component = data_Structure.Component.query.get(int(component_id))
+    file = component.datasheet
+    filepath = os.path.join(DATA_UPLOAD_FOLDER, file.file_name)
+    component.datasheet = None
+    data_Structure.db.session.delete(file)
+
+    try:
+        os.remove(filepath)
+    except:
+        flash("File could not be deleted", "danger")
+        return redirect(url_for('show_component', component_id=component_id))
+    flash("file was deleted succesful", "success")
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_component', component_id=component_id))
+
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'

@@ -201,7 +201,7 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
 
 packaging_types = dict([("0", "Cut Tape"), ("1", "Reel"), ("2", "Tray"), ("3", "Tube"), ("4", "Bulk")])
 
-booking_types = dict([("Purchase", "Purchase"), ("Removal", "Removal"), ("stocktaking", "Stocktaking")])
+booking_types = dict([("purchase", "Purchase"), ("removal", "Removal"), ("stocktaking", "Stocktaking")])
 
 # be sure to change the categories in the html file as well!
 categories = dict(
@@ -287,15 +287,24 @@ class Component(db.Model):
     packaging_id = db.Column(db.Integer)
     a5e_number = db.relationship('A5E', backref='associated_a5e_number', uselist=False)
     exb_number = db.relationship('Exb', backref='associated_exb_number', uselist=False)
-    datasheet_id = db.Column(db.Integer, db.ForeignKey('documents.id'))
-    datasheet = db.relationship('Documents', backref='associated_datasheet', uselist=False)
+    documents_id = db.Column(db.Integer, db.ForeignKey('documents.id'))
+    documents = db.relationship('Documents', backref='associated_documents', uselist=True)
     taken_out = db.Column(db.Boolean, default=False)
-
+    # footprint_id = db.Column(db.Integer,db.ForeignKey('documents.id'))
+    footprint = db.relationship('Documents', backref='associated_footprint', uselist=False)
     # storage_place = db.Column()
 
     def __init__(self):
-        self.id = id(str(urandom(10))+datetime.datetime.now().strftime('%m.%d.%y %H:%M:%S'))
+        self.id = id(str(urandom(10)) + datetime.datetime.now().strftime('%m.%d.%y %H:%M:%S'))
 
+    def datasheet(self):
+        for d in self.documents:
+            if d.document_type == "Datasheet":
+                return d
+            else: 
+                return None 
+    
+    
     def housing(self):
         return housings[self.housing_id]
 
@@ -308,12 +317,10 @@ class Component(db.Model):
     def stock(self):
         qty_stock = 0
         bookings = Booking.query.filter_by(
-            deprecated=False, component_id=self.id).all()
+            deprecated=False, component_id=self.id).filter_by(lab=False).all()
         for booking in bookings:
             qty_stock += booking.quantity
         return qty_stock
-
-
 
     def reserved(self):
         qty_stock = 0
@@ -322,16 +329,25 @@ class Component(db.Model):
             qty_stock += booking.quantity
         return qty_stock
 
+    def stock_lab(self):
+        qty_lab = 0
+        bookings = Booking.query.filter_by(deprecated=False, lab=True, component_id=self.id)
+        for b in bookings:
+            qty_lab += b.quantity
+        return qty_lab
+
 
 class Documents(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     file_name = db.Column(db.Text)
     description = db.Column(db.Text)
+    document_type = db.Column(db.Text)
 
-    def __init__(self, file_name: str, description='None'):
+    def __init__(self, document_type: str, file_name: str, description='None'):
         self.id = id(file_name + str(urandom(5)))
         self.description = description
         self.file_name = file_name
+        self.document_type = document_type
 
 
 class Booking(db.Model):
@@ -346,10 +362,11 @@ class Booking(db.Model):
     booking_type = db.Column(db.String)
     project_name = db.Column(db.Text, db.ForeignKey('project.project_name'))
     project = db.relationship('Project', backref='booked_for_project', uselist=False)
+    lab = db.Column(db.Boolean, default=False)
 
     def __init__(self, qty: int, booking_type: str):
         self.id = id(str(urandom(15)) + str(qty))
-        if booking_type is "Removal":
+        if booking_type is "Removal" or booking_type is "removal":
             self.quantity = (-1) * qty
         else:
             self.quantity = qty
@@ -404,6 +421,17 @@ class Reservation(db.Model):
             # moved to db_migrate
             # eng = db.create_all()
             # create_databases()
+
+
+# class Process(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
+#     bookings = db.relationship('Booking', backref='process_bookings', lazy='dynamic', uselist=True)
+#     reservation_id = db.Column(db.Integer, db.ForeignKey('reservation.id'))
+#     reservations = db.relationship('Reservation', backref='process_reservations', lazy='dynamic', uselist=True)
+#     date_time = db.Column(db.DateTime)
+#     user_id = db.Column(db.Integer)
+#     user_mail = db.Column(db.Text)
 
 
 SQLALCHEMY_MIGRATE_REPO = path.join(DATA_FOLDER, "static/Database")

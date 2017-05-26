@@ -184,7 +184,7 @@
                     <span>
                     <kbd class="footnote">
                         <a style="color: white"
-                           href="mailto:{{ row.added_by.email }}?Subject={{ "Your comment:  "+ request.url+"#"+"comment_id"+row.id|string }}">
+                           href="mailto:{{ row.added_by.email }}?Subject={{ "Your comment:  "+ request.url|urlencode+"#"+"comment_id"+row.id|string }}">
                     {{ "added by "+row.added_by.username|string }}
                     </a>
                 </kbd>
@@ -200,7 +200,7 @@
                             <kbd class="footnote pull-right"
                                  style="position: absolute; right: 40px">
                                 <a style="color: white"
-                                   href="mailto:{{ row.edited_by.email }}?Subject={{ "Your change of  "+ request.url+"#"+"comment_id"+row.id|string }}">
+                                   href="mailto:{{ row.edited_by.email }}?Subject={{ "Your change of  "+ request.url|urlencode+"#"+"comment_id"+row.id|string }}">
                                     {{ "last edited on "+row.last_edited+" by "+row.edited_by.username|string }}
                                 </a>
 

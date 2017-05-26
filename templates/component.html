@@ -6,6 +6,7 @@
 
 {% block content %}
     <div class="container">
+        
         <div class="row">
             <div class="col-xs-4 col-md-4">
                 <div class="container">
@@ -35,6 +36,7 @@
                     </h4>
                     <h4><p class="label label-warning">Reserved: {{ component.reserved() }}</p><br></h4>
                     <h4><p class="label label-danger" style="width: auto">In Stock: {{ component.stock() }}</p><br></h4>
+                    <h4><p class="label label-info" style="width: auto">Lab: {{ component.stock_lab() }}</p><br></h4>
                 </div>
             </div>
         </div>
@@ -55,6 +57,52 @@
                         Stocktaking
                     </button>
                 </p>
+                <p>
+                    <button class="btn btn-info" type="button" data-toggle="collapse" data-target="#lab_actions"
+                            aria-expanded="false"
+                            aria-controls="lab_actions"><span class="glyphicon glyphicon-menu-down"></span> Lab
+                    </button>
+                </p>
+                <div class="collapse" id="lab_actions">
+                    <div class="well">
+                        <!-- If someone takes out a few parts of the lab stock -->
+                        <p>
+                        <div>
+                            <form action="{{ url_for('take_lab',component_id=component.id) }}" method="post">
+                                <div class="form-inline input-group">
+                                    <span class="input-group-addon">Take out</span>
+                                    <input class="form-control" id="qty_lab_out" name="qty_lab_out" type="number"
+                                           required="required"
+                                           placeholder="Please enter the quantity you want to take...">
+                                    <div class="input-group-btn">
+                                        <button class="btn btn-primary" type="submit">Take</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        </p>
+
+                        <!-- If someone counted the parts in the lab -->
+                        <p>
+                        <div>
+                            <form action="{{ url_for('stocktaking_lab', component_id=component.id) }}" method="post">
+                                <div class="form-inline input-group">
+                                    <span class="input-group-addon">Stocktaking</span>
+                                    <input class="form-control" id="stock_lab" name="stock_lab" type="number"
+                                           required="required"
+                                           placeholder="Please enter the amount of this component available...">
+                                    <div class="input-group-btn">
+                                        <button class="btn btn-warning" type="submit">Go!</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        </p>
+                    </div>
+                </div>
+
+
+
             {% else %}
                 <div class="info">
                     <form action="{{ url_for('login', last_page_1=url_for("show_component",component_id=component.id)|replace('/','_')) }}"
@@ -69,24 +117,46 @@
                 </div>
             {% endif %}
 
-        </div>
-        <div class="col-xs-4 col-md-4">
-            <span class="page-header"><h3>Documents</h3></span>
-            {% if component.datasheet %}
-                {% set datasheet = component.datasheet %}
 
-                <a href="/static/data_folder/{{ datasheet.file_name }}" class="btn btn-default" role="button"
-                        {% if component.exb_number %}
-                   download="{{ component.exb_number.exb_number+"_"+component.description|replace(' ','_') }}">
-                        {% else %}
-                            download="id_{{ component.id|string+"_"+component.description|replace(' ','_') }}">
-                        {% endif %}
-                <span
-                        class="glyphicon glyphicon-download" style="font-size: xx-large "></span>
-                <div class="caption">
-                    <p>Datasheet</p>
+        </div>
+        <div class="col-xs-2 col-md-2">
+            <span class="page-header"><h3>Documents</h3></span>
+            {% if component.datasheet() %}
+                {% set datasheet = component.datasheet() %}
+                <div class="container-fluid">
+                    <div class="">
+                        <a href="/static/data_folder/{{ datasheet.file_name }}" class="btn btn-default btn-large"
+                           role="button"
+                                {% if component.exb_number %}
+                           download="{{ component.exb_number.exb_number+"_"+component.description|replace(' ','_') }}">
+                                {% else %}
+                                    download="id_{{ component.id|string+"_"+component.description|replace(' ','_') }}">
+                                {% endif %}
+                        <span
+                                class="glyphicon glyphicon-save-file" style="font-size: xx-large "></span>
+                        </a>
+                        <div class="h5">
+                            <p>Datasheet</p>
+
+
+
+
+                            {% if current_user.username!='Guest' %}
+
+
+
+                                <button class="btn btn-danger" data-target="#delete_datasheet" data-toggle="modal"
+                                        type="button"><span class="glyphicon glyphicon-remove"></span>
+                                </button>
+
+
+
+
+                            {% endif %}
+                        </div>
+                    </div>
+
                 </div>
-                </a>
 
 
 
@@ -163,6 +233,30 @@
             {% endif %}
 
 
+        </div>
+    </div>
+
+    {# Delete Datasheet Modal #}
+    <div class="container">
+        <div id="delete_datasheet" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{ 'Delete Datasheet' }}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url_for('delete_datasheet', component_id=component.id) }}"
+                              method="post">
+                            <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                            <button type="submit" class="btn btn-success">Delete</button>
+                        </form>
+                        <div class="modal-footer">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
