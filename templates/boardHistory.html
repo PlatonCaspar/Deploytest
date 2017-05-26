@@ -4,7 +4,9 @@
 {% block title %}
     {{ super() }}
     {% if g_board | safe %}
+
         {{ g_board.code }} {{ "Ver: "+ g_board.version }}
+
         {#Hier kommt die Struktur wie die Daten aus der Datenbank angezeigt werden sollen.#}
     {% endif %}
 
@@ -17,20 +19,20 @@
 
     <div class="well well-sm">
         <div class="media">
-            <div class="media-left media-middle">
+            <div class="media-left media-middle print_website">
                 {% if g_board.project.project_default_image_path is none %}
-                <img
-                    src="/static/staticPictures/logo.jpg"
-                    class="media-object thumbnail" alt="default_project_image"
-                    style="width: 120px">
+                    <img
+                            src="/static/staticPictures/logo.jpg"
+                            class="media-object thumbnail print_website" alt="default_project_image"
+                            style="width: 120px">
                 {% else %}
-                <img
-                    src="/static/Pictures/{{ g_board.project.project_default_image_path|replace('\\','/') }}"
-                    class="media-object thumbnail" alt="default_project_image"
-                    style="width: 120px">
+                    <img
+                            src="/static/Pictures/{{ g_board.project.project_default_image_path|replace('\\','/') }}"
+                            class="media-object thumbnail" alt="default_project_image"
+                            style="width: 120px">
                 {% endif %}
             </div>
-            <div class="media-body">
+            <div class="media-body print_website">
                 <div class="media-heading">
                     <h4>{{ g_board.project.project_name }}
 
@@ -45,10 +47,24 @@
 
         <div class="panel">
             <div class="page-header">
-                <h3>Board Comments
-                    <small>{{ "("+g_board.code|string+")" }}</small>
-                </h3>
+
+                <h2 class="print_website center-block">{{ g_board.code|string }}
+                    <small class="print_website">
+                        Version: {{ g_board.version|string }}
+                        <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                                data-target="#version_modal"><span class="glyphicon glyphicon-pencil"></span></button>
+                        State: {{ g_board.stat|string }}
+                        <button class="btn btn-default btn-sm"><span class="glyphicon glyphicon-pencil"></span></button>
+                        Patch: {{ g_board.patch|string }}
+                        <button class="btn btn-default btn-sm"><span class="glyphicon glyphicon-pencil"></span></button>
+                    </small>
+                </h2>
+
             </div>
+            <h4 class="panel-heading print_website">Board Comments
+                <small class="print_website">{{ "("+g_board.code|string+")" }}</small>
+            </h4>
+
             {% if current_user.username!='Guest' %}
                 <button type="button" class="btn btn-default center-block" data-toggle="modal"
                         data-target="#addModal"><span
@@ -76,8 +92,10 @@
                                             <div class=" col-xs-2 col-md-2">
 
                                                 <div class="thumbnail">
-                                                    <a href="/static/Pictures/{{ pic.file_path }}">
-                                                        <img src="/static/Pictures/{{ pic.file_path }}" style="width: 100%">
+                                                    <a class="" href="/static/Pictures/{{ pic.file_path }}">
+                                                        <img class="print_website"
+                                                             src="/static/Pictures/{{ pic.file_path }}"
+                                                             style="width: 100%">
                                                     </a>
                                                     <div class="caption">
                                                         {% if current_user.is_authenticated %}
@@ -164,14 +182,16 @@
                             {% if current_user.username!='Guest' %}
                                 <form action="{{ url_for('board_history_add_file', history_id=row.id, board_id=g_board.code) }}"
                                       method="post" class="" enctype="multipart/form-data"
-                                      id="{{row.id|string+'new_upfile_form'}}">
+                                      id="{{ row.id|string+'new_upfile_form' }}">
 
-                                    <input class="hidden" name="{{row.id|string+'new_upfile'}}" id="{{row.id|string+'new_upfile'}}"
+                                    <input class="hidden" name="{{ row.id|string+'new_upfile' }}"
+                                           id="{{ row.id|string+'new_upfile' }}"
                                            type="file" value="upload"
-                                           onchange="document.getElementById('{{row.id|string+'new_upfile_button'}}').click()">
-                                    <button class="hidden" type="submit" id="{{row.id|string+'new_upfile_button'}}"></button>
+                                           onchange="document.getElementById('{{ row.id|string+'new_upfile_button' }}').click()">
+                                    <button class="hidden" type="submit"
+                                            id="{{ row.id|string+'new_upfile_button' }}"></button>
                                     <button class="btn btn-default btn-sm" type="button"
-                                            onclick="document.getElementById('{{row.id|string+'new_upfile'}}').click()"><span
+                                            onclick="document.getElementById('{{ row.id|string+'new_upfile' }}').click()"><span
                                             class="glyphicon glyphicon-paperclip"></span></button>
                                 </form>
 
@@ -179,7 +199,7 @@
                         </div>
                     </div>
 
-                    <div class="panel-body" id="{{ row.id }}">{{ row.history | safe }}</div>
+                    <div class="panel-body print_website" id="{{ row.id }}">{{ row.history | safe }}</div>
                     <div class="panel-footer">
                     <span>
                     <kbd class="footnote">
@@ -289,6 +309,31 @@
 
     </div>
 
+    {# Version Change Modal #}
+    <div id="version_modal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{{ 'Change Version' }}</h4>
+                </div>
+                <div class="modal-body">
+                    <form action="#" method="get">
+                        <div class="form-group">
+                            <input class="form-control" type="text" id="version_form" name="version_form">
+                            <button class="btn btn-default" type="submit">Change</button>
+                            <button class="btn btn-default pull-right" type="button" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
 
 {%- endblock %}
 

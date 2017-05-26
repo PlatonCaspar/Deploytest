@@ -1,0 +1,9 @@
+@media print {
+    body * {
+        visibility:hidden;
+    }
+    .print_website
+    {
+        visibility:visible;
+    }
+}
