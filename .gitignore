@@ -5,3 +5,4 @@ static/Database
 static/Pictures
 List_of_electric_parts_types.md
 DHW_Database_Converter.py
+migrations/
