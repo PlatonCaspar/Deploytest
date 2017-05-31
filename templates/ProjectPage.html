@@ -12,7 +12,7 @@
                 <form class=""
                       action="{{ url_for('delete_project', project_name=project.project_name) }}"
                       method="post">
-                    <h1>{{ project.project_name }}
+                    <h1 class="print_website">{{ project.project_name }}
                         <small>
                             {% if current_user.is_authenticated %}
                                 <button class="btn btn-group btn-warning btn-sm pull-right" type="button"
@@ -100,8 +100,8 @@
                     </div>
                 </div>
             </div>
-            <div class="panel-body">
-                <h4>Description:</h4>
+            <div class="panel-body print_website">
+                <h4 class="print_website">Description:</h4>
                 <hr>
                 {{ project.project_description|safe }}
             </div>
@@ -114,8 +114,8 @@
                         <h3>Boards:</h3>
                     </div>
 
-                    <table class="table table-striped table-hover table-responsive table-condensed">
-                        <thead>
+                    <table class="table table-striped table-hover table-responsive table-condensed print_website">
+                        <thead class="print_website">
                         <tr class="print_website">
                             <th class="text-info print_website">Board</th>
                             <th class="text-info print_website">Version</th>
@@ -124,7 +124,7 @@
                         </tr>
                         </thead>
 
-                        <tbody>
+                        <tbody class="print_website">
 
                         {% for b in boards %}
 
