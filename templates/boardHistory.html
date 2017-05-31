@@ -19,11 +19,11 @@
 
     <div class="well well-sm">
         <div class="media">
-            <div class="media-left media-middle print_website">
+            <div class="media-left media-middle ">
                 {% if g_board.project.project_default_image_path is none %}
                     <img
                             src="/static/staticPictures/logo.jpg"
-                            class="media-object thumbnail print_website" alt="default_project_image"
+                            class="media-object thumbnail " alt="default_project_image"
                             style="width: 120px">
                 {% else %}
                     <img
@@ -32,7 +32,7 @@
                             style="width: 120px">
                 {% endif %}
             </div>
-            <div class="media-body print_website">
+            <div class="media-body ">
                 <div class="media-heading">
                     <h4>{{ g_board.project.project_name }}
 
@@ -48,8 +48,8 @@
         <div class="panel">
             <div class="page-header">
 
-                <h2 class="print_website center-block">{{ g_board.code|string }}
-                    <small class="print_website">
+                <h2 class=" center-block">{{ g_board.code|string }}
+                    <small class="">
                         Version: {{ g_board.version|string }}
                         {% if current_user.username != 'Guest' %}
                             <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
@@ -72,8 +72,8 @@
                 </h2>
 
             </div>
-            <h4 class="panel-heading print_website">Board Comments
-                <small class="print_website">{{ "("+g_board.code|string+")" }}</small>
+            <h4 class="panel-heading ">Board Comments
+                <small class="">{{ "("+g_board.code|string+")" }}</small>
             </h4>
 
             {% if current_user.username!='Guest' %}
@@ -104,7 +104,7 @@
 
                                                 <div class="thumbnail">
                                                     <a class="" href="/static/Pictures/{{ pic.file_path }}">
-                                                        <img class="print_website"
+                                                        <img class=""
                                                              src="/static/Pictures/{{ pic.file_path }}"
                                                              style="width: 100%">
                                                     </a>
@@ -210,7 +210,7 @@
                         </div>
                     </div>
 
-                    <div class="panel-body print_website" id="{{ row.id }}">{{ row.history | safe }}</div>
+                    <div class="panel-body " id="{{ row.id }}">{{ row.history | safe }}</div>
                     <div class="panel-footer">
                     <span>
                     <kbd class="footnote">
@@ -415,6 +415,39 @@
         </div>
 
     {% endif %}
+
+    {# Print Area #}
+    <div class="container container-fluid print_website_parent print_website">
+        <div class="page-header print_website h2">Project: {{ g_board.project.project_name }}</div>
+
+        <address class="print_website">
+            <h3 class="print_website">Board: {{ g_board.code }} <br>
+                <small class="print_website">
+                    Version: {{ g_board.version }}<br>
+                    State: {{ g_board.stat }}<br>
+                    Patch: {{ g_board.patch }}
+                </small>
+            </h3>
+        </address>
+        <table class="print_website table table-bordered table-striped">
+            <thead class="print_website">
+            <th class="print_website">Comment</th>
+            <th class="print_website">User</th>
+            <th class="print_website">Date</th>
+            </thead>
+            <tbody class="print_website">
+            {% for c in history %}
+                <tr class="print_website">
+                <td class="print_website">{{ c.history|safe }}</td>
+                <td class="print_website">{{ c.edited_by.username|string }}</td>
+                <td class="print_website">{{ c.last_edited|string }}</td>
+                </tr>
+
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
 
 {%- endblock %}
 
