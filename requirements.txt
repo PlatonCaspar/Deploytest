@@ -9,5 +9,3 @@ flask_wtf
 wtforms
 dominate
 datetime
-flask_script
-flask_migrate

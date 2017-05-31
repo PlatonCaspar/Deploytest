@@ -307,6 +307,7 @@ def add_project():
                 file_id = id(file.filename)
                 filename = secure_filename(str(file_id) + file.filename)
 
+
                 image_path = os.path.join(UPLOAD_FOLDER, filename)
                 file.save(image_path)
 
@@ -447,7 +448,7 @@ def delete_project_image(project_name):
     # image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
     project = data_Structure.db.session.query(data_Structure.Project).get(project_name)
     img_id = project.project_default_image_path
-    # img_id = None
+    #img_id = None
     project.project_default_image_path = None
     if img_id is not None:
         os.remove(os.path.join(UPLOAD_FOLDER, img_id.replace('_', '\\')))
@@ -611,7 +612,7 @@ def delete_myself():
 def user_forgot_password():
     nav.nav.register_element("frontend_top", view.nav_bar())
     flash('Pleas enter the uid, you can find it if you look for the user at ' + '<a href="' + url_for(
-        'show_registered_users') + '">Registered Users</a>', 'info')
+        'show_registered_users')+'">Registered Users</a>', 'info')
     return render_template('forgot_password.html')
 
 
@@ -632,7 +633,7 @@ def user_forgot_change_password():
         if pbkdf2_sha256.verify(request.form.get('new_password_2'), new_password):
             dumb_user.password_hashed_and_salted = new_password
             data_Structure.db.session.commit()
-            flash('password of ' + dumb_user.username + ' was changed successfully', 'success')
+            flash('password of '+dumb_user.username+' was changed successfully', 'success')
             return redirect(url_for('start'))
         else:
             flash('The new passwords did not match!', 'danger')
@@ -640,45 +641,6 @@ def user_forgot_change_password():
     else:
         flash(current_user.username + ' your password was not correct!', 'danger')
         return redirect(url_for(user_forgot_password))
-
-
-@app.route('/boardHistory/change/version/<board_id>/', methods=['POST'])
-@login_required
-def change_board_version(board_id):
-    board = data_Structure.Board.query.get(board_id)
-    new_version = request.form.get('version_form')
-    comment_string = "Version was changed from " + board.version + " to " + new_version
-    change_comment = data_Structure.History(comment_string, board.code)
-    data_Structure.db.session.add(change_comment)
-    board.version = new_version
-    data_Structure.db.session.commit()
-    return redirect(url_for('show_board_history', g_code=board_id))
-
-
-@app.route('/boardHistory/change/state/<board_id>/', methods=['POST'])
-@login_required
-def change_board_state(board_id):
-    board = data_Structure.Board.query.get(board_id)
-    new_state = request.form.get('state_form')
-    comment_string = "State was changed from " + str(board.stat) + " to " + new_state
-    change_comment = data_Structure.History(comment_string, board.code)
-    data_Structure.db.session.add(change_comment)
-    board.stat = new_state
-    data_Structure.db.session.commit()
-    return redirect(url_for('show_board_history', g_code=board_id))
-
-
-@app.route('/boardHistory/change/patch/<board_id>/', methods=['POST'])
-@login_required
-def change_board_patch(board_id):
-    board = data_Structure.Board.query.get(board_id)
-    new_patch = request.form.get('patch_form')
-    comment_string = "Patch was changed from " + str(board.patch) + " to " + new_patch
-    change_comment = data_Structure.History(comment_string, board.code)
-    data_Structure.db.session.add(change_comment)
-    board.patch = new_patch
-    data_Structure.db.session.commit()
-    return redirect(url_for('show_board_history', g_code=board_id))
 
 
 if __name__ == '__main__':
@@ -694,5 +656,5 @@ if __name__ == '__main__':
     nav.login_manager.init_app(app)
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
-    #app.run(debug=False, port=80, host='localhost')
     app.run(debug=False, port=80, host='0.0.0.0')
+# app.run(debug=False, port=80, host='0.0.0.0')
