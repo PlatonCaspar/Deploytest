@@ -147,7 +147,7 @@ class History(db.Model):
 
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
-        self.id = id(str(urandom(5) + time.strftime("%d.%m.%Y %H:%M:%S")))
+        self.id = id(str(urandom(5)) + time.strftime("%d.%m.%Y %H:%M:%S"))
 
 
 class Files(db.Model):
