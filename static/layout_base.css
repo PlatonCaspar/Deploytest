@@ -1,0 +1,26 @@
+.print_website {
+    visibility: hidden;
+
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .print_website {
+        visibility: visible;
+
+    }
+
+    .print_website_parent {
+        position: absolute;
+        top: 0;
+    }
+
+}
+
+.table_links {
+    cursor: pointer;
+
+}
