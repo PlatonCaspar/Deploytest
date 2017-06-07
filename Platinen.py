@@ -307,7 +307,6 @@ def add_project():
                 file_id = id(file.filename)
                 filename = secure_filename(str(file_id) + file.filename)
 
-
                 image_path = os.path.join(UPLOAD_FOLDER, filename)
                 file.save(image_path)
 
@@ -398,6 +397,10 @@ def add_board_history(board, history, file):
     return redirect(url_for('show_board_history', g_code=board.code))
 
 
+def getSortKeyHistory(h):
+    return h.time_date_datetime()
+
+
 @app.route('/boardHistory/<g_code>/', methods=['POST', 'GET', ])  # shows board History
 def show_board_history(g_code):
     view.logged_user = view.get_logged_user()
@@ -419,13 +422,15 @@ def show_board_history(g_code):
 
     if edit_form is not None:
         return render_template('boardHistory.html', g_board=tg_board,
-                               history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
-                                   data_Structure.History.time_and_date).all(),
+                               history=sorted(data_Structure.History.query.filter_by(board_code=g_code).all(),
+                                              key=getSortKeyHistory, reverse=True),
+                               # .order_by(lambda e:
+                               # data_Structure.History.time_date_datetime(e).desc()).all(),
                                add_form=add_form, edit_form=edit_form)
     else:
         return render_template('boardHistory.html', g_board=tg_board,
-                               history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
-                                   data_Structure.History.time_and_date).all(),
+                               history=sorted(data_Structure.History.query.filter_by(board_code=g_code).all(),
+                                   key=getSortKeyHistory, reverse=True),
                                add_form=add_form, edit_form=edit_form)
 
 
@@ -448,7 +453,7 @@ def delete_project_image(project_name):
     # image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
     project = data_Structure.db.session.query(data_Structure.Project).get(project_name)
     img_id = project.project_default_image_path
-    #img_id = None
+    # img_id = None
     project.project_default_image_path = None
     if img_id is not None:
         os.remove(os.path.join(UPLOAD_FOLDER, img_id.replace('_', '\\')))
@@ -612,7 +617,7 @@ def delete_myself():
 def user_forgot_password():
     nav.nav.register_element("frontend_top", view.nav_bar())
     flash('Pleas enter the uid, you can find it if you look for the user at ' + '<a href="' + url_for(
-        'show_registered_users')+'">Registered Users</a>', 'info')
+        'show_registered_users') + '">Registered Users</a>', 'info')
     return render_template('forgot_password.html')
 
 
@@ -633,7 +638,7 @@ def user_forgot_change_password():
         if pbkdf2_sha256.verify(request.form.get('new_password_2'), new_password):
             dumb_user.password_hashed_and_salted = new_password
             data_Structure.db.session.commit()
-            flash('password of '+dumb_user.username+' was changed successfully', 'success')
+            flash('password of ' + dumb_user.username + ' was changed successfully', 'success')
             return redirect(url_for('start'))
         else:
             flash('The new passwords did not match!', 'danger')
@@ -641,6 +646,7 @@ def user_forgot_change_password():
     else:
         flash(current_user.username + ' your password was not correct!', 'danger')
         return redirect(url_for(user_forgot_password))
+
 
 @app.route('/boardHistory/change/version/<board_id>/', methods=['POST'])
 @login_required
@@ -679,8 +685,6 @@ def change_board_patch(board_id):
     board.patch = new_patch
     data_Structure.db.session.commit()
     return redirect(url_for('show_board_history', g_code=board_id))
-
-
 
 
 if __name__ == '__main__':
