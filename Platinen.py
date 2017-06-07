@@ -8,6 +8,7 @@ from flask_nav import register_renderer
 from flask_sqlalchemy import SQLAlchemy
 from passlib.hash import pbkdf2_sha256
 from werkzeug.utils import secure_filename
+from upgrade import migrate_database
 
 import addPlatineForm
 import data_Structure
@@ -686,6 +687,12 @@ def change_board_patch(board_id):
     data_Structure.db.session.commit()
     return redirect(url_for('show_board_history', g_code=board_id))
 
+@app.route('/upgrade/')
+@login_required
+def upgrade_within_app():
+    migrate_database()
+    return redirect(url_for("start"))
+
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'
@@ -700,5 +707,6 @@ if __name__ == '__main__':
     nav.login_manager.init_app(app)
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
+
     app.run(debug=False, port=80, host='0.0.0.0')
 # app.run(debug=False, port=80, host='0.0.0.0')

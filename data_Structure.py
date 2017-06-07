@@ -137,6 +137,7 @@ class History(db.Model):
                                    backref=db.backref('belongs_to_history_backref', lazy='dynamic', uselist=True))
 
 
+
     def __init__(self, history: str, board_code: str):
         self.board_code = board_code
         self.history = history.replace('\n', "<br>")
