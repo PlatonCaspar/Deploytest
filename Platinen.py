@@ -420,12 +420,12 @@ def show_board_history(g_code):
     if edit_form is not None:
         return render_template('boardHistory.html', g_board=tg_board,
                                history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
-                                   data_Structure.History.time_and_date).all()[::-1],
+                                   data_Structure.History.time_and_date).all(),
                                add_form=add_form, edit_form=edit_form)
     else:
         return render_template('boardHistory.html', g_board=tg_board,
                                history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
-                                   data_Structure.History.time_and_date).all()[::-1],
+                                   data_Structure.History.time_and_date).all(),
                                add_form=add_form, edit_form=edit_form)
 
 
