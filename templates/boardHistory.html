@@ -316,6 +316,103 @@
 
     </div>
 
+    {% if current_user.username != 'Guest' %}
+
+        {# Version Change Modal #}
+        <div id="version_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{ 'Change Version' }}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url_for('change_board_version', board_id=g_board.code) }}" method="post">
+                            <div class="form-group">
+                                <input class="form-control" type="text" id="version_form" name="version_form"
+                                       placeholder="Please enter the new Version...">
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-default" type="submit">Change</button>
+                                <button class="btn btn-default pull-right" type="button" data-dismiss="modal">Cancel
+                                </button>
+                            </div>
+                        </form>
+                        <div class="modal-footer">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+
+        {# State Change Modal #}
+        <div id="state_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{ 'Change State' }}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url_for('change_board_state', board_id=g_board.code) }}" method="post">
+                            <div class="form-group">
+                                <input class="form-control" type="text" id="state_form" name="state_form"
+                                       placeholder="Please enter the current state of the board...">
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-default" type="submit">Change</button>
+                                <button class="btn btn-default pull-right" type="button" data-dismiss="modal">Cancel
+                                </button>
+                            </div>
+
+                        </form>
+                        <div class="modal-footer">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+
+        {# Patch Change Modal #}
+        <div id="patch_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{ 'Change Patch' }}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url_for('change_board_patch', board_id=g_board.code) }}" method="post">
+                            <div class="form-group">
+                                <input class="form-control" type="text" id="patch_form" name="patch_form"
+                                       placeholder="Please enter the current patch of the board...">
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-default" type="submit">Change</button>
+                                <button class="btn btn-default pull-right" type="button" data-dismiss="modal">Cancel
+                                </button>
+                            </div>
+
+                        </form>
+                        <div class="modal-footer">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+
+    {% endif %}
+
+
 
     {# Print Area #}
     <div class="container container-fluid print_website_parent print_website">
@@ -352,4 +449,4 @@
 
 {%- endblock %}
 
-
+

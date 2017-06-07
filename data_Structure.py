@@ -34,8 +34,12 @@ class Board(db.Model):
     history = db.relationship('History', backref='History', lazy='dynamic')
     addedBy_id = db.Column(db.String, db.ForeignKey('user.uid'))
     addedBy = db.relationship('User', backref='user_board', uselist=False)
+    stat = db.Column(db.Text)
+    patch = db.Column(db.Text)
 
-    def __init__(self, code: str, project_name: str, ver: str):  # , history):
+
+    def __init__(self, code: str, project_name: str, ver: str, stat="init", patch="None"):  # , history):
+
         self.project_name = project_name
         self.code = code
         self.id = id(code)
@@ -43,6 +47,9 @@ class Board(db.Model):
         self.link = str(url_for('show_board_history', g_code=self.code))
         self.dateAdded = time.strftime("%d.%m.%Y %H:%M:%S")
         self.addedBy = current_user
+        self.stat = stat
+        self.patch = patch
+
 
     def __repr__(self):
         return '<Board %r>' % self.code
@@ -140,7 +147,7 @@ class History(db.Model):
 
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
-        self.id = id(str(urandom(5) + time.strftime("%d.%m.%Y %H:%M:%S")))
+        self.id = id(str(urandom(5)) + time.strftime("%d.%m.%Y %H:%M:%S"))
 
 
 class Files(db.Model):
