@@ -24,3 +24,14 @@
 + flask_wtf
 + wtforms
 + dominate
+
+
+## Upgrading the database
+1. Open a shell/bash 
+2. run: `python upgrade.py db init` (NOTE: only on first use! - what happens when used on second time is not known right now.)
+3. run: `python upgrade.py db stamp head`
+4. run: `python upgrade.py db migrate`
+5. check output if there were any foreign keys added or changed. 
+* ! if so: open the created migration file and define the first None Value as a String of the foreign key's name. ! 
+6. run: `python upgrade.py db upgrade`
+7. check output for errors. If there are none, it should have worked.

@@ -34,10 +34,8 @@ class Board(db.Model):
     history = db.relationship('History', backref='History', lazy='dynamic')
     addedBy_id = db.Column(db.String, db.ForeignKey('user.uid'))
     addedBy = db.relationship('User', backref='user_board', uselist=False)
-    stat = db.Column(db.Text)
-    patch = db.Column(db.Text);
 
-    def __init__(self, code: str, project_name: str, ver: str, stat="init", patch="None"):  # , history):
+    def __init__(self, code: str, project_name: str, ver: str):  # , history):
         self.project_name = project_name
         self.code = code
         self.id = id(code)
@@ -45,8 +43,6 @@ class Board(db.Model):
         self.link = str(url_for('show_board_history', g_code=self.code))
         self.dateAdded = time.strftime("%d.%m.%Y %H:%M:%S")
         self.addedBy = current_user
-        self.stat = stat
-        self.patch = patch
 
     def __repr__(self):
         return '<Board %r>' % self.code
@@ -184,10 +180,12 @@ class Project(db.Model):
                                       backref=db.backref('project_history_backref', lazy='dynamic', uselist=True))
     project_history_id = db.Column(db.Integer, db.ForeignKey('history.id'))
 
+
     def __init__(self, project_name: str, project_description: str, project_default_image_path: str):
         self.project_name = project_name
         self.project_description = project_description
         self.project_default_image_path = project_default_image_path
+
 
 
 ##EXB-List from now on
