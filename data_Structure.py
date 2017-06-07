@@ -144,7 +144,7 @@ class History(db.Model):
 
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
-        self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code + str(current_user.uid) + str(urandom(5)))
+        self.id = id(str(urandom(5) + time.strftime("%d.%m.%Y %H:%M:%S")))
 
 
 class Files(db.Model):
@@ -173,7 +173,7 @@ class Anonymous(AnonymousUserMixin):
         self.username = 'Guest'
 
 
-class Project(db.Model):  # //TODO Implement the Project Class and add relationship to Board
+class Project(db.Model):
     project_name = db.Column(db.Text, primary_key=True)
     project_description = db.Column(db.Text)
     project_default_image_path = db.Column(db.Text, default=None)
