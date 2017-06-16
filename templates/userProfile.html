@@ -1,203 +1,295 @@
-{%- extends "base.html" %}
-{%- import 'bootstrap/wtf.html' as wtf %}
-
-{% block title %}
-    {% set person = current_user %}
-    {{ person.username+" Profile" }}
-
-{% endblock %}
-
-{% block content %}
-    {% set person = current_user %}
-    <div class="panel panel-default">
-        <p class="panel-heading text-justify text-info"><strong>{{ person.username }}</strong><br>
-            <small>{{ 'UID: '+person.uid|string }}</small>
-            <span><button class="btn btn-default  pull-right" type="button" data-toggle="modal"
+{%- extends "base.html" %} {%- import 'bootstrap/wtf.html' as wtf %} {% block title %} {% set person = current_user %} {{
+person.username+" Profile" }} {% endblock %} {% block content %} {% set person = current_user %}
+<div class="panel panel-default col-xs-8 col-md-8 col-ld-8 col-xs-offset-2 col-md-offset-2 col-ld-offset-2">
+    <p class="panel-heading text-justify text-info"><strong>{{ person.username }}</strong><br>
+        <small>{{ 'UID: '+person.uid|string }}</small>
+        <span><button class="btn btn-default  pull-right" type="button" data-toggle="modal"
                           data-target="#edit_Username"><span
                     class="glyphicon glyphicon-pencil"></span>
-            </button></span><br><br>
-        </p>
+        </button>
+        </span><br><br>
+    </p>
 
-        <div class="panel-body">
-            <address>
-                <p>
-                    <span class="text-justify text-info">Email: </span>
-                    <span class="text-justify">{{ person.email }}</span>
-                    <button class="btn btn-default pull-right" type="button" data-toggle="modal"
-                            data-target="#edit_email"><span
+    <div class="panel-body">
+        <address>
+            <p>
+                <span class="text-justify text-info">Email: </span>
+                <span class="text-justify">{{ person.email }}</span>
+                <button class="btn btn-default pull-right" type="button" data-toggle="modal" data-target="#edit_email"><span
                             class="glyphicon glyphicon-pencil"></span>
                     </button>
-                    </span><br><br>
-                    <span class="text-justify text-info">Password:</span>
-                    <span class="text-justify"> ********** (Of course no plain text - it is not possible)</span>
-                    <button class="btn btn-default pull-right" type="button" data-toggle="modal"
-                            data-target="#edit_password"><span
+                </span><br><br>
+                <span class="text-justify text-info">Password:</span>
+                <span class="text-justify"> ********** (Of course no plain text - it is not possible)</span>
+                <button class="btn btn-default pull-right" type="button" data-toggle="modal" data-target="#edit_password"><span
                             class="glyphicon glyphicon-pencil"></span>
                     </button>
-                    </span>
-                </p>
-            </address>
+                </span>
+            </p>
+        </address>
+    </div>
+
+</div>
+{# Process Table #}
+<div class="panel panel-default col-xs-8 col-md-8 col-ld-8 col-xs-offset-2 col-md-offset-2 col-ld-offset-2">
+    <p class="panel-heading text-justify text-info"><strong>Processes</strong><br>
+    </p>
+    {% if person.processes() %} {% for p in person.processes()[::-1] %}
+
+
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="id_{{p.id}}">
+                <h4 class="panel-title">
+
+                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#{{p.id}}collapse" aria-expanded="true" aria-controls="{{p.id}}collapse">
+                        {{p.description}} (dd.mm.yy)
+                    </a>
+                </h4>
+            </div>
+            <div id="{{p.id}}collapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="id_{{p.id}}">
+                <div class="panel-body">
+                    <form action="{{url_for('book_process', process_id=p.id)}}" method="post">
+                        <button class="btn btn-primary col-xs-6 col-md-6 col-ld-6 col-xs-offset-3 col-md-offset-3 col-ld-offset-3" type="submit">Book</button>
+                    </form>
+                    {# Table #}
+
+
+                    <table class="table table-striped table-hover table-responsive table-condensed table_links">
+
+                        <thead>
+                            <tr>
+                                <th class="text-info">EXB/ID</th>
+                                <th class="text-info">Description</th>
+                                <th class="text-info">Quantity</th>
+                                <th class="text-info">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% for d in p.data() %}
+                            <tr> {#class="table_links" onclick="window.document.location='{{ row.link }}';">#}
+
+
+                                <td class="text-justify">
+                                    {% if d.component.exb_number %} {{ d.component.exb_number.exb_number }} {% else %} {{d.component.id}} {% endif %}
+                                </td>
+                                <td class="text-justify">
+                                    {{ d.component.description }}
+                                </td>
+                                <td class="text-justify">
+                                    {{ d.quantity }}
+                                </td>
+                                <td class="text-justify">
+                                    {% if d.booking_type %} {{ d.booking_type }} {% else %} Reservation {% endif %}
+
+                                </td>
+                            </tr>
+
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <br>
-        <br>
-        <button class="btn btn-danger" type="button" data-toggle="modal" data-target="#remove_user">
+    </div>
+
+    {% endfor %}
+
+</div>
+{% endif %}
+
+</div>
+<div class="col-xs-4 col-md-4 col-ld-4 col-xs-offset-2 col-md-offset-2 col-ld-offset-2">
+    <button class="btn btn-danger" type="button" data-toggle="modal" data-target="#remove_user">
             <span class="glyphicon glyphicon-erase"></span> Delete My Profile
         </button>
-    </div>
-    {# Modal for changing the Username #}
-    <div id="edit_Username" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Edit Username</h4>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{# Modal for changing the Username #}
+<div id="edit_Username" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Edit Username</h4>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <p class="text text-justify">Please remember your new Username well, you'll have to login with that name the next time.</p>
                 </div>
-                <div class="modal-body">
-                    <div class="alert alert-info"><p class="text text-justify">Please remember your new Username well,
-                        you'll have to login with that name the next time.</p></div>
-                    <form action="{{ url_for('change_username', uid=current_user.uid) }}" method="post">
-                        <div class="input-group">
-                            <span class="input-group-addon"><span
+                <form action="{{ url_for('change_username', uid=current_user.uid) }}" method="post">
+                    <div class="input-group">
+                        <span class="input-group-addon"><span
                                     class="glyphicon glyphicon-user"></span> Username</span>
-                            <input id="new_username" name="new_username" type="text" class="form-control"
-                                   placeholder="Please enter your new Username" required="true">
-                        </div>
-                        <br>
-                        <button class="btn btn-success btn-block"><span class="glyphicon glyphicon-edit"></span> Edit
+                        <input id="new_username" name="new_username" type="text" class="form-control" placeholder="Please enter your new Username"
+                            required="true">
+                    </div>
+                    <br>
+                    <button class="btn btn-success btn-block"><span class="glyphicon glyphicon-edit"></span> Edit
                         </button>
 
-                    </form>
+                </form>
 
-                    <div class="modal-footer">
-                    </div>
+                <div class="modal-footer">
                 </div>
-
             </div>
+
         </div>
-
-
     </div>
-    {# End Modal for Username #}
 
-    {# Modal for changing the email #}
-    <div id="edit_email" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Edit E-Mail</h4>
-                </div>
-                <div class="modal-body">
 
-                    <form action="{{ url_for('change_email', uid=current_user.uid) }}" method="post">
-                        <div class="input-group">
-                            <span class="input-group-addon"><span
+</div>
+{# End Modal for Username #} {# Modal for changing the email #}
+<div id="edit_email" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Edit E-Mail</h4>
+            </div>
+            <div class="modal-body">
+
+                <form action="{{ url_for('change_email', uid=current_user.uid) }}" method="post">
+                    <div class="input-group">
+                        <span class="input-group-addon"><span
                                     class="glyphicon glyphicon-envelope"></span> E-Mail</span>
-                            <input id="new_email" name="new_email" type="text" class="form-control"
-                                   placeholder="Please enter your new E-Mail" required="true">
-                        </div>
-                        <br>
-                        <button class="btn btn-success btn-block"><span class="glyphicon glyphicon-edit"></span> Edit
+                        <input id="new_email" name="new_email" type="text" class="form-control" placeholder="Please enter your new E-Mail" required="true">
+                    </div>
+                    <br>
+                    <button class="btn btn-success btn-block"><span class="glyphicon glyphicon-edit"></span> Edit
                         </button>
 
-                    </form>
+                </form>
 
-                    <div class="modal-footer">
-                    </div>
+                <div class="modal-footer">
                 </div>
-
             </div>
+
         </div>
-
-
     </div>
-    {# End Modal for email #}
 
-    {# Modal for changing the password #}
-    <div id="edit_password" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Change Password</h4>
-                </div>
-                <div class="modal-body">
 
-                    <form action="{{ url_for('change_password', uid=current_user.uid) }}" method="post">
-                        <div class="input-group">
-                            <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
-                            <input id="old_password" name="old_password" type="password" class="form-control"
-                                   placeholder="Please enter your current Password" required="true">
-                        </div>
-                        <br>
-                        <div class="input-group">
-                            <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
-                            <input id="new_password_1" name="new_password_1" type="password" class="form-control"
-                                   placeholder="Please enter your new Password" required="true">
-                        </div>
-                        <div class="input-group">
-                            <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
-                            <input id="new_password_2" name="new_password_2" type="password" class="form-control"
-                                   placeholder="Please repeat your new Password" required="true">
-                        </div>
-                        <br>
-                        <button class="btn btn-success btn-block"><span class="glyphicon glyphicon-edit"></span> Edit
+</div>
+{# End Modal for email #} {# Modal for changing the password #}
+<div id="edit_password" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Change Password</h4>
+            </div>
+            <div class="modal-body">
+
+                <form action="{{ url_for('change_password', uid=current_user.uid) }}" method="post">
+                    <div class="input-group">
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+                        <input id="old_password" name="old_password" type="password" class="form-control" placeholder="Please enter your current Password"
+                            required="true">
+                    </div>
+                    <br>
+                    <div class="input-group">
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+                        <input id="new_password_1" name="new_password_1" type="password" class="form-control" placeholder="Please enter your new Password"
+                            required="true">
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+                        <input id="new_password_2" name="new_password_2" type="password" class="form-control" placeholder="Please repeat your new Password"
+                            required="true">
+                    </div>
+                    <br>
+                    <button class="btn btn-success btn-block"><span class="glyphicon glyphicon-edit"></span> Edit
                         </button>
 
-                    </form>
+                </form>
 
-                    <div class="modal-footer">
-                    </div>
+                <div class="modal-footer">
                 </div>
-
             </div>
+
         </div>
-
-
     </div>
-    {# End Modal for password #}
 
-    {# Modal for removing user #}
-    <div id="remove_user" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Delete My User</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-danger"><span class="glyphicon glyphicon-fire"></span> Pleas be aware that after deleting your User you wont have any more access to the editing functions of this Page.
+
+</div>
+{# End Modal for password #} {# Modal for removing user #}
+<div id="remove_user" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Delete My User</h4>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger"><span class="glyphicon glyphicon-fire"></span> Pleas be aware that after deleting your User you wont have
+                    any more access to the editing functions of this Page.
 
                 </div>
-                    <form action="{{ url_for('delete_myself') }}" method="post">
-                        <div class="input-group">
-                            <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
-                            <input id="password_1" name="password_1" type="password" class="form-control"
-                                   placeholder="Please enter your current Password" required="true">
-                        </div>
-                        <br>
-                        <div class="input-group">
-                            <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
-                            <input id="password_2" name="password_2" type="password" class="form-control"
-                                   placeholder="Please confirm your Password" required="true">
-                        </div>
-                        <br>
-                        <button class="btn btn-danger btn-block"><span class="glyphicon glyphicon-remove"></span> Bye!
+                <form action="{{ url_for('delete_myself') }}" method="post">
+                    <div class="input-group">
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+                        <input id="password_1" name="password_1" type="password" class="form-control" placeholder="Please enter your current Password"
+                            required="true">
+                    </div>
+                    <br>
+                    <div class="input-group">
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+                        <input id="password_2" name="password_2" type="password" class="form-control" placeholder="Please confirm your Password"
+                            required="true">
+                    </div>
+                    <br>
+                    <button class="btn btn-danger btn-block"><span class="glyphicon glyphicon-remove"></span> Bye!
                         </button>
 
-                    </form>
+                </form>
 
-                    <div class="modal-footer">
-                    </div>
+                <div class="modal-footer">
                 </div>
-
             </div>
+
         </div>
-
-
     </div>
-    {# End Modal for removing user #}
 
 
-
-{% endblock %}
+</div>
+{# End Modal for removing user #} {% endblock %}

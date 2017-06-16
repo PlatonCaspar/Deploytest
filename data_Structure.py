@@ -31,7 +31,8 @@ db = flask_sqlalchemy.SQLAlchemy(app)
 class Board(db.Model):
     code = db.Column(db.String(500), primary_key=True)
     project_name = db.Column(db.Text, db.ForeignKey('project.project_name'))
-    project = db.relationship('Project', backref=db.backref('project_boards_backref', lazy='dynamic'))
+    project = db.relationship('Project', backref=db.backref(
+        'project_boards_backref', lazy='dynamic'))
     link = db.Column(db.String(500))
     version = db.Column(db.String(20))
     id = db.Column(db.Integer, primary_key=False)
@@ -70,11 +71,12 @@ class User(db.Model):
         self.username = username
         if password and email:
             self.uid = id(username)
-        
+
             self.email = email
             self.password_hashed_and_salted = pbkdf2_sha256.hash(password)
 
-        if db.session.query(User).all() is None:  # First user logged in must be active!
+        # First user logged in must be active!
+        if db.session.query(User).all() is None:
             self.is_active = True
 
         else:
@@ -121,15 +123,20 @@ class User(db.Model):
     def get(uid):
         return User.query.filter_by(uid=uid).first()
 
+    def processes(self):
+        return Process.query.filter_by(user_id=self.uid).all()
+
 
 class History(db.Model):
     board_code = db.Column(db.String(500), db.ForeignKey('board.code'))
     id = db.Column(db.Integer, primary_key=True)
     history = db.Column(db.Text)
     edited_by_id = db.Column(db.Text, db.ForeignKey('user.uid'))
-    added_by = db.relationship('User', backref=db.backref('added_by_backref', lazy='dynamic'))
+    added_by = db.relationship('User', backref=db.backref(
+        'added_by_backref', lazy='dynamic'))
 
-    edited_by = db.relationship('User', backref=db.backref('edited_by_backref', lazy='dynamic'))
+    edited_by = db.relationship('User', backref=db.backref(
+        'edited_by_backref', lazy='dynamic'))
     time_and_date = db.Column(db.String(10))
     last_edited = db.Column(db.String(10))
     data_objects = db.relationship('Files',
@@ -179,7 +186,8 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
     project_name = db.Column(db.Text, primary_key=True)
     project_description = db.Column(db.Text)
     project_default_image_path = db.Column(db.Text, default=None)
-    project_boards = db.relationship('Board', backref=db.backref('project_backref', lazy='dynamic', uselist=True))
+    project_boards = db.relationship('Board', backref=db.backref(
+        'project_backref', lazy='dynamic', uselist=True))
     sub_projects = db.relationship('Project', lazy='dynamic', uselist=True)
     sub_projects_id = db.Column(db.Text, db.ForeignKey('project.project_name'))
     project_history = db.relationship('History',
@@ -197,30 +205,38 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
         self.project_default_image_path = project_default_image_path
 
 
-##EXB-List from now on
+# EXB-List from now on
 
 
-packaging_types = dict([("0", "Cut Tape"), ("1", "Reel"), ("2", "Tray"), ("3", "Tube"), ("4", "Bulk")])
+packaging_types = dict([("0", "Cut Tape"), ("1", "Reel"),
+                        ("2", "Tray"), ("3", "Tube"), ("4", "Bulk")])
 
-booking_types = dict([("purchase", "Purchase"), ("removal", "Removal"), ("stocktaking", "Stocktaking")])
+booking_types = dict([("purchase", "Purchase"),
+                      ("removal", "Removal"), ("stocktaking", "Stocktaking")])
 
 # be sure to change the categories in the html file as well!
 categories = dict(
     [(1, "Diode"), (2, "Transistor"), (3, "Integrated circuit"), (4, "Optoelectronic device"), (5, "Display"),
-     (6, "Vacuum Tube"), (7, "Discharge device"), (8, "Power source"), (9, "Resistor"), (10, "Capacitor"),
+     (6, "Vacuum Tube"), (7, "Discharge device"), (8,
+                                                   "Power source"), (9, "Resistor"), (10, "Capacitor"),
      (11, "Inductor"),
-     (12, "Saturable inductor"), (13, "Transformer"), (14, "Magnetic amplifier (toroid)"),
+     (12, "Saturable inductor"), (13,
+                                  "Transformer"), (14, "Magnetic amplifier (toroid)"),
      (15, "Ferrite impedance, bedas"),
-     (16, "Motor / Generator"), (17, "Solenoid"), (18, "Loudspeaker / Microphone"), (19, "Memristor"),
+     (16, "Motor / Generator"), (17, "Solenoid"), (18,
+                                                   "Loudspeaker / Microphone"), (19, "Memristor"),
      (20, "RC / LC Network"),
-     (21, "Transducer, seonsor, detector"), (22, "Antenna"), (23, "Filter"), (24, "Prototyping aid"),
+     (21, "Transducer, seonsor, detector"), (22,
+                                             "Antenna"), (23, "Filter"), (24, "Prototyping aid"),
      (25, "Piezoelectric device, crystal, resonator"),
-     (26, "Terminals and Connectors"), (27, "Cable assembly"), (28, "Switch"), (29, "Protection device"),
+     (26, "Terminals and Connectors"), (27,
+                                        "Cable assembly"), (28, "Switch"), (29, "Protection device"),
      (30, "Mechanical accesories (Heat sink, Fan, etc...)")])
 # be sure to change the housings in the html as well!
 housings = dict([(0, "NA"), (1, "TO"), (2, "PFM"), (3, "SIP"), (4, "ZIP"), (5, "DIL"), (6, "DIP"),
                  (7, "DPAK/TO"), (8, "SOD"), (9, "DFP"), (10, "TFP"), (11, "QFP"),
-                 (12, "QFN (MLF/MFP)"), (13, "SOP"), (14, "SOIC"), (15, "SOJ"), (16, "LGA"),
+                 (12, "QFN (MLF/MFP)"), (13, "SOP"), (14,
+                                                      "SOIC"), (15, "SOJ"), (16, "LGA"),
                  (17, "PGA"), (18, "BGA"), (19, "TCP"), (20, "PLCC")])
 
 # String of Chip forms:
@@ -229,12 +245,14 @@ chip_forms = "010050201040205040603080509071008120612101411151516081812182520102
 # Units
 unit = dict([(0, ""), (1, "Ohm"), (2, "Farad"), (3, "Henry"), (4, "dB")])
 # unit scale
-scale = dict([(0, ""), (1, "G"), (2, "M"), (3, "k"), (4, "m"), (5, "µ"), (6, "n"), (7, "p")])
+scale = dict([(0, ""), (1, "G"), (2, "M"), (3, "k"),
+              (4, "m"), (5, "µ"), (6, "n"), (7, "p")])
 
 
 class Exb(db.Model):
     exb_number = db.Column(db.Text, primary_key=True)
-    associated_components_id = db.Column(db.Integer, db.ForeignKey('component.id'))
+    associated_components_id = db.Column(
+        db.Integer, db.ForeignKey('component.id'))
     associated_components = db.relationship('Component', backref='associated_components_exb',
                                             uselist=False)
 
@@ -245,7 +263,8 @@ class Exb(db.Model):
 
         elif division is not None and exb_number is None:
             if division == 'SDI':
-                all_exb_sdi = db.session.query(Exb).filter(Exb.exb_number.contains("EXB01")).all()
+                all_exb_sdi = db.session.query(Exb).filter(
+                    Exb.exb_number.contains("EXB01")).all()
                 biggest = 0
                 for exb in all_exb_sdi:
                     if biggest < int(exb.exb_number.split("EXB01")[1]):
@@ -254,7 +273,8 @@ class Exb(db.Model):
                 self.exb_number = "EXB01" + str(new_exb_numer_counter).zfill(4)
                 print(self.exb_number)
             elif division == 'IPE':
-                all_exb_ipe = db.session.query(Exb).filter(Exb.exb_number.contains("EXB00")).all()
+                all_exb_ipe = db.session.query(Exb).filter(
+                    Exb.exb_number.contains("EXB00")).all()
                 biggest = 0
                 for exb in all_exb_ipe:
                     if biggest < int(exb.exb_number.split("EXB00")[1]):
@@ -266,7 +286,8 @@ class Exb(db.Model):
 class A5E(db.Model):
     # __table_name__ = 'a5e'
     a5e_number = db.Column(db.Text, primary_key=True)
-    associated_components_id = db.Column(db.Integer, db.ForeignKey('component.id'))
+    associated_components_id = db.Column(
+        db.Integer, db.ForeignKey('component.id'))
     associated_components = db.relationship('Component', backref='associated_components_a5e',
                                             uselist=False)
 
@@ -286,13 +307,17 @@ class Component(db.Model):
     # unit = db.Column(db.String(10))
     manufacturer = db.Column(db.String)
     packaging_id = db.Column(db.Integer)
-    a5e_number = db.relationship('A5E', backref='associated_a5e_number', uselist=False)
-    exb_number = db.relationship('Exb', backref='associated_exb_number', uselist=False)
+    a5e_number = db.relationship(
+        'A5E', backref='associated_a5e_number', uselist=False)
+    exb_number = db.relationship(
+        'Exb', backref='associated_exb_number', uselist=False)
     documents_id = db.Column(db.Integer, db.ForeignKey('documents.id'))
-    documents = db.relationship('Documents', backref='associated_documents', uselist=True)
+    documents = db.relationship(
+        'Documents', backref='associated_documents', uselist=True)
     taken_out = db.Column(db.Boolean, default=False)
     # footprint_id = db.Column(db.Integer,db.ForeignKey('documents.id'))
-    footprint = db.relationship('Documents', backref='associated_footprint', uselist=False)
+    footprint = db.relationship(
+        'Documents', backref='associated_footprint', uselist=False)
     # storage_place = db.Column()
 
     def __init__(self):
@@ -303,10 +328,9 @@ class Component(db.Model):
         for d in self.documents:
             if d.document_type == "Datasheet":
                 return d
-            else: 
-                return None 
-    
-    
+            else:
+                return None
+
     def housing(self):
         return housings[self.housing_id]
 
@@ -319,24 +343,34 @@ class Component(db.Model):
     def stock(self):
         qty_stock = 0
         bookings = Booking.query.filter_by(
-            deprecated=False, component_id=self.id).filter_by(lab=False).all()
+            deprecated=False, component_id=self.id, lab=False).all()
+        print(str(bookings))
         for booking in bookings:
-            qty_stock += booking.quantity
+            if booking.quantity:
+                print("booking.quantity is true")
+                qty_stock += booking.quantity
+                print("qty_stock: "+str(qty_stock))
         return qty_stock
 
     def reserved(self):
         qty_stock = 0
-        bookings = db.session.query(Reservation).join(Component, Component.id == Reservation.component_id).all()
+        bookings = Reservation.query.filter_by(component_id=self.id).all()
         for booking in bookings:
-            qty_stock += booking.quantity
+            if booking.quantity:
+                qty_stock += booking.quantity
         return qty_stock
 
     def stock_lab(self):
         qty_lab = 0
-        bookings = Booking.query.filter_by(deprecated=False, lab=True, component_id=self.id)
+        bookings = Booking.query.filter_by(
+            deprecated=False, lab=True, component_id=self.id)
         for b in bookings:
-            qty_lab += b.quantity
+            if b.quantity:
+                qty_lab += b.quantity
         return qty_lab
+
+    def reservations(self):
+        return Reservation.query.filter_by(component_id = self.id).all()
 
 
 class Documents(db.Model):
@@ -356,14 +390,16 @@ class Booking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date_time = db.Column(db.DateTime)
     component_id = db.Column(db.Integer, db.ForeignKey('component.id'))
-    component = db.relationship('Component', backref='booked_component', uselist=False)
+    component = db.relationship(
+        'Component', backref='booked_component', uselist=False)
     quantity = db.Column(db.Integer)
     deprecated = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer)
     user_mail = db.Column(db.Text)
     booking_type = db.Column(db.String)
     project_name = db.Column(db.Text, db.ForeignKey('project.project_name'))
-    project = db.relationship('Project', backref='booked_for_project', uselist=False)
+    project = db.relationship(
+        'Project', backref='booked_for_project', uselist=False)
     lab = db.Column(db.Boolean, default=False)
 
     def __init__(self, qty: int, booking_type: str, component=None):
@@ -391,8 +427,6 @@ class Booking(db.Model):
         else:
             return User(username=str(self.user_id), email=self.user_mail)
 
-    
-
 
 class Reservation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -400,16 +434,19 @@ class Reservation(db.Model):
     user_id = db.Column(db.Integer)
     user_mail = db.Column(db.Text)
     component_id = db.Column(db.Integer, db.ForeignKey('component.id'))
-    component = db.relationship('Component', backref='reserved_component', uselist=False)
+    component = db.relationship(
+        'Component', backref='reserved_component', uselist=False)
     quantity = db.Column(db.Integer)
     project_name = db.Column(db.Text, db.ForeignKey('project.project_name'))
-    project = db.relationship('Project', backref='reserved_for_project', uselist=False)
+    project = db.relationship(
+        'Project', backref='reserved_for_project', uselist=False)
 
     def __init__(self, qty: int):
         #self.id = id(str(urandom(15)) + str(qty))
         self.date_time = datetime.datetime.now()
         self.user_id = current_user.uid
         self.user_mail = current_user.email
+        self.quantity = qty
 
     def date(self):
 
@@ -427,38 +464,50 @@ class Reservation(db.Model):
             # eng = db.create_all()
             # create_databases()
 
-        def book (self):
-            booking = Booking(self.component, self.quantity, 'removal')
-            db.session.add(booking)
-            db.session.commit()
-            return booking
-
+    def book(self):
+        booking = Booking(component=self.component, qty=self.quantity, booking_type='removal')
+        db.session.add(booking)
+        db.session.commit()
+        return booking
 
 
 class Process(db.Model):
-     id = db.Column(db.Integer, primary_key=True)
-     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
-     bookings = db.relationship('Booking', backref='process_bookings', lazy='dynamic', uselist=True)
-     reservation_id = db.Column(db.Integer, db.ForeignKey('reservation.id'))
-     reservations = db.relationship('Reservation', backref='process_reservations', lazy='dynamic', uselist=True)
-     date_time = db.Column(db.DateTime)
-     user_id = db.Column(db.Integer)
-     user_mail = db.Column(db.Text)
-    
-     def __init__(self):
+    id = db.Column(db.Integer, primary_key=True)
+    booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
+    bookings = db.relationship(
+        'Booking', backref='process_bookings', lazy='dynamic', uselist=True)
+    reservation_id = db.Column(db.Integer, db.ForeignKey('reservation.id'))
+    reservations = db.relationship(
+        'Reservation', backref='process_reservations', lazy='dynamic', uselist=True)
+    date_time = db.Column(db.DateTime)
+    user_id = db.Column(db.Integer)
+    user_mail = db.Column(db.Text)
+    description = db.Column(db.Text)
+
+    def __init__(self, description=None):
         self.date_time = datetime.datetime.now()
         self.user_id = current_user.uid
         self.user_mail = current_user.email
+        if description:
+            self.description = description
+        else:
+            self.description = current_user.username + \
+                ": Process " + self.date_time.strftime("%d.%m.%y")
 
-     def book(self):
+    def book(self):
         for r in self.reservations:
-            self.bookings+=r.book()
+            self.bookings.append(r.book())
             db.session.delete(r)
             db.session.commit()
 
-
-    
-
+    def data(self):
+        if self.reservations.all():
+            print("Reservations: "+str(self.reservations.all()))
+            return self.reservations
+        elif self.bookings.all():
+            return self.bookings
+        else:
+            return None
 
 
 SQLALCHEMY_MIGRATE_REPO = path.join(DATA_FOLDER, "static/Database")
