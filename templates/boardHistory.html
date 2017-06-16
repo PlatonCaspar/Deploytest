@@ -45,10 +45,35 @@
 
         <div class="panel">
             <div class="page-header">
-                <h3>Board Comments
-                    <small>{{ "("+g_board.code|string+")" }}</small>
-                </h3>
+
+                <h2 class=" center-block">{{ g_board.code|string }}
+                    <small class="">
+                        Version: {{ g_board.version|string }}
+                        {% if current_user.username != 'Guest' %}
+                            <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                                    data-target="#version_modal"><span class="glyphicon glyphicon-pencil"></span>
+                            </button>
+                        {% endif %}
+                        State: {{ g_board.stat|string }}
+                        {% if current_user.username != 'Guest' %}
+                            <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                                    data-target="#state_modal"><span class="glyphicon glyphicon-pencil"></span>
+                            </button>
+                        {% endif %}
+                        Patch: {{ g_board.patch|string }}
+                        {% if current_user.username != 'Guest' %}
+                            <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                                    data-target="#patch_modal"><span class="glyphicon glyphicon-pencil"></span>
+                            </button>
+                        {% endif %}
+                    </small>
+                </h2>
+
             </div>
+            <h4 class="panel-heading ">Board Comments
+                <small class="">{{ "("+g_board.code|string+")" }}</small>
+            </h4>
+
             {% if current_user.username!='Guest' %}
                 <button type="button" class="btn btn-default center-block" data-toggle="modal"
                         data-target="#addModal"><span
@@ -76,8 +101,10 @@
                                             <div class=" col-xs-2 col-md-2">
 
                                                 <div class="thumbnail">
-                                                    <a href="/static/Pictures/{{ pic.file_path }}">
-                                                        <img src="/static/Pictures/{{ pic.file_path }}" style="width: 100%">
+                                                    <a class="" href="/static/Pictures/{{ pic.file_path }}">
+                                                        <img class=""
+                                                             src="/static/Pictures/{{ pic.file_path }}"
+                                                             style="width: 100%">
                                                     </a>
                                                     <div class="caption">
                                                         {% if current_user.is_authenticated %}
@@ -289,6 +316,136 @@
 
     </div>
 
+    {% if current_user.username != 'Guest' %}
+
+        {# Version Change Modal #}
+        <div id="version_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{ 'Change Version' }}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url_for('change_board_version', board_id=g_board.code) }}" method="post">
+                            <div class="form-group">
+                                <input class="form-control" type="text" id="version_form" name="version_form"
+                                       placeholder="Please enter the new Version...">
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-default" type="submit">Change</button>
+                                <button class="btn btn-default pull-right" type="button" data-dismiss="modal">Cancel
+                                </button>
+                            </div>
+                        </form>
+                        <div class="modal-footer">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+
+        {# State Change Modal #}
+        <div id="state_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{ 'Change State' }}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url_for('change_board_state', board_id=g_board.code) }}" method="post">
+                            <div class="form-group">
+                                <input class="form-control" type="text" id="state_form" name="state_form"
+                                       placeholder="Please enter the current state of the board...">
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-default" type="submit">Change</button>
+                                <button class="btn btn-default pull-right" type="button" data-dismiss="modal">Cancel
+                                </button>
+                            </div>
+
+                        </form>
+                        <div class="modal-footer">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+
+        {# Patch Change Modal #}
+        <div id="patch_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{ 'Change Patch' }}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url_for('change_board_patch', board_id=g_board.code) }}" method="post">
+                            <div class="form-group">
+                                <input class="form-control" type="text" id="patch_form" name="patch_form"
+                                       placeholder="Please enter the current patch of the board...">
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-default" type="submit">Change</button>
+                                <button class="btn btn-default pull-right" type="button" data-dismiss="modal">Cancel
+                                </button>
+                            </div>
+
+                        </form>
+                        <div class="modal-footer">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+
+    {% endif %}
+
+
+
+    {# Print Area #}
+    <div class="container container-fluid print_website_parent print_website">
+        <div class="page-header print_website h2">Project: {{ g_board.project.project_name }}</div>
+
+        <address class="print_website">
+            <h3 class="print_website">Board: {{ g_board.code }} <br>
+                <small class="print_website">
+                    Version: {{ g_board.version }}<br>
+                    State: {{ g_board.stat }}<br>
+                    Patch: {{ g_board.patch }}
+                </small>
+            </h3>
+        </address>
+        <table class="print_website table table-bordered table-striped">
+            <thead class="print_website">
+            <th class="print_website">Comment</th>
+            <th class="print_website">User</th>
+            <th class="print_website">Date</th>
+            </thead>
+            <tbody class="print_website">
+            {% for c in history %}
+                <tr class="print_website">
+                <td class="print_website">{{ c.history|safe }}</td>
+                <td class="print_website">{{ c.edited_by.username|string }}</td>
+                <td class="print_website">{{ c.last_edited|string }}</td>
+                </tr>
+
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
 
 {%- endblock %}
 

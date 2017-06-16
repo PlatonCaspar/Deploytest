@@ -454,12 +454,12 @@ def show_board_history(g_code):
     if edit_form is not None:
         return render_template('boardHistory.html', g_board=tg_board,
                                history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
-                                   data_Structure.History.time_and_date).all()[::-1],
+                                   data_Structure.History.time_and_date).all(),
                                add_form=add_form, edit_form=edit_form)
     else:
         return render_template('boardHistory.html', g_board=tg_board,
                                history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
-                                   data_Structure.History.time_and_date).all()[::-1],
+                                   data_Structure.History.time_and_date).all(),
                                add_form=add_form, edit_form=edit_form)
 
 
@@ -685,6 +685,46 @@ def user_forgot_change_password():
     else:
         flash(current_user.username + ' your password was not correct!', 'danger')
         return redirect(url_for(user_forgot_password))
+
+@app.route('/boardHistory/change/version/<board_id>/', methods=['POST'])
+@login_required
+def change_board_version(board_id):
+    board = data_Structure.Board.query.get(board_id)
+    new_version = request.form.get('version_form')
+    comment_string = "Version was changed from " + board.version + " to " + new_version
+    change_comment = data_Structure.History(comment_string, board.code)
+    data_Structure.db.session.add(change_comment)
+    board.version = new_version
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_board_history', g_code=board_id))
+
+
+@app.route('/boardHistory/change/state/<board_id>/', methods=['POST'])
+@login_required
+def change_board_state(board_id):
+    board = data_Structure.Board.query.get(board_id)
+    new_state = request.form.get('state_form')
+    comment_string = "State was changed from " + str(board.stat) + " to " + new_state
+    change_comment = data_Structure.History(comment_string, board.code)
+    data_Structure.db.session.add(change_comment)
+    board.stat = new_state
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_board_history', g_code=board_id))
+
+
+@app.route('/boardHistory/change/patch/<board_id>/', methods=['POST'])
+@login_required
+def change_board_patch(board_id):
+    board = data_Structure.Board.query.get(board_id)
+    new_patch = request.form.get('patch_form')
+    comment_string = "Patch was changed from " + str(board.patch) + " to " + new_patch
+    change_comment = data_Structure.History(comment_string, board.code)
+    data_Structure.db.session.add(change_comment)
+    board.patch = new_patch
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_board_history', g_code=board_id))
+
+
 
 
 @app.route('/component/add/', methods=['GET'])

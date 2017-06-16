@@ -15,11 +15,11 @@
                     <h1>{{ project.project_name }}
                         <small>
                             {% if current_user.is_authenticated %}
-                                <button class="btn btn-group btn-warning btn-sm pull-right" type="button"
-                                        data-toggle="collapse" data-target="#delete_project"
-                                        aria-expanded="false"
-                                        aria-controls="delete_project"><span
-                                        class="glyphicon glyphicon-remove"></span></button>
+                            <button class="btn btn-group btn-warning btn-sm pull-right" type="button"
+                                    data-toggle="collapse" data-target="#delete_project"
+                                    aria-expanded="false"
+                                    aria-controls="delete_project"><span
+                                    class="glyphicon glyphicon-remove"></span></button>
                             {% endif %}
                         </small>
                     </h1>
@@ -43,42 +43,41 @@
                     <div class="col-xs-3 col-md-3">
                         <div class="thumbnail">
                             {% if project.project_default_image_path is none %}
-                                <img src="/static/staticPictures/logo.jpg"
-                                     alt="Project Picture"
-                                     style="width: 100%">
+                            <img src="/static/staticPictures/logo.jpg"
+                                 alt="Project Picture"
+                                 style="width: 100%">
                             {% else %}
-                                <img src="/static/Pictures/{{ project.project_default_image_path|replace('\\','/') }}"
-                                     alt="Project Picture"
-                                     style="width: 100%">
+                            <img src="/static/Pictures/{{ project.project_default_image_path|replace('\\','/') }}"
+                                 alt="Project Picture"
+                                 style="width: 100%">
                             {% endif %}
                             {% if current_user.is_authenticated %}
-                                <div class="caption">
-                                    <p>
-                                    <div class="row">
+                            <div class="caption">
+                                <p>
+                                <div class="row">
+                                    <div class="col-xs-6 col-md-6">
+                                        <button class="btn btn-default btn-block" type="button" data-toggle="collapse"
+                                                data-target="#delete_project_picture">
+                                            <span class="glyphicon glyphicon-remove"></span>
+                                        </button>
+                                    </div>
+                                    <form action="{{ url_for('edit_project_image',project_name=project.project_name) }}"
+                                          method="post" class="" enctype="multipart/form-data"
+                                          id="new_upfile_form">
+
+                                        <input class="hidden" name="new_upfile" id="new_upfile" accept="image/*"
+                                               type="file" value="upload"
+                                               onchange="document.getElementById('new_upfile_button').click()">
+                                        <button class="hidden" type="submit" id="new_upfile_button"></button>
                                         <div class="col-xs-6 col-md-6">
                                             <button class="btn btn-default btn-block" type="button"
-                                                    data-toggle="collapse"
-                                                    data-target="#delete_project_picture">
-                                                <span class="glyphicon glyphicon-remove"></span>
-                                            </button>
+                                                    onclick="document.getElementById('new_upfile').click()"><span
+                                                    class="glyphicon glyphicon-edit"></span></button>
                                         </div>
-                                        <form action="{{ url_for('edit_project_image',project_name=project.project_name) }}"
-                                              method="post" class="" enctype="multipart/form-data"
-                                              id="new_upfile_form">
-
-                                            <input class="hidden" name="new_upfile" id="new_upfile" accept="image/*"
-                                                   type="file" value="upload"
-                                                   onchange="document.getElementById('new_upfile_button').click()">
-                                            <button class="hidden" type="submit" id="new_upfile_button"></button>
-                                            <div class="col-xs-6 col-md-6">
-                                                <button class="btn btn-default btn-block" type="button"
-                                                        onclick="document.getElementById('new_upfile').click()"><span
-                                                        class="glyphicon glyphicon-edit"></span></button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    </p>
+                                    </form>
                                 </div>
+                                </p>
+                            </div>
                             {% endif %}
                             {% set img_id=project.project_default_image_path|replace('/','_') %}
 
@@ -103,10 +102,7 @@
             <div class="panel-body">
                 <h4>Description:</h4>
                 <hr>
-                {{ project.project_description|safe }} {% if current_user.username!='Guest' %}
-                <button class="btn btn-default btn-sm pull-right" data-toggle="modal"
-                        data-target="#edit_description_modal">
-                    <span class="glyphicon glyphicon-pencil small"></span></button>{% endif %}
+                {{ project.project_description|safe }}
             </div>
             <div class="panel-footer">
 
@@ -117,49 +113,41 @@
                         <h3>Boards:</h3>
                     </div>
 
-                    <table class="table table-striped table-hover table-responsive table-condensed">
-                        <thead>
-                        <tr>
-                            <th class="text-info">Code</th>
-                            <th class="text-info">Version</th>
-                            <th class="text-info">Added on</th>
-                            <th class="text-info">Added by</th>
+                    <table class="table table-striped table-hover table-responsive table-condensed ">
+                        <thead class="">
+                        <tr class="">
+                            <th class="text-info ">Board</th>
+                            <th class="text-info ">Version</th>
+                            <th class="text-info ">Status</th>
+                            <th class="text-info ">Patch</th>
                         </tr>
                         </thead>
 
-                        <tbody>
-                        {% set args=boards %}
-                        {% for row in args %}
-                            <form action="{{ row.link }}">
+                        <tbody class="">
+
+                        {% for b in boards %}
 
 
-                                <tr>
-                                    <div class="btn-group btn-group-justified">
+
+                            <tr class="table_links "
+                                onclick="window.document.location='{{ url_for('show_board_history',g_code=b.code) }}';">
 
 
-                                        <td class="text-justify">
-                                            <button type="submit" class="btn btn-block"
-                                                    style="background-color: transparent">{{ row.code }}</button>
-                                        </td>
-                                        <td class="text-justify">
-                                            <button type="submit" class="btn btn-block"
-                                                    style="background-color: transparent">{{ row.project_name }}</button>
-                                        </td>
-                                        <td class="text-justify">
-                                            <button type="submit" class="btn btn-block"
-                                                    style="background-color: transparent">{{ row.version }}</button>
-                                        </td>
-                                        <td class="text-justify">
-                                            <button type="submit" class="btn btn-block"
-                                                    style="background-color: transparent">{{ row.dateAdded }}</button>
-                                        </td>
-                                        <td class="text-justify">
-                                            <button type="submit" class="btn btn-block btn-text-left"
-                                                    style="background-color: transparent"><span
-                                                    class="glyphicon glyphicon-user"
-                                                    style="padding-right: 5px"></span>{{ row.addedBy.username }}
-                                            </button>
-                                        </td>
+                                <td class="text-justify table_links ">
+                                    {{ b.code }}
+                                </td>
+                                <td class="text-justify table_links ">
+                                    {{ b.version }}
+                                </td>
+                                <td class="text-justify table_links ">
+                                    {{ b.stat }}
+                                </td>
+                                <td class="text-justify table_links ">
+                                    {{ b.patch }}
+                                </td>
+
+
+                            </tr>
 
                                     </div>
                                 </tr>
@@ -174,36 +162,59 @@
         </div>
     </div>
 
-    {% if current_user.username!='Guest' %}
+    {# Print Area #}
 
-        <!-- description Modal -->
-        <div class="modal fade" id="edit_description_modal" tabindex="-1" role="dialog"
-             aria-labelledby="Edit_Description">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title" id="myModalLabel">Edit Description</h4>
-                    </div>
-                    <div class="modal-body">
-                        <form action="{{ url_for('change_project_description',project_name=project.project_name) }}"
-                              method="post">
-                            <input id="project_description_form" name="project_description_form" class="form-control"
-                                   type="text"
-                                   value="{{ project.project_description }}">
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <div class="container container-fluid print_website print_website_parent">
+        <p class="print_website">
+        <h3>Project</h3>
+        <address class="print_website">
+            <h4 class="print_website">Project Name: {{ project.project_name }}<br>
+                <small class="print_website">Project description: {{ project.project_description }}</small>
+            </h4>
+        </address>
+        </p>
 
-                        <button type="button" class="btn btn-primary"
-                                onclick="document.getElementById('project_description_form').submit()">Save changes
-                        </button>
+        <table class="table table-striped table-bordered print_website">
+            <thead class="print_website">
+            <tr class="print_website">
+                <th class="text-info print_website">Board</th>
+                <th class="text-info print_website">Version</th>
+                <th class="text-info print_website">Status</th>
+                <th class="text-info print_website">Patch</th>
+            </tr>
+            </thead>
 
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endif %}
-{% endblock %}
+            <tbody class="print_website">
+
+            {% for b in boards %}
+
+
+
+                <tr class="table_links print_website">
+
+
+                    <td class="text-justify table_links print_website">
+                        {{ b.code }}
+                    </td>
+                    <td class="text-justify table_links print_website">
+                        {{ b.version }}
+                    </td>
+                    <td class="text-justify table_links print_website">
+                        {{ b.stat }}
+                    </td>
+                    <td class="text-justify table_links print_website">
+                        {{ b.patch }}
+                    </td>
+
+
+                </tr>
+
+
+            {% endfor %}
+            </tbody>
+        </table>
+
+
+    </div>
+
+{% endblock %}
