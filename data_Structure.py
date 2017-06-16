@@ -31,8 +31,7 @@ db = flask_sqlalchemy.SQLAlchemy(app)
 class Board(db.Model):
     code = db.Column(db.String(500), primary_key=True)
     project_name = db.Column(db.Text, db.ForeignKey('project.project_name'))
-    project = db.relationship('Project', backref=db.backref(
-        'project_boards_backref', lazy='dynamic'))
+    project = db.relationship('Project', backref=db.backref('project_boards_backref', lazy='dynamic'))
     link = db.Column(db.String(500))
     version = db.Column(db.String(20))
     id = db.Column(db.Integer, primary_key=False)
@@ -40,8 +39,12 @@ class Board(db.Model):
     history = db.relationship('History', backref='History', lazy='dynamic')
     addedBy_id = db.Column(db.String, db.ForeignKey('user.uid'))
     addedBy = db.relationship('User', backref='user_board', uselist=False)
+    stat = db.Column(db.Text)
+    patch = db.Column(db.Text)
 
-    def __init__(self, code: str, project_name: str, ver: str):  # , history):
+
+    def __init__(self, code: str, project_name: str, ver: str, stat="init", patch="None"):  # , history):
+
         self.project_name = project_name
         self.code = code
         self.id = id(code)
@@ -49,6 +52,9 @@ class Board(db.Model):
         self.link = str(url_for('show_board_history', g_code=self.code))
         self.dateAdded = time.strftime("%d.%m.%Y %H:%M:%S")
         self.addedBy = current_user
+        self.stat = stat
+        self.patch = patch
+
 
     def __repr__(self):
         return '<Board %r>' % self.code

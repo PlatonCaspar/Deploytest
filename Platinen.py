@@ -239,6 +239,7 @@ def start():
             component = exb_number.associated_components
             return redirect(url_for('show_component', component_id=component.id))
         elif "EXB" in search_word:
+            search_word=search_word.strip()
             exb_number = data_Structure.Exb.query.get(search_word)
             component = exb_number.associated_components
             return redirect(url_for('show_component', component_id=component.id))
@@ -1099,5 +1100,5 @@ if __name__ == '__main__':
 
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
-    app.run(debug=False, port=80)  # , host='0.0.0.0')
+    app.run(debug=False, port=80) # , host='0.0.0.0')
 # app.run(debug=False, port=80, host='0.0.0.0')
