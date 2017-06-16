@@ -45,6 +45,11 @@ def nav_bar():
         return ownNavRenderer.ExtendedNavbar(
             title=View(tags.img(src='/static/staticPictures/logo.png', width=200), 'start'),
             items=(View('Start', 'start'),
+                   Subgroup('Components',
+                   View('Components', 'show_all_components')),
+                   Subgroup('Projects',
+                            View('Projects', 'show_project_all')),
+                   
                    search_bar
                    ),
 
@@ -59,13 +64,22 @@ def nav_bar():
             )
 
         )
+
+        
     else:
         return ownNavRenderer.ExtendedNavbar(
             title=View(tags.img(src='/static/staticPictures/logo.png', width=200), 'start'),
             items=(View('Start', 'start'),
-                   View('New Board', 'add__board'),
-
-                   View('New Project', 'add_project'),
+                    Subgroup('Board',
+                            View('New Board', 'add__board')),
+                    Subgroup('Project',
+                            View('Projects', 'show_project_all'), 
+                            View('New Project', 'add_project')),
+                   Subgroup('Components',
+                   View('Components', 'show_all_components'),
+                   View('New Component', 'add_component'),
+                   View('Stocktaking Stock', 'stocktaking_stock'),
+                   View('Return Component', 'bring_back')),
                    search_bar
 
                    ),

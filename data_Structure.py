@@ -70,6 +70,7 @@ class User(db.Model):
         self.username = username
         if password and email:
             self.uid = id(username)
+        
             self.email = email
             self.password_hashed_and_salted = pbkdf2_sha256.hash(password)
 
@@ -145,7 +146,7 @@ class History(db.Model):
 
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
-        self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code + str(current_user.uid) + str(urandom(5)))
+        #self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code + str(current_user.uid) + str(urandom(5)))
 
 
 class Files(db.Model):
@@ -158,7 +159,7 @@ class Files(db.Model):
 
     def __init__(self, history, file_path: str, description='None'):
         self.belongs_to_history = history
-        self.id = id(file_path)
+        #self.id = id(file_path)
         self.description = description
         self.file_path = file_path
 
@@ -295,7 +296,8 @@ class Component(db.Model):
     # storage_place = db.Column()
 
     def __init__(self):
-        self.id = id(str(urandom(10)) + datetime.datetime.now().strftime('%m.%d.%y %H:%M:%S'))
+        #self.id = id(str(urandom(10)) + datetime.datetime.now().strftime('%m.%d.%y %H:%M:%S'))
+        pass
 
     def datasheet(self):
         for d in self.documents:
@@ -344,7 +346,7 @@ class Documents(db.Model):
     document_type = db.Column(db.Text)
 
     def __init__(self, document_type: str, file_name: str, description='None'):
-        self.id = id(file_name + str(urandom(5)))
+        #self.id = id(file_name + str(urandom(5)))
         self.description = description
         self.file_name = file_name
         self.document_type = document_type
@@ -364,8 +366,8 @@ class Booking(db.Model):
     project = db.relationship('Project', backref='booked_for_project', uselist=False)
     lab = db.Column(db.Boolean, default=False)
 
-    def __init__(self, qty: int, booking_type: str):
-        self.id = id(str(urandom(15)) + str(qty))
+    def __init__(self, qty: int, booking_type: str, component=None):
+       # self.id = id(str(urandom(15)) + str(qty))
         if booking_type is "Removal" or booking_type is "removal":
             self.quantity = (-1) * qty
         else:
@@ -375,6 +377,7 @@ class Booking(db.Model):
         self.user_id = int(current_user.uid)
         self.date_time = datetime.datetime.now()
         self.user_mail = current_user.email
+        self.component = component
 
     def date(self):
         if self.date_time:
@@ -387,6 +390,8 @@ class Booking(db.Model):
             return db.session.query(User).get(self.user_id)
         else:
             return User(username=str(self.user_id), email=self.user_mail)
+
+    
 
 
 class Reservation(db.Model):
@@ -401,7 +406,7 @@ class Reservation(db.Model):
     project = db.relationship('Project', backref='reserved_for_project', uselist=False)
 
     def __init__(self, qty: int):
-        self.id = id(str(urandom(15)) + str(qty))
+        #self.id = id(str(urandom(15)) + str(qty))
         self.date_time = datetime.datetime.now()
         self.user_id = current_user.uid
         self.user_mail = current_user.email
@@ -422,16 +427,38 @@ class Reservation(db.Model):
             # eng = db.create_all()
             # create_databases()
 
+        def book (self):
+            booking = Booking(self.component, self.quantity, 'removal')
+            db.session.add(booking)
+            db.session.commit()
+            return booking
 
-# class Process(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
-#     bookings = db.relationship('Booking', backref='process_bookings', lazy='dynamic', uselist=True)
-#     reservation_id = db.Column(db.Integer, db.ForeignKey('reservation.id'))
-#     reservations = db.relationship('Reservation', backref='process_reservations', lazy='dynamic', uselist=True)
-#     date_time = db.Column(db.DateTime)
-#     user_id = db.Column(db.Integer)
-#     user_mail = db.Column(db.Text)
+
+
+class Process(db.Model):
+     id = db.Column(db.Integer, primary_key=True)
+     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
+     bookings = db.relationship('Booking', backref='process_bookings', lazy='dynamic', uselist=True)
+     reservation_id = db.Column(db.Integer, db.ForeignKey('reservation.id'))
+     reservations = db.relationship('Reservation', backref='process_reservations', lazy='dynamic', uselist=True)
+     date_time = db.Column(db.DateTime)
+     user_id = db.Column(db.Integer)
+     user_mail = db.Column(db.Text)
+    
+     def __init__(self):
+        self.date_time = datetime.datetime.now()
+        self.user_id = current_user.uid
+        self.user_mail = current_user.email
+
+     def book(self):
+        for r in self.reservations:
+            self.bookings+=r.book()
+            db.session.delete(r)
+            db.session.commit()
+
+
+    
+
 
 
 SQLALCHEMY_MIGRATE_REPO = path.join(DATA_FOLDER, "static/Database")
@@ -450,7 +477,7 @@ SQLALCHEMY_MIGRATE_REPO = path.join(DATA_FOLDER, "static/Database")
 # print('Current database version: ' + str(v))
 
 
-# db.create_all()
+db.create_all()
 # if not path.exists(SQLALCHEMY_MIGRATE_REPO):
 #    api.create(SQLALCHEMY_MIGRATE_REPO, 'database_repository')
 #    api.version_control(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)

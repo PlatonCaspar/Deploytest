@@ -273,6 +273,10 @@ def start():
                                search_form=searchForm.SearchForm(), search_word=search_word)
     return render_template('start.html', search_form=search_form)
 
+@app.route('/Project/show/all/', methods=['GET'])
+def show_project_all():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template('table.html', projects=data_Structure.Project.query.all())
 
 @app.route('/addBoard/', methods=['GET', 'POST'])
 @login_required
@@ -920,7 +924,7 @@ def take_lab(component_id):
 @app.route('/component/datasheet/delete/<component_id>/do/', methods=['POST'])
 def delete_datasheet(component_id):
     component = data_Structure.Component.query.get(int(component_id))
-    file = component.datasheet
+    file = component.datasheet()
     filepath = os.path.join(DATA_UPLOAD_FOLDER, file.file_name)
     component.datasheet = None
     data_Structure.db.session.delete(file)
@@ -934,6 +938,48 @@ def delete_datasheet(component_id):
     data_Structure.db.session.commit()
     return redirect(url_for('show_component', component_id=component_id))
 
+
+@app.route('/component/bringback/', methods=['GET', 'POST'])
+@app.route("/component/bringback/<component_id>/", methods=['GET', 'POST'])
+@login_required
+def bring_back(component_id=None):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+
+    if component_id:
+            component = data_Structure.Component.query.get(int(component_id))
+    else:
+        component = None
+
+    if request.method == 'POST':
+        
+
+        if not component:
+            exb = data_Structure.Exb.query.get(request.form.get('exb'))
+            if exb:
+                component = exb.associated_components
+        if not component:
+            flash("Component cannot be found!", "danger")
+            return redirect(url_for('bring_back'))
+        component.taken_out = False
+
+        
+        if request.form.get('qty'):
+            print("Stocktaking started...")
+            for b in data_Structure.Booking.query.filter_by(deprecated=False, lab=False).join(data_Structure.Component,
+                                                                                        data_Structure.Booking.component_id == component.id).all():
+                b.deprecated = True
+            booking = data_Structure.Booking(int(request.form.get('qty')), "Stocktaking")
+            booking.component = component
+            data_Structure.db.session.add(booking)
+        data_Structure.db.session.commit()
+        return redirect(url_for('bring_back'))
+    return render_template('bringback.html', component=component)
+
+@app.route('/component/reserve/<component_id>/', methods=['POST'])
+@login_required
+def reserve_component(component_id):
+    pass
+#RH GT 117
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'

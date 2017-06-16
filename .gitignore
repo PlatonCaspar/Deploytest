@@ -6,3 +6,4 @@ static/Pictures
 static/data_folder
 List_of_electric_parts_types.md
 DHW_Database_Converter.py
+migrations/
