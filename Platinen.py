@@ -479,12 +479,12 @@ def show_board_history(g_code):
     if edit_form is not None:
         return render_template('boardHistory.html', g_board=tg_board,
                                history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
-                                   data_Structure.History.time_and_date).all(),
+                                   data_Structure.History.time_and_date).all()[::-1],
                                add_form=add_form, edit_form=edit_form)
     else:
         return render_template('boardHistory.html', g_board=tg_board,
                                history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
-                                   data_Structure.History.time_and_date).all(),
+                                   data_Structure.History.time_and_date).all()[::-1],
                                add_form=add_form, edit_form=edit_form)
 
 
@@ -633,8 +633,16 @@ def change_username(uid):
         data_Structure.User).filter_by(uid=uid).first()
 
     new_username = request.form.get('new_username')
-    user_to_change.username = new_username
-    data_Structure.db.session.commit()
+    flash(new_username)
+    print(data_Structure.User.query.filter_by(username=new_username).all())
+    flash(str(data_Structure.User.query.filter_by(username=new_username)))
+
+    if not data_Structure.db.session.query(data_Structure.User).filter_by(username=str(new_username)).all():
+        user_to_change.username = new_username
+        data_Structure.db.session.commit()
+    else:
+        flash("Username \""+new_username+"\" already exists. Please choose another Username", "danger")
+        print("Hallo")
     return redirect(url_for('my_profile'))
 
 

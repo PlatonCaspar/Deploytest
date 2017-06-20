@@ -17,12 +17,15 @@ def write_code_for_search_bar():
     bar = tags.div(tags.form(tags.div(
         tags.select(tags.option('All', value='All', Class="container-fluid panel-body"),
 
-                    tags.option("Boards", value='Boards', Class="container-fluid panel-body"),
-                    tags.option("Projects", value='Projects', Class="container-fluid panel-body"),
+                    tags.option("Boards", value='Boards',
+                                Class="container-fluid panel-body"),
+                    tags.option("Projects", value='Projects',
+                                Class="container-fluid panel-body"),
                     Class="form-control selectpicker",
                     style="margin: auto data-width: auto", name="Selector"),
 
-        tags.input(Type="text", Class="form-control ", placeholder="Search", name="search_field"),
+        tags.input(Type="text", Class="form-control ",
+                   placeholder="Search", name="search_field"),
 
         # tags.div(
         tags.button(tags.i(Class="glyphicon glyphicon-search"),
@@ -43,55 +46,62 @@ search_bar = RawTag(tags.li(write_code_for_search_bar()))
 def nav_bar():
     if current_user.username is 'Guest':
         return ownNavRenderer.ExtendedNavbar(
-            title=View(tags.img(src='/static/staticPictures/logo.png', width=200), 'start'),
+            title=View(
+                tags.img(src='/static/staticPictures/logo.png', width=200), 'start'),
             items=(View('Start', 'start'),
-                   Subgroup('Components',
-                   View('Components', 'show_all_components')),
-                   Subgroup('Projects',
+                   Subgroup('Project',
                             View('Projects', 'show_project_all')),
-                   
+                   Subgroup('Component',
+                            View('Components', 'show_all_components')),
+
+
                    search_bar
                    ),
 
             right_items=(
-                Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
-                Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px")),
+                Link(
+                    'Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
+                Text(tags.span(Class="glyphicon glyphicon-user",
+                               style="margin-right: -20px")),
                 Subgroup('Hello, Guest',
                          View(
-                             tags.div(tags.span(Class="glyphicon glyphicon-log-in", style="margin-right: 5%"), "Login"),
+                             tags.div(tags.span(
+                                 Class="glyphicon glyphicon-log-in", style="margin-right: 5%"), "Login"),
                              'login',
                              last_page_1=request.path.replace('/', '_')))
             )
 
         )
 
-        
     else:
         return ownNavRenderer.ExtendedNavbar(
-            title=View(tags.img(src='/static/staticPictures/logo.png', width=200), 'start'),
+            title=View(
+                tags.img(src='/static/staticPictures/logo.png', width=200), 'start'),
             items=(View('Start', 'start'),
-                    Subgroup('Board',
+                   Subgroup('Board',
                             View('New Board', 'add__board')),
-                    Subgroup('Project',
-                            View('Projects', 'show_project_all'), 
+                   Subgroup('Project',
+                            View('Projects', 'show_project_all'),
                             View('New Project', 'add_project')),
-                   Subgroup('Components',
-                   View('Components', 'show_all_components'),
-                   View('New Component', 'add_component'),
-                   View('Stocktaking Stock', 'stocktaking_stock'),
-                   View('Return Component', 'bring_back')),
+                   Subgroup('Component',
+                            View('Components', 'show_all_components'),
+                            View('New Component', 'add_component'),
+                            View('Stocktaking Stock', 'stocktaking_stock'),
+                            View('Return Component', 'bring_back')),
                    search_bar
 
                    ),
             right_items=(
-                Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
-                Text(tags.span(Class="glyphicon glyphicon-user container-inline", style="margin-right: -20px ")),
+                Link(
+                    'Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
+                Text(tags.span(Class="glyphicon glyphicon-user container-inline",
+                               style="margin-right: -20px ")),
                 Subgroup('Hello, ' + current_user.username,
                          View(tags.div(tags.span(Class="glyphicon glyphicon-trash", style="margin-right: 5%"),
                                        "Delete User"), 'delete_user'),
                          Separator,
                          View(tags.div(tags.span(Class="glyphicon glyphicon-user", style="margin-right: 5%"),
-                                       current_user.username+"`s Profile"), 'my_profile'),
+                                       current_user.username + "`s Profile"), 'my_profile'),
                          View(tags.div(tags.span(Class="glyphicon glyphicon-log-out", style="margin-right: 5%"),
                                        "Logout"), 'logout'))
             )
