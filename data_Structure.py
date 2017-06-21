@@ -31,7 +31,8 @@ db = flask_sqlalchemy.SQLAlchemy(app)
 class Board(db.Model):
     code = db.Column(db.String(500), primary_key=True)
     project_name = db.Column(db.Text, db.ForeignKey('project.project_name'))
-    project = db.relationship('Project', backref=db.backref('project_boards_backref', lazy='dynamic'))
+    project = db.relationship('Project', backref=db.backref(
+        'project_boards_backref', lazy='dynamic'))
     link = db.Column(db.String(500))
     version = db.Column(db.String(20))
     id = db.Column(db.Integer, primary_key=False)
@@ -42,8 +43,8 @@ class Board(db.Model):
     stat = db.Column(db.Text)
     patch = db.Column(db.Text)
 
-
-    def __init__(self, code: str, project_name: str, ver: str, stat="init", patch="None"):  # , history):
+    # , history):
+    def __init__(self, code: str, project_name: str, ver: str, stat="init", patch="None"):
 
         self.project_name = project_name
         self.code = code
@@ -54,7 +55,6 @@ class Board(db.Model):
         self.addedBy = current_user
         self.stat = stat
         self.patch = patch
-
 
     def __repr__(self):
         return '<Board %r>' % self.code
@@ -355,7 +355,7 @@ class Component(db.Model):
             if booking.quantity:
                 print("booking.quantity is true")
                 qty_stock += booking.quantity
-                print("qty_stock: "+str(qty_stock))
+                print("qty_stock: " + str(qty_stock))
         return qty_stock
 
     def reserved(self):
@@ -376,7 +376,7 @@ class Component(db.Model):
         return qty_lab
 
     def reservations(self):
-        return Reservation.query.filter_by(component_id = self.id).all()
+        return Reservation.query.filter_by(component_id=self.id).all()
 
 
 class Documents(db.Model):
@@ -471,7 +471,8 @@ class Reservation(db.Model):
             # create_databases()
 
     def book(self):
-        booking = Booking(component=self.component, qty=self.quantity, booking_type='removal')
+        booking = Booking(component=self.component,
+                          qty=self.quantity, booking_type='removal')
         db.session.add(booking)
         db.session.commit()
         return booking
@@ -508,12 +509,56 @@ class Process(db.Model):
 
     def data(self):
         if self.reservations.all():
-            print("Reservations: "+str(self.reservations.all()))
+            print("Reservations: " + str(self.reservations.all()))
             return self.reservations
         elif self.bookings.all():
             return self.bookings
         else:
             return None
+
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_Key=True)
+    component_id = db.Column(db.Integer, db.ForeignKey('component.id'))
+    component = db.relationship(
+        'Component', backref='ordered_component', uselist=False)
+    delivered = db.Column(db.Boolean, default=False)
+    date_time = db.Column(db.DateTime)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.uid'))
+    user = db.relationship('User', backref='ordering_user', uselist=False)
+    description = db.Column(db.Text)
+    quantity = db.Column(db.Integer)
+
+    def __init__(self, component, qantity, description=None):
+        self.date_time = datetime.datetime.now()
+        if description:
+            self.description = description
+        else:
+            self.description = current_user.username + \
+                ": Order " + self.date_time.strftime("%d.%m.%y")
+        self.user = current_user
+        self.component = component
+        self.qantity = qantity
+
+    def date(self):
+
+        if self.date_time:
+            return self.date_time.strftime("%d.%m.%Y")
+        else:
+            return None
+
+    def confirm(self, quantity=None):
+        if not quantity:
+            quantity = self.quantity
+
+        description = "Delivery Confirmed qty: "+str(quantity)
+        p = Process(description=description)
+        b = Booking(qty=int(quantity), booking_type='purchase', component=self.component)
+        p.component = b
+        db.session.add(p)
+        db.session.add(b)
+        db.session.commit()
+
 
 
 SQLALCHEMY_MIGRATE_REPO = path.join(DATA_FOLDER, "static/Database")

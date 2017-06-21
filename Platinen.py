@@ -633,13 +633,11 @@ def change_username(uid):
         data_Structure.User).filter_by(uid=uid).first()
 
     new_username = request.form.get('new_username')
-    flash(new_username)
-    print(data_Structure.User.query.filter_by(username=new_username).all())
-    flash(str(data_Structure.User.query.filter_by(username=new_username)))
 
     if not data_Structure.db.session.query(data_Structure.User).filter_by(username=str(new_username)).all():
         user_to_change.username = new_username
         data_Structure.db.session.commit()
+        flash("Username was changed sucesfully to \""+new_username+"\"", "success")
     else:
         flash("Username \""+new_username+"\" already exists. Please choose another Username", "danger")
         print("Hallo")

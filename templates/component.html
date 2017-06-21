@@ -72,8 +72,12 @@
                             </p>
                         </div>
                     </div>
+                    <!-- End of Lab cllapse -->
 
-
+                    <p>
+                        <button class="btn btn-default" type="button" data-toggle="modal" data-target="#order_modal">Order</button>
+                    </p>
+                    
 
                     {% else %}
                     <div class="info">
@@ -292,6 +296,39 @@
                 </div>
                 <div class="modal-body">
                     <form action="{{ url_for('reserve_component', component_id=component.id) }}" method="post">
+                        <div class="input-group">
+                            <div class="input-group-addon">Quantity</div>
+                            <input class="form-control" type="number" name="qty">
+
+                        </div>
+                        <br>
+
+                        <button type="button" data-dismiss="modal" class="btn btn-default col-xs-6 col-md-6 col-ld-6">Cancel</button>
+                        <button type="submit" class="btn btn-primary col-xs-6 col-md-6 col-ld-6">Submit</button>
+
+                    </form>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Order Modal#}
+
+
+<div class="container">
+    <div id="order_modal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{{ 'Order' }}</h4>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('order_component', component_id=component.id) }}" method="post">
                         <div class="input-group">
                             <div class="input-group-addon">Quantity</div>
                             <input class="form-control" type="number" name="qty">
