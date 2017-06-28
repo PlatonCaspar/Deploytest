@@ -522,7 +522,7 @@ class Process(db.Model):
 
 
 class Order(db.Model):
-    id = db.Column(db.Integer, primary_Key=True)
+    id = db.Column(db.Integer, primary_key=True)
     component_id = db.Column(db.Integer, db.ForeignKey('component.id'))
     component = db.relationship(
         'Component', backref='ordered_component', uselist=False)
@@ -534,7 +534,7 @@ class Order(db.Model):
     description = db.Column(db.Text)
     quantity = db.Column(db.Integer)
 
-    def __init__(self, component, qantity, description=None):
+    def __init__(self, component, qty: int, description=None):
         self.date_time = datetime.datetime.now()
         self.booking_type = "Order"
         if description:
@@ -544,7 +544,7 @@ class Order(db.Model):
                 ": Order " + self.date_time.strftime("%d.%m.%y")
         self.user = current_user
         self.component = component
-        self.qantity = qantity
+        self.quantity = qty
 
     def date(self):
 

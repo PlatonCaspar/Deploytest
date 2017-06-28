@@ -1089,6 +1089,29 @@ def book_process(process_id):
     process.book()
     return redirect('my_profile')
 
+@app.route('/process/order/component/', methods=['POST'])
+def order_component():
+    component_id = request.args.get('component_id')
+    qty = request.form.get('qty')
+    flash(qty)
+    if component_id and qty:
+        component = data_Structure.Component.query.get(int(component_id))
+        order = data_Structure.Order(component=component, qty=qty)
+        flash(order.quantity)
+        process = data_Structure.Process()
+        data_Structure.db.session.commit()
+        process.orders.append(order)
+        flash(process.orders[0].quantity)
+        data_Structure.db.session.add(process)
+        data_Structure.db.session.commit()
+        flash('order was placed!', 'success')
+        for o in process.orders:
+            flash(o.quantity)
+    return redirect(url_for('show_component', component_id=component_id))
+        
+
+
+
 # RH GT 117
 
 
