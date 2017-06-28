@@ -486,6 +486,8 @@ class Process(db.Model):
     reservation_id = db.Column(db.Integer, db.ForeignKey('reservation.id'))
     reservations = db.relationship(
         'Reservation', backref='process_reservations', lazy='dynamic', uselist=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
+    orders = db.relationship('Order', backref='processs_order', lazy='dynamic', uselist=True)
     date_time = db.Column(db.DateTime)
     user_id = db.Column(db.Integer)
     user_mail = db.Column(db.Text)
@@ -509,10 +511,12 @@ class Process(db.Model):
 
     def data(self):
         if self.reservations.all():
-            print("Reservations: " + str(self.reservations.all()))
-            return self.reservations
+            #print("Reservations: " + str(self.reservations.all()))
+            return self.reservations.all()
         elif self.bookings.all():
-            return self.bookings
+            return self.bookings.all()
+        elif self.orders.all():
+            return self.orders.all()
         else:
             return None
 
@@ -522,6 +526,7 @@ class Order(db.Model):
     component_id = db.Column(db.Integer, db.ForeignKey('component.id'))
     component = db.relationship(
         'Component', backref='ordered_component', uselist=False)
+    booking_type = db.Column(db.Text)
     delivered = db.Column(db.Boolean, default=False)
     date_time = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('user.uid'))
@@ -531,6 +536,7 @@ class Order(db.Model):
 
     def __init__(self, component, qantity, description=None):
         self.date_time = datetime.datetime.now()
+        self.booking_type = "Order"
         if description:
             self.description = description
         else:
