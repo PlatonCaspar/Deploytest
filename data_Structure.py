@@ -378,6 +378,9 @@ class Component(db.Model):
     def reservations(self):
         return Reservation.query.filter_by(component_id=self.id).all()
 
+    def orders(self):
+        return Order.query.filter_by(component_id=self.id, delivered=False).all()
+
 
 class Documents(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -487,7 +490,8 @@ class Process(db.Model):
     reservations = db.relationship(
         'Reservation', backref='process_reservations', lazy='dynamic', uselist=True)
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
-    orders = db.relationship('Order', backref='processs_order', lazy='dynamic', uselist=True)
+    orders = db.relationship(
+        'Order', backref='processs_order', lazy='dynamic', uselist=True)
     date_time = db.Column(db.DateTime)
     user_id = db.Column(db.Integer)
     user_mail = db.Column(db.Text)
@@ -504,16 +508,22 @@ class Process(db.Model):
                 ": Process " + self.date_time.strftime("%d.%m.%y")
 
     def book(self):
-        for r in self.reservations:
+        for r in self.data(booking=True):
             self.bookings.append(r.book())
-            db.session.delete(r)
-            db.session.commit()
+            if self.reservations.all():
+                db.session.delete(r)
+                db.session.commit()
+            elif self.orders.all():
+                r.delivered = True
+                db.session.commit()
 
-    def data(self):
+    def data(self, booking=False):
         if self.reservations.all():
             #print("Reservations: " + str(self.reservations.all()))
             return self.reservations.all()
         elif self.bookings.all():
+            if booking:
+                return None
             return self.bookings.all()
         elif self.orders.all():
             return self.orders.all()
@@ -557,14 +567,21 @@ class Order(db.Model):
         if not quantity:
             quantity = self.quantity
 
-        description = "Delivery Confirmed qty: "+str(quantity)
+        description = "Delivery Confirmed qty: " + str(quantity)
         p = Process(description=description)
-        b = Booking(qty=int(quantity), booking_type='purchase', component=self.component)
+        b = Booking(qty=int(quantity), booking_type='purchase',
+                    component=self.component)
         p.component = b
         db.session.add(p)
         db.session.add(b)
         db.session.commit()
 
+    def book(self):
+        booking = Booking(component=self.component,
+                          qty=self.quantity, booking_type='Purchase')
+        db.session.add(booking)
+        db.session.commit()
+        return booking
 
 
 SQLALCHEMY_MIGRATE_REPO = path.join(DATA_FOLDER, "static/Database")
