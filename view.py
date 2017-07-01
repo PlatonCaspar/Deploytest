@@ -52,7 +52,8 @@ def nav_bar():
                    Subgroup('Project',
                             View('Projects', 'show_project_all')),
                    Subgroup('Component',
-                            View('Components', 'show_all_components')),
+                            View('Components', 'show_all_components'),
+                            View('Confirm Order', 'confirm_order')),
 
 
                    search_bar
@@ -87,7 +88,8 @@ def nav_bar():
                             View('Components', 'show_all_components'),
                             View('New Component', 'add_component'),
                             View('Stocktaking Stock', 'stocktaking_stock'),
-                            View('Return Component', 'bring_back')),
+                            View('Return Component', 'bring_back'),
+                            View('Confirm Order', 'confirm_order')),
                    search_bar
 
                    ),

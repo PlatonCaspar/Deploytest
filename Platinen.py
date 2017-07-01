@@ -10,6 +10,7 @@ from flask_nav import register_renderer
 from flask_sqlalchemy import SQLAlchemy
 from passlib.hash import pbkdf2_sha256
 from werkzeug.utils import secure_filename
+from werkzeug.datastructures import MultiDict
 
 import addPlatineForm
 import data_Structure
@@ -239,7 +240,7 @@ def start():
             component = exb_number.associated_components
             return redirect(url_for('show_component', component_id=component.id))
         elif "EXB" in search_word:
-            search_word=search_word.strip()
+            search_word = search_word.strip()
             exb_number = data_Structure.Exb.query.get(search_word)
             component = exb_number.associated_components
             return redirect(url_for('show_component', component_id=component.id))
@@ -637,9 +638,11 @@ def change_username(uid):
     if not data_Structure.db.session.query(data_Structure.User).filter_by(username=str(new_username)).all():
         user_to_change.username = new_username
         data_Structure.db.session.commit()
-        flash("Username was changed sucesfully to \""+new_username+"\"", "success")
+        flash("Username was changed sucesfully to \"" +
+              new_username + "\"", "success")
     else:
-        flash("Username \""+new_username+"\" already exists. Please choose another Username", "danger")
+        flash("Username \"" + new_username +
+              "\" already exists. Please choose another Username", "danger")
         print("Hallo")
     return redirect(url_for('my_profile'))
 
@@ -1089,29 +1092,47 @@ def book_process(process_id):
     process.book()
     return redirect('my_profile')
 
+
 @app.route('/process/order/component/', methods=['POST'])
 def order_component():
     component_id = request.args.get('component_id')
     qty = request.form.get('qty')
-    flash(qty)
     if component_id and qty:
         component = data_Structure.Component.query.get(int(component_id))
         order = data_Structure.Order(component=component, qty=qty)
-        flash(order.quantity)
         process = data_Structure.Process()
         data_Structure.db.session.commit()
         process.orders.append(order)
-        flash(process.orders[0].quantity)
         data_Structure.db.session.add(process)
         data_Structure.db.session.commit()
         flash('order was placed!', 'success')
-        for o in process.orders:
-            flash(o.quantity)
     return redirect(url_for('show_component', component_id=component_id))
-        
 
 
+@app.route('/process/order/confirm/', methods=['GET'])
+def confirm_order():
+    nav.nav.register_element("frontend_top", view.nav_bar())
 
+    process = data_Structure.Process.query.filter_by(reservations=None, bookings=None).all()
+
+    return render_template('confirm_order.html', process=process)
+
+@app.route('/process/order/confirm/do/', methods=['POST'])
+@login_required
+def order_confirm_do():
+    p = data_Structure.Process()
+    form_data = request.form
+    print(form_data)
+    for key, qty in form_data.items():
+        order = data_Structure.Order.query.get(int(key))
+        if order.quantity == int(qty):
+            p.bookings.append(order.book())
+
+        else:
+            p.bookings.append(order.book(quantity=int(qty)))
+            flash('Order was not delivered completely!', 'warning')
+    flash('order was confirmed succesfull', 'success')
+    return redirect(url_for('confirm_order'))
 # RH GT 117
 
 
@@ -1129,5 +1150,5 @@ if __name__ == '__main__':
 
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
-    app.run(debug=False, port=80) # , host='0.0.0.0')
+    app.run(debug=False, port=80, host='0.0.0.0')
 # app.run(debug=False, port=80, host='0.0.0.0')

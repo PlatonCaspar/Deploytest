@@ -517,7 +517,7 @@ class Process(db.Model):
                 r.delivered = True
                 db.session.commit()
 
-    def data(self, booking=False):
+    def data(self, booking=False, hide_delivered=False):
         if self.reservations.all():
             #print("Reservations: " + str(self.reservations.all()))
             return self.reservations.all()
@@ -526,7 +526,10 @@ class Process(db.Model):
                 return None
             return self.bookings.all()
         elif self.orders.all():
-            return self.orders.all()
+            if hide_delivered:
+                return self.orders.filter_by(delivered=False).all()
+            else:
+                return self.orders.all()
         else:
             return None
 
@@ -576,12 +579,21 @@ class Order(db.Model):
         db.session.add(b)
         db.session.commit()
 
-    def book(self):
+    def book(self, quantity=None):
+        if not quantity:
+            quantity=self.quantity
+            self.delivered = True
+        elif quantity is self.quantity:
+            self.delivered = True
+        else:
+            self.quantity -= quantity
         booking = Booking(component=self.component,
-                          qty=self.quantity, booking_type='Purchase')
+                          qty=quantity, booking_type='Purchase')
         db.session.add(booking)
         db.session.commit()
         return booking
+
+
 
 
 SQLALCHEMY_MIGRATE_REPO = path.join(DATA_FOLDER, "static/Database")
