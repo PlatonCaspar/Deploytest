@@ -1133,8 +1133,19 @@ def order_confirm_do():
             flash('Order was not delivered completely!', 'warning')
     flash('order was confirmed succesfull', 'success')
     return redirect(url_for('confirm_order'))
-# RH GT 117
 
+@app.route('/process/reservations/delete/do/', methods=['POST'])
+@login_required
+def delete_process():
+    process_id = int(request.args.get('process_id'))
+    process = data_Structure.Process.query.get(process_id)
+
+    for r in process.reservations:
+        data_Structure.db.session.delete(r)
+    data_Structure.db.session.delete(process)
+    data_Structure.db.session.commit()
+    flash('Process was deleted succesfully', "success")
+    return redirect(url_for('my_profile'))
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'
