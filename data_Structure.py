@@ -519,7 +519,7 @@ class Process(db.Model):
 
     def data(self, booking=False, hide_delivered=False):
         if self.reservations.all():
-            #print("Reservations: " + str(self.reservations.all()))
+            print("Reservations: " + str(self.reservations.all()))
             return self.reservations.all()
         elif self.bookings.all():
             if booking:

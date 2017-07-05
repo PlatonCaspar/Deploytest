@@ -1,6 +1,7 @@
 import os
 import time
 import urllib
+import tempfile
 
 from markupsafe import Markup
 from flask import render_template, request, redirect, url_for, session, flash
@@ -22,6 +23,7 @@ import project_forms
 import registerUserForm
 import searchForm
 import view
+import BOM_Converter
 from data_Structure import app, db
 from historyForm import HistoryForm, EditHistoryForm
 
@@ -1152,6 +1154,33 @@ def delete_process():
 def bom_upload():
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('bom_upload.html')
+
+@app.route('/process/reservation/bom/do/', methods=['POST'])
+@login_required
+def bom_upload_do():
+    bom_file = request.files['bom_file']
+    #print(bom_file.read())
+    temp = tempfile.mkstemp(dir=DATA_UPLOAD_FOLDER)
+    with open(temp[1], 'wb') as open_temp:
+        open_temp.write(bom_file.read())
+    with open(temp[1], 'rt') as temp_bom:
+        reservations = BOM_Converter.read_csv(temp_bom)
+        process = data_Structure.Process()
+        data_Structure.db.session.add(process)
+        data_Structure.db.session.commit()
+        for e in reservations:
+            r = data_Structure.Reservation(int(e[1]))
+            r.component = data_Structure.Exb.query.get(e[0]).associated_components
+            print("NOW")
+            process.reservations.append(r)
+            data_Structure.db.session.add(r)
+            data_Structure.db.session.commit()
+        
+        flash("reservation was made")
+
+    
+        
+    return redirect(url_for('bom_upload'))
 
 
 if __name__ == '__main__':

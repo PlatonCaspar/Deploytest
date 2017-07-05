@@ -73,6 +73,7 @@ person.username+" Profile" }} {% endblock %} {% block content %} {% set person =
                         <tbody>
 
                             {% for d in p.data() %}
+                            {{p.data()}}
                             <tr> {#class="table_links" onclick="window.document.location='{{ row.link }}';">#}
 
 
