@@ -1147,6 +1147,13 @@ def delete_process():
     flash('Process was deleted succesfully', "success")
     return redirect(url_for('my_profile'))
 
+@app.route('/process/reservation/bom/', methods=['GET'])
+@login_required
+def bom_upload():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template('bom_upload.html')
+
+
 if __name__ == '__main__':
     # app.secret_key = 'Test'
 

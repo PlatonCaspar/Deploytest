@@ -89,7 +89,8 @@ def nav_bar():
                             View('New Component', 'add_component'),
                             View('Stocktaking Stock', 'stocktaking_stock'),
                             View('Return Component', 'bring_back'),
-                            View('Confirm Order', 'confirm_order')),
+                            View('Confirm Order', 'confirm_order'),
+                            View('BOM Reservation', 'bom_upload')),
                    search_bar
 
                    ),
