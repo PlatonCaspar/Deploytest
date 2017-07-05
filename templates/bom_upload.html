@@ -1,0 +1,77 @@
+{%- extends 'base.html' %}
+{% block title %}
+    BOM Upload
+{% endblock %}
+
+{% block content %}
+
+    <div class="container container-fluid">
+        <div class="col-xs-6 col-md-6 col-ld-6 col-xs-offset-3 col-md-offset-3 col-ld-offset-3">
+            <div class="page-header"><h3>BOM Upload</h3></div>
+            
+             <form action="#" method="GET" enctype=multipart/form-data>
+
+                    <p>
+                        <div class="input-group">
+                            <label class="input-group-btn">
+                            <span class="btn btn-default">
+                            <input id="bom_file" name="bom_file" type="file"
+                                   onchange="change_file_input(this)" style="display: none;">Select BOM...
+                            </span>
+                            </label>
+                            <input type="text" placeholder="Select a BOM..." class="form-control" id="bom_name" readonly>                            {# Clear button for datasheet input #}
+                            <div class="input-group-btn">
+                                <button id="clear_file_btn" type="button" onclick="clear_file_input(this)" class="btn btn-danger disabled">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                </button>
+                            </div>
+
+                        </div>
+                    </p>
+                    <div class="input">
+                        <p>
+                            <button class="btn btn-success" type="submit"><span
+                                        class="glyphicon glyphicon-upload"></span> Upload!
+                                </button>
+                        </p>
+                    </div>
+
+                </form>
+
+                <script>
+                                                                                   //More beautiful select field :)
+                                                                                   function change_file_input(file_input) {
+                                                                                       var text_box = document.getElementById("bom_name");
+                                                                                       //var file_path = document.getElementById("datasheet");
+                                                                                       var file_path = file_input.value;
+                                                                                       var file_btn = document.getElementById("clear_file_btn");
+                                                                                       //print(file_path);
+                                                                                       if (file_path) {
+                                                                                           var startIndex = (file_path.indexOf('\\') >= 0 ? file_path.lastIndexOf('\\') : file_path.lastIndexOf('/'));
+                                                                                           var filename = file_path.substring(startIndex);
+                                                                                           if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
+                                                                                               filename = filename.substring(1);
+                                                                                           }
+                                                                                           //filename = "Hallo"
+                                                                                           text_box.value = filename;//(name = "value", value = filename);
+                                                                                           file_btn.setAttribute("class", "btn btn-danger")
+                                                                                       }
+
+                                                                                   }
+
+                                                                                   //clear button action
+                                                                                   function clear_file_input(clear_btn) {
+                                                                                       var file_input = document.getElementById("bom_file");
+                                                                                       file_input.value = "";
+                                                                                       var file_name_box = document.getElementById("bom_name");
+                                                                                       file_name_box.value = "";
+                                                                                       if (file_input.value === "") {
+                                                                                           clear_btn.setAttribute("class", "btn btn-danger disabled");
+                                                                                       }
+                                                                                   }
+                </script>       
+
+        </div>
+    </div>
+
+{% endblock %}
