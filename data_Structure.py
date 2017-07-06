@@ -330,6 +330,9 @@ class Component(db.Model):
         #self.id = id(str(urandom(10)) + datetime.datetime.now().strftime('%m.%d.%y %H:%M:%S'))
         pass
 
+    def reduced_description(self):
+        return self.description+";"+self.manufacturer+";"+self.manufacturer_id+";"+self.value
+
     def datasheet(self):
         for d in self.documents:
             if d.document_type == "Datasheet":
@@ -410,6 +413,8 @@ class Booking(db.Model):
     project = db.relationship(
         'Project', backref='booked_for_project', uselist=False)
     lab = db.Column(db.Boolean, default=False)
+    process_id = db.Column(db.Integer, db.ForeignKey('process.id'))
+
 
     def __init__(self, qty: int, booking_type: str, component=None):
        # self.id = id(str(urandom(15)) + str(qty))
@@ -449,6 +454,7 @@ class Reservation(db.Model):
     project_name = db.Column(db.Text, db.ForeignKey('project.project_name'))
     project = db.relationship(
         'Project', backref='reserved_for_project', uselist=False)
+    process_id = db.Column(db.Integer, db.ForeignKey('process.id'))
 
     def __init__(self, qty: int):
         #self.id = id(str(urandom(15)) + str(qty))
@@ -483,13 +489,13 @@ class Reservation(db.Model):
 
 class Process(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
+    #booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
     bookings = db.relationship(
         'Booking', backref='process_bookings', lazy='dynamic', uselist=True)
-    reservation_id = db.Column(db.Integer, db.ForeignKey('reservation.id'))
+    #reservation_id = db.Column(db.Integer, db.ForeignKey('reservation.id'))
     reservations = db.relationship(
         'Reservation', backref='process_reservations', lazy='dynamic', uselist=True)
-    order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
+    #order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
     orders = db.relationship(
         'Order', backref='processs_order', lazy='dynamic', uselist=True)
     date_time = db.Column(db.DateTime)
@@ -546,6 +552,8 @@ class Order(db.Model):
     user = db.relationship('User', backref='ordering_user', uselist=False)
     description = db.Column(db.Text)
     quantity = db.Column(db.Integer)
+    process_id = db.Column(db.Integer, db.ForeignKey('process.id'))
+
 
     def __init__(self, component, qty: int, description=None):
         self.date_time = datetime.datetime.now()

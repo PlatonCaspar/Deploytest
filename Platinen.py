@@ -881,7 +881,7 @@ def create_component():
             filename = str(id(os.urandom(6))) + secure_filename(file.filename)
             filepath = os.path.join(DATA_UPLOAD_FOLDER, filename)
             file.save(filepath)
-            datasheet = data_Structure.Documents(filename)
+            datasheet = data_Structure.Documents(document_type="Datasheet",file_name=filename)
             data_Structure.db.session.add(datasheet)
             new_component.datasheet = datasheet
 
@@ -1159,22 +1159,31 @@ def bom_upload():
 @login_required
 def bom_upload_do():
     bom_file = request.files['bom_file']
+    description = request.form.get('description')
     #print(bom_file.read())
     temp = tempfile.mkstemp(dir=DATA_UPLOAD_FOLDER)
     with open(temp[1], 'wb') as open_temp:
         open_temp.write(bom_file.read())
     with open(temp[1], 'rt') as temp_bom:
         reservations = BOM_Converter.read_csv(temp_bom)
-        process = data_Structure.Process()
+        print("REservations ReservationsReservations: "+str(reservations))
+        process = data_Structure.Process(description=description)
         data_Structure.db.session.add(process)
         data_Structure.db.session.commit()
         for e in reservations:
             r = data_Structure.Reservation(int(e[1]))
-            r.component = data_Structure.Exb.query.get(e[0]).associated_components
-            print("NOW")
-            process.reservations.append(r)
-            data_Structure.db.session.add(r)
-            data_Structure.db.session.commit()
+            exb = data_Structure.Exb.query.get(e[0])
+            if not exb:
+                flash(e[0]+" was not found!", 'warning')
+            else:
+                r.component = data_Structure.Exb.query.get(e[0]).associated_components
+                data_Structure.db.session.add(r)
+                data_Structure.db.session.commit()
+                print(r)
+                process.reservations.append(r)
+                print(process.reservations.all())
+                data_Structure.db.session.commit()
+                print("After Commit: "+str(process.reservations.all()))
         
         flash("reservation was made")
 

@@ -71,9 +71,8 @@ person.username+" Profile" }} {% endblock %} {% block content %} {% set person =
                             </tr>
                         </thead>
                         <tbody>
-
+                            {% if p.data() %}
                             {% for d in p.data() %}
-                            {{p.data()}}
                             <tr> {#class="table_links" onclick="window.document.location='{{ row.link }}';">#}
 
 
@@ -93,6 +92,7 @@ person.username+" Profile" }} {% endblock %} {% block content %} {% set person =
                             </tr>
 
                             {% endfor %}
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>

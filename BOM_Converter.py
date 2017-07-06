@@ -17,6 +17,7 @@ def read_csv(bom_file):
     reader = csv.reader(bom_file, delimiter=';')
     
     for row in reader:
-        if 'EXB' in row[2] and row[2] != 'EXB':
-            out.append((row[2],row[0]))
+        if any(i.isdigit() for i in row[0]):
+            print(row)
+            out.append((row[6],row[0]))
     return out
