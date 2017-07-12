@@ -482,6 +482,7 @@ class Reservation(db.Model):
     def book(self):
         booking = Booking(component=self.component,
                           qty=self.quantity, booking_type='removal')
+        self.component.taken_out = True
         db.session.add(booking)
         db.session.commit()
         return booking
@@ -539,6 +540,12 @@ class Process(db.Model):
         else:
             return None
 
+    def user(self):
+        user = User.query.get(self.user_id)
+        if user:
+            return user 
+        else:
+            return User(username=self.user_mail, email=self.user_mail)
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -925,6 +925,9 @@ def show_all_components():
 def show_component(component_id):
     nav.nav.register_element("frontend_top", view.nav_bar())
     component = data_Structure.Component.query.get(component_id)
+    if component.taken_out:
+        process = data_Structure.Process.query.all()[::-1][0]
+        flash("Component is out for placement. ("+process.user().username+")","danger")
     return render_template('component.html', component=component)
 
 
@@ -1060,7 +1063,7 @@ def bring_back(component_id=None):
         component.taken_out = False
 
         if request.form.get('qty'):
-            print("Stocktaking started...")
+            #print("Stocktaking started...")
             for b in data_Structure.Booking.query.filter_by(deprecated=False, lab=False).join(data_Structure.Component,
                                                                                               data_Structure.Booking.component_id == component.id).all():
                 b.deprecated = True
