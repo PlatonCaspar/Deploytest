@@ -926,7 +926,8 @@ def show_component(component_id):
     nav.nav.register_element("frontend_top", view.nav_bar())
     component = data_Structure.Component.query.get(component_id)
     if component.taken_out:
-        process = data_Structure.Process.query.all()[::-1][0]
+        booking = data_Structure.Booking.query.filter_by(component_id = component.id).all()[::-1][0]
+        process = data_Structure.Process.query.get(booking.process_id)
         flash("Component is out for placement. ("+process.user().username+")","danger")
     return render_template('component.html', component=component)
 
