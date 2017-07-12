@@ -21,6 +21,8 @@ def write_code_for_search_bar():
                                 Class="container-fluid panel-body"),
                     tags.option("Projects", value='Projects',
                                 Class="container-fluid panel-body"),
+                    tags.option("Components", value='Components',
+                                Class="container-fluid panel-body"),
                     Class="form-control selectpicker",
                     style="margin: auto data-width: auto", name="Selector"),
 

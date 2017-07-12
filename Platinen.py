@@ -239,13 +239,15 @@ def start():
             print('Yes it contans EXB')
             search_word = clean_exb_scan(search_word)
             exb_number = data_Structure.Exb.query.get(search_word)
-            component = exb_number.associated_components
-            return redirect(url_for('show_component', component_id=component.id))
+            if exb_number:
+                component = exb_number.associated_components
+                return redirect(url_for('show_component', component_id=component.id))
         elif "EXB" in search_word:
             search_word = search_word.strip()
             exb_number = data_Structure.Exb.query.get(search_word)
-            component = exb_number.associated_components
-            return redirect(url_for('show_component', component_id=component.id))
+            if exb_number:
+                component = exb_number.associated_components
+                return redirect(url_for('show_component', component_id=component.id))
         if data_Structure.db.session.query(data_Structure.Board).get(search_word) is not None:
             return redirect(url_for('show_board_history',
                                     g_code=data_Structure.db.session.query(data_Structure.Board).get(search_word).code))
@@ -281,12 +283,20 @@ def start():
 
                 ).all()
             results_project = list(set(results_project))
-            if not results_board and not results_project:
-                flash('No results were found', 'warning')
-                return render_template('base.html')
+
+        if search_area == 'Components' or search_area == 'All':
+            if search_word is "":
+                results_component = data_Structure.Component.query.all()
+            else:
+                components = data_Structure.Component.query.all()
+                results_component = filter(lambda c: search_word in c.reduced_description(), components)
+
+        if not results_board and not results_project and not results_component:
+            flash('No results were found', 'warning')
+            return render_template('base.html')
 
         return render_template('table.html', args=results_board, projects=results_project,
-                               search_form=searchForm.SearchForm(), search_word=search_word)
+                               search_form=searchForm.SearchForm(), search_word=search_word, components=results_component)
     return render_template('start.html', search_form=search_form)
 
 

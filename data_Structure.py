@@ -331,7 +331,11 @@ class Component(db.Model):
         pass
 
     def reduced_description(self):
-        return self.description+";"+self.manufacturer+";"+self.manufacturer_id+";"+self.value
+        if self.smd:
+            smd = "smd"
+        else: 
+            smd = ""
+        return self.description+";"+self.manufacturer+";"+self.manufacturer_id+";"+self.value+";"+smd+";"+self.housing()+";"+self.category()+";"+self.package()+";"+str(self.chip_form_id)
 
     def datasheet(self):
         for d in self.documents:
