@@ -43,6 +43,24 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 # def set_logged_user(state):
 #    logged_user = state
 
+def value_search(search_word: str, value: str): #returns a score for each given string
+    score = 0
+    search_words = search_word.split('')
+    for w in search_words:
+        if w in value:
+            score+=1
+    okay = True
+    
+    i = 0
+    while okay and i < search_words.length():
+        
+        while search_words[i] in value and i < search_words.length(): #adds 1 to score if words are in the same row
+            i+=1
+            score+=1
+        i+=1
+        
+    return score
+
 @app.template_filter('urlencode')
 def urlencode_filter(s):
     if type(s) == 'Markup':
