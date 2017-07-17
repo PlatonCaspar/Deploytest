@@ -10,17 +10,8 @@
     <table class="table table-striped table-hover table-responsive table-condensed table_link">
         <thead>
         <tr>
-            <th class="text-info">ID</th>
-            <th class="text-info">Description</th>
-            <th class="text-info">SMD</th>
-            <th class="text-info">housing</th>
-            <th class="text-info">category</th>
-            <th class="text-info">manufacturer_id</th>
-            <th class="text-info">manufacturer</th>
-            <th class="text-info">chip_form</th>
-            <th class="text-info">value</th>
-            <th class="text-info">packaging</th>
-            <th class="text-info">exb_number</th>
+           <th class="text-info">exb_number</th>
+           <th class="text-info">Description</th>
             <th class="text-info">quantity stock</th>
             <th class="text-info">quantity reserved</th>
             <th class="text-info">available</th>
@@ -30,24 +21,15 @@
         </thead>
         <tbody>
 
-        {% if components %}
+        {% if exb_numbers %}
 
-            {% for c in components %}
-
+            {% for exb in exb_numbers %}
+                {% set c = exb.associated_components %}
 
                 <tr onclick="window.document.location='{{ url_for('show_component',component_id=c.id) }}';">
 
-                    <td class="text-justify">{{ c.id }}</td>
-                    <td class="text-justify">{{ c.description }}</td>
-                    <td class="text-justify">{{ c.smd }}</td>
-                    <td class="text-justify">{{ c.housing() }}</td>
-                    <td class="text-justify">{{ c.category() }}</td>
-                    <td class="text-justify">{{ c.manufacturer_id }}</td>
-                    <td class="text-justify">{{ c.manufacturer }}</td>
-                    <td class="text-justify">{{ c.chip_form_id }}</td>
-                    <td class="text-justify">{{ c.value }}</td>
-                    <td class="text-justify">{{ c.package() }}</td>
-                    <td class="text-justify">{{ c.exb_number.exb_number }}</td>
+                    <td class="text-justify">{{ exb.exb_number }}</td>
+                    <td class="text-justify">{{c.reduced_description()}}
                     <td class="text-justify">{{ c.stock() }}</td>
                     <td class="text-justify">{{ c.reserved() }}</td>
                     <td class="text-justify">{{ c.stock()-c.reserved() }}</td>

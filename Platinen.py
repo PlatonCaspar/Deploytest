@@ -944,9 +944,9 @@ def create_component():
 @app.route('/component/show/', methods=['GET'])
 def show_all_components():
     nav.nav.register_element("frontend_top", view.nav_bar())
-    all_components = data_Structure.db.session.query(
-        data_Structure.Component).all()
-    return render_template('component_table.html', components=all_components)
+    exb_numbers = data_Structure.Exb.query.all()
+    print (exb_numbers)
+    return render_template('component_table.html', exb_numbers=exb_numbers)
 
 
 @app.route('/component/show/<component_id>/', methods=['GET'])
