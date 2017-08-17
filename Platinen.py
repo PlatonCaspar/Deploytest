@@ -24,6 +24,7 @@ import registerUserForm
 import searchForm
 import view
 import BOM_Converter
+import search
 from data_Structure import app, db
 from historyForm import HistoryForm, EditHistoryForm
 
@@ -43,23 +44,7 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 # def set_logged_user(state):
 #    logged_user = state
 
-def value_search(search_word: str, value: str): #returns a score for each given string
-    score = 0
-    search_words = search_word.split('')
-    for w in search_words:
-        if w in value:
-            score+=1
-    okay = True
-    
-    i = 0
-    while okay and i < search_words.length():
-        
-        while search_words[i] in value and i < search_words.length(): #adds 1 to score if words are in the same row
-            i+=1
-            score+=1
-        i+=1
-        
-    return score
+
 
 @app.template_filter('urlencode')
 def urlencode_filter(s):
@@ -244,17 +229,18 @@ def start():
     search_form = searchForm.SearchForm(request.form)
     results_board = None
     results_project = None
+    results_component = None
     if request.method == 'POST':
         if request.form.get('submit_main') is None:
             search_word = request.form.get('search_field')
             search_area = request.form.get('Selector')
+            
 
         else:
             search_word = request.form.get('search_field_main')
 
             search_area = 'All'
         if "EXB" in search_word and "Q" in search_word:
-            print('Yes it contans EXB')
             search_word = clean_exb_scan(search_word)
             exb_number = data_Structure.Exb.query.get(search_word)
             if exb_number:
@@ -271,43 +257,24 @@ def start():
                                     g_code=data_Structure.db.session.query(data_Structure.Board).get(search_word).code))
         if search_area == 'Boards' or search_area == 'All':
             if search_word is "":
-                results_board = data_Structure.db.session.query(
-                    data_Structure.Board).all()
+                results_board = data_Structure.Board.query.all()
             else:
-                results_board = data_Structure.db.session.query(data_Structure.Board).filter(
-                    data_Structure.Board.code.contains(search_word) |
-                    data_Structure.Board.project_name.contains(search_word) |
-                    data_Structure.Board.link.contains(search_word) |
-                    data_Structure.Board.version.contains(search_word) |
-                    data_Structure.Board.id.contains(search_word) |
-                    data_Structure.Board.dateAdded.contains(search_word)  # |
-                    #    data_Structure.Board.addedBy.username.contains(search_word)
-                ).all()
-
-            results_board = list(set(results_board))
-        if search_area == 'User' or search_area == 'All':
-            pass
+                results_board = search.search(search_word=search_word, items=data_Structure.Board.query.all())
+        
         if search_area == 'Projects' or search_area == 'All':
             if search_word is "":
-                results_project = data_Structure.db.session.query(
-                    data_Structure.Project).all()
+                results_project = data_Structure.Project.query.all()
             elif search_word is not "":
-                results_project = data_Structure.db.session.query(data_Structure.Project).filter(
-                    data_Structure.Project.project_name.contains(search_word) |
-                    data_Structure.Project.project_description.contains(
-                        search_word)
-                    # search_word in str(data_Structure.Project.project_name) |
-                    # search_word in str(data_Structure.Project.project_description)
-
-                ).all()
-            results_project = list(set(results_project))
+                results_project = search.search(search_word=search_word, items=data_Structure.Project.query.all())
+                    
+            
 
         if search_area == 'Components' or search_area == 'All':
             if search_word is "":
                 results_component = data_Structure.Component.query.all()
             else:
                 components = data_Structure.Component.query.all()
-                results_component = filter(lambda c: search_word in c.reduced_description(), components)
+                results_component = search.search(search_word, components)
 
         if not results_board and not results_project and not results_component:
             flash('No results were found', 'warning')
@@ -1223,6 +1190,13 @@ def bom_upload_do():
         
     return redirect(url_for('bom_upload'))
 
+@app.route('/board/change/owner/do/<board_id>', methods=["POST"])
+@login_required
+def change_board_owner(board_id):
+    board = data_Structure.Board.query.get(board_id)
+    new_owner = request.form.get('owner_form')
+    board.change_owner(new_owner)
+    return redirect(url_for('show_board_history', g_code=board_id))
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'

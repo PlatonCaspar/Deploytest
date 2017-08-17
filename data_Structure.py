@@ -7,6 +7,7 @@ from passlib.hash import pbkdf2_sha256
 from flask_login import current_user, AnonymousUserMixin
 from migrate.versioning import api
 
+
 import datetime
 
 DATA_FOLDER = path.dirname(__file__)
@@ -42,6 +43,7 @@ class Board(db.Model):
     addedBy = db.relationship('User', backref='user_board', uselist=False)
     stat = db.Column(db.Text)
     patch = db.Column(db.Text)
+    owner = db.Column(db.Text, default="None")
 
     # , history):
     def __init__(self, code: str, project_name: str, ver: str, stat="init", patch="None"):
@@ -61,6 +63,17 @@ class Board(db.Model):
 
     def __hash__(self):
         return hash(self.code)
+    
+    def change_owner(self, new_owner):
+        text = "The board's owner changed from "+str(self.owner)+" to "+new_owner+"."
+        self.owner = new_owner
+        new_history = History(history=text, board_code=self.code)
+        db.session.add(new_history)
+
+        db.session.commit()
+
+    def reduce(self):
+        return str(self.code)+","+str(self.project_name)+";owner:"+str(self.owner)+";patch:"+str(self.patch)+";state:"+str(self.stat)
 
 
 class User(db.Model):
@@ -210,6 +223,8 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
         self.project_description = project_description
         self.project_default_image_path = project_default_image_path
 
+    def reduce(self):
+        return str(self.project_name)+";"+str(self.project_description.replace("",";"))
 
 # EXB-List from now on
 
@@ -336,6 +351,9 @@ class Component(db.Model):
         else: 
             smd = ""
         return self.description+";"+self.manufacturer+";"+self.manufacturer_id+";"+self.value+";"+smd+";"+self.housing()+";"+self.category()+";"+self.package()+";"+str(self.chip_form_id)
+
+    def reduce(self):
+        return self.reduced_description().replace(" ",";")
 
     def datasheet(self):
         for d in self.documents:
