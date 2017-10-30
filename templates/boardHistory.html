@@ -140,33 +140,39 @@
                                             <div class=" col-xs-2 col-md-2">
 
                                                 <div class="thumbnail">
-                                                    <a href="/static/Pictures/{{ pic.file_path }}">
-                                                        <img src="/static/staticPictures/index_file_picture.jpg"
-                                                             style="width: 100%">
+                                                    <!--a href="/static/Pictures/{{ pic.file_path }}"-->
+                                                        <img src="/static/staticPictures/file.png"
+                                                             style="width: 50%">
 
                                                         <div class="caption">
                                                             {% set filename=pic.file_path.split('/') %}
-                                                            <button class="btn btn-block btn-default"
+                                                            <div class="btn-group inline">
+                                                                {% if current_user.is_authenticated %}
+                                                            <button class="btn btn-default btn-sm" type="button"
+                                                                    data-toggle="collapse" data-target="#{{ pic.id }}"
+                                                                    aria-expanded="false"
+                                                                    aria-controls="{{ pic.id }}"><span
+                                                                    class="glyphicon glyphicon-remove"></span></button>
+                                                                    {% endif %}
+                                                            <a href="/static/Pictures/{{ pic.file_path }}"
+                                                                    class="btn btn-default btn-sm"
                                                                     id="file_id{{ pic.id }}"
                                                                     type="button"
                                                                     style="white-space: normal; word-break: break-all">
                                                             <span class="text-justify">
                                                                 {{ filename[filename|length-1] }}
                                                             </span>
-                                                            </button>
-                                                            <br>
+                                                            </a>
+                                                            </div>
+                                                            
+                                                    
 
-
-                                                    </a>
+                                                    
                                                     {% if current_user.is_authenticated %}
                                                         <form class=""
                                                               action="{{ url_for('delete_history_image', img_id=pic.id, board_id=g_board.code) }}"
                                                               method="post">
-                                                            <button class="btn btn-default btn-sm" type="button"
-                                                                    data-toggle="collapse" data-target="#{{ pic.id }}"
-                                                                    aria-expanded="false"
-                                                                    aria-controls="{{ pic.id }}"><span
-                                                                    class="glyphicon glyphicon-remove"></span></button>
+                                                            
                                                             <div class="collapse" id="{{ pic.id }}">
                                                                 <div class="">
                                                                     <br><br>
@@ -180,6 +186,7 @@
 
                                                         </form>
                                                     {% endif %}
+                                                    
                                                 </div>
                                             </div>
                                             </div>
