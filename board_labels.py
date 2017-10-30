@@ -46,7 +46,7 @@ def print_label(adress, user='anonymous', passwd=None):
                 print('Sending File')
                 ftp.storbinary("STORE LABEL.txt", file, callback=None)
     except:
-        flash("Label couold not be printed", 'warning')
+        flash("Label could not be printed", 'warning')
     
 
 def callback_():
