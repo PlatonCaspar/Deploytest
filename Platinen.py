@@ -20,6 +20,7 @@ import project_forms
 import registerUserForm
 import searchForm
 import view
+import board_labels
 from data_Structure import app
 from historyForm import HistoryForm, EditHistoryForm
 
@@ -269,6 +270,9 @@ def add__board():
         if data_Structure.Board.query.filter_by(code=new_board.code).scalar() is not None:
             # if Board is now available
             flash('Board was successfully added!', 'success')
+            label_file_cont = board_labels.generate_label(new_board.code)
+            board_labels.write_doc(label_file_cont)
+            board_labels.print_label("10.11.5.2", "root", "0000")
             return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
                                    search_form=searchForm.SearchForm())
 
