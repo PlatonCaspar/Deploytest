@@ -272,7 +272,7 @@ def add__board():
             flash('Board was successfully added!', 'success')
             label_file_cont = board_labels.generate_label(new_board.code)
             board_labels.write_doc(label_file_cont)
-            board_labels.print_label("10.11.5.2", "root", "0000")
+            board_labels.print_label("labelprinter01.sdi.site", "root", "0000")
             return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
                                    search_form=searchForm.SearchForm())
 

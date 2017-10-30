@@ -1,12 +1,17 @@
 """File generates Board labels for any project."""
+import os
 from ftplib import FTP
 from flask import flash
+
+
+DATA_FOLDER = os.path.dirname(os.path.abspath(__file__))
+LABEL_PATH = os.path.join(DATA_FOLDER, 'static/label.txt')
 
 
 def write_doc(text):
     """writes array "text" to file"""
     try:
-        with open('./static/label.txt', 'w') as file:
+        with open(LABEL_PATH, 'w') as file:
             file.writelines(text)
     except PermissionError:
         print('could not open File!')
@@ -22,7 +27,7 @@ def generate_code(code, number, text=None):
     text.append('S 0,0,19,42,100\r\n')
     text.append('O R\r\n')
     text.append('T 3,15,0,5,3;'+code_number+'\r\n')
-    text.append('B 2,3,0,QRCODE+MODEL1,0.3;'+code_number+'\r\n')
+    text.append('B 3,3,0,QRCODE+MODEL1,0.3;'+code_number+'\r\n')
     text.append('A 1\r\n')
     return text
 
@@ -33,7 +38,7 @@ def generate_label(code_number):
     text.append('S 0,0,19,42,100\r\n')
     text.append('O R\r\n')
     text.append('T 3,15,0,5,3;'+code_number+'\r\n')
-    text.append('B 2,3,0,QRCODE+MODEL1,0.3;'+code_number+'\r\n')
+    text.append('B 3,3,0,QRCODE+MODEL1,0.3;'+code_number+'\r\n')
     text.append('A 1\r\n')
     return text
 
@@ -42,7 +47,7 @@ def print_label(adress, user='anonymous', passwd=None):
     try:
         with FTP(adress, user='root', passwd='0000') as ftp:
             ftp.cwd('/execute')
-            with open('./static/label.txt', 'rb') as file:
+            with open(LABEL_PATH, 'rb') as file:
                 print('Sending File')
                 ftp.storbinary("STORE LABEL.txt", file, callback=None)
     except:
