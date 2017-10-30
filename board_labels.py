@@ -1,5 +1,6 @@
 """File generates Board labels for any project."""
 from ftplib import FTP
+from flask import flash
 
 
 def write_doc(text):
@@ -38,11 +39,14 @@ def generate_label(code_number):
 
 def print_label(adress, user='anonymous', passwd=None):
     #print(adress+' '+user+" "+passwd)
-    with FTP(adress, user='root', passwd='0000') as ftp:
-        ftp.cwd('/execute')
-        with open('./static/label.txt', 'rb') as file:
-            print('Sending File')
-            ftp.storbinary("STORE LABEL.txt", file, callback=None)
+    try:
+        with FTP(adress, user='root', passwd='0000') as ftp:
+            ftp.cwd('/execute')
+            with open('./static/label.txt', 'rb') as file:
+                print('Sending File')
+                ftp.storbinary("STORE LABEL.txt", file, callback=None)
+    except:
+        flash("Label couold not be printed", 'warning')
     
 
 def callback_():
