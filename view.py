@@ -25,7 +25,7 @@ def write_code_for_search_bar():
         tags.input(Type="text", Class="form-control ", placeholder="Search", name="search_field"),
 
         # tags.div(
-        tags.button(tags.i(Class="glyphicon glyphicon-search"),
+        tags.button(tags.i(Class="glyphicon glyphicon-search", style="color:#009999"),
                     Class="btn btn-default",
                     Type="submit"),
         # Class="input-group-btn"),
