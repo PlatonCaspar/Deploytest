@@ -26,8 +26,7 @@ def generate_code(code, number, text=None):
     return text
 
 def generate_label(code_number):
-     """generates code for each line"""    
-    
+    """generates code for each line"""
     text = ['m m\r\n']
     text.append('J\r\n')
     text.append('S 0,0,19,42,100\r\n')
