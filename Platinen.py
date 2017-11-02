@@ -246,7 +246,6 @@ def start():
 
 
 @app.route('/addBoard/', methods=['GET', 'POST'])
-@login_required
 def add__board():
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -254,7 +253,6 @@ def add__board():
     board_form.name.choices = addPlatineForm.load_choices()
     add_project_form = project_forms.AddProjectForm(request.form)
     if request.method == 'POST':
-
         if data_Structure.Board.query.filter_by(
                 code=board_form.code.data).scalar() is not None:  # check if board already exists
             flash('Board does already exist in the database!', 'danger')

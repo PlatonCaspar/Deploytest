@@ -45,6 +45,7 @@ def nav_bar():
         return ownNavRenderer.ExtendedNavbar(
             title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left", href=url_for('start')), 'start'),
             items=(View('Start', 'start'),
+                    View('New Board', 'add__board'),
                    search_bar
                    ),
 
