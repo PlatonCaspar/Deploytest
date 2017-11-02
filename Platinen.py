@@ -21,6 +21,7 @@ import registerUserForm
 import searchForm
 import view
 import board_labels
+import search
 from data_Structure import app
 from historyForm import HistoryForm, EditHistoryForm
 
@@ -195,54 +196,59 @@ def start():
     search_form = searchForm.SearchForm(request.form)
     results_board = None
     results_project = None
+    results_component = None
     if request.method == 'POST':
         if request.form.get('submit_main') is None:
             search_word = request.form.get('search_field')
             search_area = request.form.get('Selector')
+            
 
         else:
             search_word = request.form.get('search_field_main')
 
             search_area = 'All'
+        if "EXB" in search_word and "Q" in search_word:
+            search_word = clean_exb_scan(search_word)
+            exb_number = data_Structure.Exb.query.get(search_word)
+            if exb_number:
+                component = exb_number.associated_components
+                return redirect(url_for('show_component', component_id=component.id))
+        elif "EXB" in search_word:
+            search_word = search_word.strip()
+            exb_number = data_Structure.Exb.query.get(search_word)
+            if exb_number:
+                component = exb_number.associated_components
+                return redirect(url_for('show_component', component_id=component.id))
         if data_Structure.db.session.query(data_Structure.Board).get(search_word) is not None:
             return redirect(url_for('show_board_history',
                                     g_code=data_Structure.db.session.query(data_Structure.Board).get(search_word).code))
         if search_area == 'Boards' or search_area == 'All':
             if search_word is "":
-                results_board = data_Structure.db.session.query(data_Structure.Board).all()
+                results_board = data_Structure.Board.query.all()
             else:
-                results_board = data_Structure.db.session.query(data_Structure.Board).filter(
-                    data_Structure.Board.code.contains(search_word) |
-                    data_Structure.Board.project_name.contains(search_word) |
-                    data_Structure.Board.link.contains(search_word) |
-                    data_Structure.Board.version.contains(search_word) |
-                    data_Structure.Board.id.contains(search_word) |
-                    data_Structure.Board.dateAdded.contains(search_word)  # |
-                    #    data_Structure.Board.addedBy.username.contains(search_word)
-                ).all()
-
-            results_board = list(set(results_board))
-        if search_area == 'User' or search_area == 'All':
-            pass
+                results_board = search.search(search_word=search_word, items=data_Structure.Board.query.all())
+        
         if search_area == 'Projects' or search_area == 'All':
             if search_word is "":
-                results_project = data_Structure.db.session.query(data_Structure.Project).all()
+                results_project = data_Structure.Project.query.all()
             elif search_word is not "":
-                results_project = data_Structure.db.session.query(data_Structure.Project).filter(
-                    data_Structure.Project.project_name.contains(search_word) |
-                    data_Structure.Project.project_description.contains(search_word)
-                    # search_word in str(data_Structure.Project.project_name) |
-                    # search_word in str(data_Structure.Project.project_description)
+                results_project = search.search(search_word=search_word, items=data_Structure.Project.query.all())
 
-                ).all()
-            results_project = list(set(results_project))
-            if not results_board and not results_project:
-                flash('No results were found', 'warning')
-                return render_template('base.html')
+        if search_area == 'All':
+            results_comments = None
+            if search_word is not "":
+                results_comments = search.search(search_word=search_word, items=data_Structure.History.query.all())
+                print("Platinen.py "+str(results_comments))
+
+        if not results_board and not results_project and not results_component and not results_comments:
+            flash('No results were found', 'warning')
+            return render_template('base.html')
 
         return render_template('table.html', args=results_board, projects=results_project,
-                               search_form=searchForm.SearchForm(), search_word=search_word)
+                               search_form=searchForm.SearchForm(), search_word=search_word, components=results_component,
+                               results_comments=results_comments)
     return render_template('start.html', search_form=search_form)
+
 
 
 @app.route('/addBoard/', methods=['GET', 'POST'])

@@ -57,6 +57,11 @@ class Board(db.Model):
     def __hash__(self):
         return hash(self.code)
 
+    def reduce(self):
+        return str(self.code)+";"+str(self.project_name)+";owner:"+";patch:"+str(self.patch)+";state:"+str(self.stat)
+
+
+
 
 class User(db.Model):
     username = db.Column(db.String(), primary_key=False)
@@ -71,7 +76,6 @@ class User(db.Model):
     def __init__(self, username='Guest', password=None, email=None):
         self.username = username
         if password and email:
-            self.uid = id(username)
             self.email = email
             self.password_hashed_and_salted = pbkdf2_sha256.hash(password)
 
@@ -149,10 +153,31 @@ class History(db.Model):
 
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
-        self.id = id(str(urandom(5)) + time.strftime("%d.%m.%Y %H:%M:%S"))
+        
 
     def time_date_datetime(self):
         return time.strptime(self.time_and_date, "%d.%m.%Y %H:%M:%S")
+
+    def link(self):
+        return url_for('show_board_history', g_code=self.board_code)+'#comment_id'+str(self.id)
+
+    def reduce(self):
+        return self.history.replace(" ", ";")+";"+str(self.added_by.username)+";"+self.edited_by.username
+
+    def short_result(self, search_word, max_length = 30):
+        
+        start_ind = self.history.index(search_word)
+        
+        if start_ind > 6:
+            start_ind = start_ind-6
+
+        if len(self.history)-start_ind < max_length:
+            end_ind = len(self.history)
+            return self.history[start_ind:end_ind]
+        else:
+            end_ind = start_ind+max_length-1
+            return self.history[start_ind:end_ind]+"..."
+        
 
 
 
@@ -166,7 +191,6 @@ class Files(db.Model):
 
     def __init__(self, history, file_path: str, description='None'):
         self.belongs_to_history = history
-        self.id = id(file_path)
         self.description = description
         self.file_path = file_path
 
@@ -199,6 +223,8 @@ class Project(db.Model):
         self.project_description = project_description
         self.project_default_image_path = project_default_image_path
 
+    def reduce(self):
+        return str(self.project_name)+";"+str(self.project_description.replace(" ",";"))
 
 
 ##EXB-List from now on
