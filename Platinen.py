@@ -325,6 +325,7 @@ def add_project():
 
             data_Structure.db.session.add(project_to_add)
             data_Structure.db.session.commit()
+            flash('Project '+project_to_add.project_name+" was added.", "success")
 
             if str(request.form.get('add_platine')) in 'true':
                 return redirect(url_for('add__board'))
