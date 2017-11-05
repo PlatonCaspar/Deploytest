@@ -197,6 +197,7 @@ def start():
     results_board = None
     results_project = None
     results_component = None
+    results_comments = None
     if request.method == 'POST':
         if request.form.get('submit_main') is None:
             search_word = request.form.get('search_field')
@@ -701,6 +702,18 @@ def change_board_patch(board_id):
 def upgrade_within_app():
     migrate_database()
     return redirect(url_for("start"))
+
+@app.route('/board/edit_args/', methods=['POST'])
+def edit_args():
+    arg_name = request.form.get('name')
+    board_id = request.args.get('board_id')
+    arg_value = request.form.get('value')
+
+    board = data_Structure.Board.query.get(board_id)
+    board.args([arg_name,arg_value])
+    data_Structure.db.session.commit()
+
+    return redirect(url_for('show_board_history', g_code=board_id))
 
 
 if __name__ == '__main__':

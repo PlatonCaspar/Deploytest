@@ -74,6 +74,13 @@
                 <small class="">{{ "("+g_board.code|string+")" }}</small>
             </h4>
 
+            <h3>
+                {{g_board.args().keys()|string+" "+g_board.args()["Test_arg"]|string}}
+                <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                                    data-target="#args_modal"><span class="glyphicon glyphicon-pencil"></span>
+                            </button>
+            </h3>
+
             {% if current_user.username!='Guest' %}
                 <button type="button" class="btn btn-default center-block" data-toggle="modal"
                         data-target="#addModal"><span
@@ -417,7 +424,40 @@
 
         </div>
 
-    {% endif %}
+{# Args Change Modal #}
+        <div id="args_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{ 'Change args' }}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url_for('edit_args', board_id=g_board.code) }}" method="post">
+                            <div class="form-group">
+                                <input class="form-control" type="text" id="name" name="name"
+                                       placeholder="Please enter the name of the argument">
+                                       <input class="form-control" type="text" id="value" name="value"
+                                       placeholder="Please enter the value of the argument">
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-default" type="submit">Change</button>
+                                <button class="btn btn-default pull-right" type="button" data-dismiss="modal">Cancel
+                                </button>
+                            </div>
+
+                        </form>
+                        <div class="modal-footer">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+
+  {% endif %}
 
 
 
