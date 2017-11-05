@@ -2,10 +2,15 @@ import flask_sqlalchemy
 from flask import Flask
 from os import urandom
 from flask import url_for
-import time
 from passlib.hash import pbkdf2_sha256
 from flask_login import current_user, AnonymousUserMixin
+from sqlalchemy.types import TypeDecorator, VARCHAR
+
+import json
 import datetime
+import time
+
+
 
 # import flask
 app = Flask(__name__)
@@ -14,13 +19,20 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///static/Database/data.sql'
 db = flask_sqlalchemy.SQLAlchemy(app)
 
 
-# metadata = sqlalchemy.MetaData(db)
+class JSONEncodedDict(TypeDecorator):
+    "Represents an immutable structure as a json-encoded string."
+    
+    impl = VARCHAR
 
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = json.dumps(value)
+        return value
 
-# db.echo = True
-
-
-# counter = 0;
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = json.loads(value)
+        return value
 
 
 class Board(db.Model):
@@ -36,6 +48,7 @@ class Board(db.Model):
     addedBy = db.relationship('User', backref='user_board', uselist=False)
     stat = db.Column(db.Text)
     patch = db.Column(db.Text)
+    arguments = db.Column(JSONEncodedDict())
 
 
     def __init__(self, code: str, project_name: str, ver: str, stat="init", patch="None"):  # , history):
