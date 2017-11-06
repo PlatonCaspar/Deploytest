@@ -4,7 +4,6 @@ from os import urandom
 from flask import url_for
 from passlib.hash import pbkdf2_sha256
 from flask_login import current_user, AnonymousUserMixin
-from sqlalchemy.types import TypeDecorator, VARCHAR
 
 import json
 import datetime
