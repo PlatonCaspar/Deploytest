@@ -70,6 +70,7 @@
                 </h2>
                 <h3>
                     <small>
+                        {% if g_board.args() is not none %}
                         {% for arg in g_board.args() %}
                         {{arg|string+": "+g_board.args()[arg]|string}}
                         {% if current_user.username != 'Guest' %}
@@ -78,10 +79,12 @@
                         </button>
                         {% endif %}
                         {% endfor %}
+                        
                         {% if current_user.username != 'Guest' %}
                         <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
                                 data-target="#args_modal" onclick="set_args_name_modal('')"><span class="glyphicon glyphicon-plus"></span>
                         </button>
+                        {% endif %}
                         {% endif %}
                     </small>
                 </h3>
@@ -452,19 +455,36 @@
                     <div class="modal-body">
                         <form action="{{ url_for('edit_args', board_id=g_board.code) }}" method="post">
                             <div class="form-group">
-                                <input class="form-control" type="text" id="name" name="name"
+                                <input class="form-control" type="text" id="name" name="name" required="required"
                                        placeholder="Please enter the name of the argument">
                                        <input class="form-control" type="text" id="value" name="value"
                                        placeholder="Please enter the value of the argument">
                             </div>
                             <div class="form-group">
                                 <button class="btn btn-default" type="submit">Change</button>
+                                <button class="btn btn-warning" type="button" id="delete_arg_button"
+                                    data-toggle="collapse" data-target="#delete_arg"
+                                    aria-expanded="false"
+                                    aria-controls="delete_arg"><span
+                                    class="glyphicon glyphicon-remove"></span></button>
                                 <button class="btn btn-default pull-right" type="button" data-dismiss="modal">Cancel
                                 </button>
                             </div>
 
-                        </form>
+                       
                         <div class="modal-footer">
+                            
+                            <div class="collapse" id="delete_arg">
+                            <br>
+                                <button class="btn btn-danger btn-sm btn-block" name="delete_btn" id="delete_btn"
+                                        type="submit"><span
+                                        class="glyphicon glyphicon-ok pull-left"></span>
+                                    <strong>Delete?</strong>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                        
                         </div>
                     </div>
 
@@ -478,8 +498,13 @@
 
             function set_args_name_modal(name) {
                     var my_input = document.getElementById("name");
-                    my_input.value = name; //myDiv.className.replace(/(?:^|\s)panel-default(?!\S)/g , 'panel-primary');
+                    my_input.value = name;
                     }
+            
+            
+                    
+
+            
             
         </script>
 

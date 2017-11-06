@@ -49,6 +49,7 @@ class Board(db.Model):
     stat = db.Column(db.Text)
     patch = db.Column(db.Text)
     arguments = db.Column(db.Text)
+    
 
 
     def __init__(self, code: str, project_name: str, ver: str, stat="init", patch="None"):  # , history):
@@ -71,24 +72,31 @@ class Board(db.Model):
         return hash(self.code)
 
     def reduce(self):
-        return str(self.code)+";"+str(self.project_name)+";owner:"+";patch:"+str(self.patch)+";state:"+str(self.stat)
+        arguments = ""
+        for arg in self.args():
+            arguments = arguments+arg+":"+self.args()[arg]+";"
+        return str(self.code)+";"+str(self.project_name)+";owner:"+";patch:"+str(self.patch)+";state:"+str(self.stat)+arguments
 
-    def args(self, to_add=None):
-        for name in json.loads(self.arguments):
-            print(name+" - - ")
+    def args(self, to_add=None, delete=False):
+        if delete:
+            arguments = json.loads(self.arguments)
+            deleted = arguments.pop(to_add, None)
+            self.arguments=json.dumps(arguments)
+            return deleted
+            
         if to_add:
             if not self.arguments:
                 self.arguments = json.dumps({to_add[0]:to_add[1]})
             else:
                 val = json.loads(self.arguments)
                 val[to_add[0]]=to_add[1]
-                print(val)
+                
                 self.arguments=json.dumps(val)
 
         elif self.arguments:
             return json.loads(self.arguments)
         else:
-            return None
+            return {}
 
     
 
@@ -258,10 +266,6 @@ class Project(db.Model):
 
 
 ##EXB-List from now on
-
-
-
-
 
 eng = db.create_all()
 

@@ -707,13 +707,26 @@ def upgrade_within_app():
 def edit_args():
     arg_name = request.form.get('name')
     board_id = request.args.get('board_id')
+    board = data_Structure.Board.query.get(board_id)
+    if request.form.get('delete_btn') is not None:
+        res = board.args(arg_name, delete=True)
+        data_Structure.db.session.commit()
+        if res:
+            flash(res+" was deleted", 'success')
+        return redirect(url_for('show_board_history', g_code=board_id))
+
     arg_value = request.form.get('value')
 
-    board = data_Structure.Board.query.get(board_id)
+    
     board.args([arg_name,arg_value])
     data_Structure.db.session.commit()
 
     return redirect(url_for('show_board_history', g_code=board_id))
+
+def test_queries():
+    with app.app_context():
+        migrate_database()
+
 
 
 if __name__ == '__main__':
@@ -729,6 +742,9 @@ if __name__ == '__main__':
     nav.login_manager.init_app(app)
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
-
+    test_queries()
     app.run(debug=False, port=80, host='0.0.0.0')
+    
+
+    
 # app.run(debug=False, port=80, host='0.0.0.0')

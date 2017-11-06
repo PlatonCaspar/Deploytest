@@ -14,13 +14,13 @@ migration = Migrate(app, db, render_as_batch=True)
 # manager.add_command('db', MigrateCommand)
 def migrate_database():
     if not os.path.exists(MIGRATIONS_FOLDER):
-        print(init(directory=MIGRATIONS_FOLDER))
-    print("Stamp" + str(stamp(directory=MIGRATIONS_FOLDER, revision='head')))
+        init(directory=MIGRATIONS_FOLDER)
+    stamp(directory=MIGRATIONS_FOLDER, revision='head')
     try:
-        print(migrate(directory=MIGRATIONS_FOLDER))
+        migrate(directory=MIGRATIONS_FOLDER)
     except:
         flash('Database could not be migrated!','danger')
-    print(upgrade(directory=MIGRATIONS_FOLDER))
+    upgrade(directory=MIGRATIONS_FOLDER)
 
 # if __name__ == '__main__':
 #    manager.run()

@@ -8,8 +8,6 @@ def value_search(search_word: str, value: str):  # returns a score for each give
     for w in search_words:
 
         if w in value:
-            print(len(search_words))
-            print("1. Krit +1")
             score += 1
 
 
@@ -52,9 +50,6 @@ def search(search_word, items):
     results = []
     for i in items:
         score = value_search(search_word, i.reduce())
-        print("score "+str(score) )
-        print(i.reduce())
         if score > 0:
             results.append((i,score))
-        print("RESULTS "+str(results))
     return [r[0] for r in sort_results(results)]
