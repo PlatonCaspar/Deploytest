@@ -68,18 +68,35 @@
                         {% endif %}
                     </small>
                 </h2>
+                <h3>
+                    <small>
+                        {% for arg in g_board.args() %}
+                        {{arg|string+": "+g_board.args()[arg]|string}}
+                        {% if current_user.username != 'Guest' %}
+                        <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                                data-target="#args_modal" onclick="set_args_name_modal('{{arg}}')"><span class="glyphicon glyphicon-pencil"></span>
+                        </button>
+                        {% endif %}
+                        {% endfor %}
+                        {% if current_user.username != 'Guest' %}
+                        <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                                data-target="#args_modal" onclick="set_args_name_modal('')"><span class="glyphicon glyphicon-plus"></span>
+                        </button>
+                        {% endif %}
+                    </small>
+                </h3>
 
             </div>
             <h4 class="panel-heading ">Board Comments
                 <small class="">{{ "("+g_board.code|string+")" }}</small>
             </h4>
 
-            <h3>
+         <!--   <h3>
                 {{g_board.args().keys()|string+" "+g_board.args()["Test_arg"]|string}}
                 <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
                                     data-target="#args_modal"><span class="glyphicon glyphicon-pencil"></span>
                             </button>
-            </h3>
+            </h3> -->
 
             {% if current_user.username!='Guest' %}
                 <button type="button" class="btn btn-default center-block" data-toggle="modal"
@@ -456,6 +473,15 @@
 
 
         </div>
+
+        <script>
+
+            function set_args_name_modal(name) {
+                    var my_input = document.getElementById("name");
+                    my_input.value = name; //myDiv.className.replace(/(?:^|\s)panel-default(?!\S)/g , 'panel-primary');
+                    }
+            
+        </script>
 
   {% endif %}
 
