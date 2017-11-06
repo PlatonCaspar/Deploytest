@@ -5,7 +5,7 @@ from flask import render_template, current_app, flash
 from flask_migrate import Migrate, init, migrate, stamp, upgrade
 import os
 
-MIGRATIONS_FOLDER = "static/migrations"
+MIGRATIONS_FOLDER = "migrations/migrations/"
 
 
 migration = Migrate(app, db, render_as_batch=True)
