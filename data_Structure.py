@@ -1,7 +1,7 @@
 import flask_sqlalchemy
 from flask import Flask
 from os import urandom
-from flask import url_for
+from flask import url_for, flash
 from passlib.hash import pbkdf2_sha256
 from flask_login import current_user, AnonymousUserMixin
 
@@ -187,9 +187,13 @@ class History(db.Model):
         return self.history.replace(" ", ";")+";"+str(self.added_by.username)+";"+self.edited_by.username
 
     def short_result(self, search_word, max_length = 30):
-        
-        start_ind = self.history.index(search_word)
-        
+        #print(self.history+ " "+search_word)
+        start_ind = 0
+        try:
+            start_ind = self.history.lower().index(search_word.lower())
+        except:
+            flash('some error occured in \"short_result\"', "danger")
+            #print(search_word.lower()+" "+self.history.lower())
         if start_ind > 6:
             start_ind = start_ind-6
 

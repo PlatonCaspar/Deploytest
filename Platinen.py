@@ -251,6 +251,36 @@ def start():
     return render_template('start.html', search_form=search_form)
 
 
+@app.route('/addBoard/scripted/test/', methods=['POST'])
+def add_board_scripted():
+    board_id = request.args.get('board_id')
+    project_name = request.args.get('project')
+    ver=request.args.get('version')
+    stat = request.args.get('status')
+    arg = request.args.get('result')
+    comment = request.args.get('comment')
+    print(board_id)
+    if not board_id and not project and not ver and not stat and not arg: 
+        print('no Succes')
+        return "No Success"
+    board = data_Structure.Board.query.get(board_id)
+    if board:
+        print('Board exists')
+        return "Success"#redirect(url_for('show_board_history', g_code=board_id))
+    else:
+        new_board=data_Structure.Board(board_id,project_name,ver)
+        new_board.args(['Test',arg])
+        print(new_board)
+        data_Structure.db.session.add(new_board)
+        data_Structure.db.session.commit()
+        if comment:
+            new_comment = data_Structure.History(comment, board_id)
+            data_Structure.db.session.add(new_comment)
+            data_Structure.db.session.commit()
+
+        
+        return "Success"
+
 
 @app.route('/addBoard/', methods=['GET', 'POST'])
 def add__board():
