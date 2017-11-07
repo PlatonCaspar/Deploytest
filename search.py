@@ -9,6 +9,16 @@ def value_search(search_word: str, value: str):  # returns a score for each give
 
         if w in value:
             score += 1
+        if '&' in w:
+            print('& in w')
+            temp_w = w.split('&')
+            for tw in temp_w:
+                if tw not in value:
+                    print('tw not in value '+tw+" value: "+value )
+                    score=0
+                    return score
+                elif tw in value:
+                    score += 1
 
 
     okay = True
