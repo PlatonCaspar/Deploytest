@@ -19,10 +19,10 @@ app = Flask(__name__)
 naming_convention = {
     "fk": "fk_%(table_name)s_(column_0_name)s_%(referred_table_name)s"  
 }
-metadata = MetaData(naming_convention)
+metadata = MetaData(naming_convention=naming_convention)
 SQLALCHEMY_DATABASE_URI = 'sqlite:///static/Database/data.sql'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
-db = flask_sqlalchemy.SQLAlchemy(app)
+db = flask_sqlalchemy.SQLAlchemy(app, metadata=metadata)
 
 class Board(db.Model):
     code = db.Column(db.String(500), primary_key=True)
@@ -39,6 +39,7 @@ class Board(db.Model):
     stat = db.Column(db.Text)
     patch = db.Column(db.Text)
     arguments = db.Column(db.Text)
+
     
 
     # , history):
@@ -311,6 +312,7 @@ class Exb(db.Model):
         db.Integer, db.ForeignKey('component.id'))
     associated_components = db.relationship('Component', backref='associated_components_exb',
                                             uselist=False)
+    
 
     def __init__(self, exb_number=None, division=None):
 
@@ -360,6 +362,7 @@ class Component(db.Model):
     manufacturer_id = db.Column(db.Text)
     chip_form_id = db.Column(db.Text)
     value = db.Column(db.Text)
+    projects = db.relationship('Project', backref='associated_projects', uselist=True)
     # unit = db.Column(db.String(10))
     manufacturer = db.Column(db.String)
     packaging_id = db.Column(db.Integer)
