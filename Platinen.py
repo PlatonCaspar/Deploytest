@@ -290,7 +290,8 @@ def start():
             return render_template('base.html')
 
         return render_template('table.html', args=results_board, projects=results_project,
-                               search_form=searchForm.SearchForm(), search_word=search_word, components=results_component)
+                               search_form=searchForm.SearchForm(), search_word=search_word, components=results_component,
+                               results_comments=results_comments)
     return render_template('start.html', search_form=search_form)
 
 
@@ -298,8 +299,7 @@ def start():
 def show_project_all():
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('table.html', projects=data_Structure.Project.query.all())
-                               search_form=searchForm.SearchForm(), search_word=search_word, components=results_component,
-                               results_comments=results_comments)
+                               
     return render_template('start.html', search_form=search_form)
 
 

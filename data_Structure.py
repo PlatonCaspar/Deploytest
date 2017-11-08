@@ -4,15 +4,9 @@ from os import urandom, path
 from flask import url_for
 from passlib.hash import pbkdf2_sha256
 from flask_login import current_user, AnonymousUserMixin
-<<<<<<< HEAD
-from migrate.versioning import api
-
-
-=======
-from sqlalchemy.types import TypeDecorator, VARCHAR
+from sqlalchemy import MetaData
 
 import json
->>>>>>> args
 import datetime
 import time
 
@@ -22,27 +16,13 @@ DATA_FOLDER = path.dirname(__file__)
 # print(DATA_FOLDER)
 # import flask
 app = Flask(__name__)
-
+naming_convention = {
+    "fk": "fk_%(table_name)s_(column_0_name)s_%(referred_table_name)s"  
+}
+metadata = MetaData(naming_convention)
 SQLALCHEMY_DATABASE_URI = 'sqlite:///static/Database/data.sql'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 db = flask_sqlalchemy.SQLAlchemy(app)
-
-
-class JSONEncodedDict(TypeDecorator):
-    "Represents an immutable structure as a json-encoded string."
-    
-    impl = VARCHAR
-
-    def process_bind_param(self, value, dialect):
-        if value is not None:
-            value = json.dumps(value)
-        return value
-
-    def process_result_value(self, value, dialect):
-        if value is not None:
-            value = json.loads(value)
-        return value
-
 
 class Board(db.Model):
     code = db.Column(db.String(500), primary_key=True)
@@ -81,9 +61,6 @@ class Board(db.Model):
         return hash(self.code)
 
     def reduce(self):
-<<<<<<< HEAD
-        return str(self.code)+","+str(self.project_name)+";owner:"+str(self.owner)+";patch:"+str(self.patch)+";state:"+str(self.stat)
-=======
         arguments = ""
         for arg in self.args():
             arguments = arguments+arg+":"+self.args()[arg]+";"
@@ -110,8 +87,7 @@ class Board(db.Model):
         else:
             return {}
 
-    
->>>>>>> args
+
 
 
 class User(db.Model):
@@ -127,11 +103,6 @@ class User(db.Model):
     def __init__(self, username='Guest', password=None, email=None):
         self.username = username
         if password and email:
-<<<<<<< HEAD
-            self.uid = id(username)
-
-=======
->>>>>>> args
             self.email = email
             self.password_hashed_and_salted = pbkdf2_sha256.hash(password)
 
@@ -214,11 +185,7 @@ class History(db.Model):
             self.added_by = db.session.query(User).get('Guest')
 
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
-        self.last_edited = self.time_and_date
-<<<<<<< HEAD
-        #self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code + str(current_user.uid) + str(urandom(5)))
-=======
-        
+        self.last_edited = self.time_and_date       
 
     def time_date_datetime(self):
         return time.strptime(self.time_and_date, "%d.%m.%Y %H:%M:%S")
@@ -242,9 +209,6 @@ class History(db.Model):
         else:
             end_ind = start_ind+max_length-1
             return self.history[start_ind:end_ind]+"..."
-        
-
->>>>>>> args
 
 
 class Files(db.Model):
@@ -257,10 +221,6 @@ class Files(db.Model):
 
     def __init__(self, history, file_path: str, description='None'):
         self.belongs_to_history = history
-<<<<<<< HEAD
-        #self.id = id(file_path)
-=======
->>>>>>> args
         self.description = description
         self.file_path = file_path
 
@@ -287,7 +247,7 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
     project_history = db.relationship('History',
                                       backref=db.backref('project_history_backref', lazy='dynamic', uselist=True))
     project_history_id = db.Column(db.Integer, db.ForeignKey('history.id'))
-    project_component_id = db.Column(db.Integer, db.ForeignKey('component.id'))
+    project_component_id = db.Column(db.Integer, db.ForeignKey('component.id'), name='project_component_id')
     project_components = db.relationship('Component', backref='project_component_bacckref', lazy='dynamic',
                                          uselist=True)
     reservations = db.relationship('Reservation',
@@ -299,7 +259,6 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
         self.project_default_image_path = project_default_image_path
 
     def reduce(self):
-<<<<<<< HEAD
         return str(self.project_name)+";"+str(self.project_description.replace("",";"))
 
 # EXB-List from now on
@@ -705,32 +664,6 @@ class Order(db.Model):
         db.session.add(booking)
         db.session.commit()
         return booking
-=======
-        return str(self.project_name)+";"+str(self.project_description.replace(" ",";"))
->>>>>>> args
-
-
-
-<<<<<<< HEAD
-
-SQLALCHEMY_MIGRATE_REPO = path.join(DATA_FOLDER, "static/Database")
-
-
-# v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-# migration = SQLALCHEMY_MIGRATE_REPO + ('/versions/%03d_migration.py' % (v+1))
-# tmp_module = imp.new_module('old_model')
-# old_model = api.create_model(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-# exec(old_model, tmp_module.__dict__)
-# script = api.make_update_script_for_model(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO, tmp_module.meta, db.metadata)
-# open(migration, "wt").write(script)
-# api.upgrade(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-# v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-# print('New migration saved as ' + migration)
-# print('Current database version: ' + str(v))
-
-=======
-eng = db.create_all()
->>>>>>> args
 
 db.create_all()
 # if not path.exists(SQLALCHEMY_MIGRATE_REPO):
