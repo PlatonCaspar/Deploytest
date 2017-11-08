@@ -12,6 +12,8 @@ from flask_sqlalchemy import SQLAlchemy
 from passlib.hash import pbkdf2_sha256
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import MultiDict
+from upgrade import migrate_database
+
 
 import addPlatineForm
 import data_Structure
@@ -26,6 +28,7 @@ import view
 import BOM_Converter
 import search
 from data_Structure import app, db
+import board_labels
 from historyForm import HistoryForm, EditHistoryForm
 
 nav.login_manager.anonymous_user = data_Structure.User
@@ -230,6 +233,7 @@ def start():
     results_board = None
     results_project = None
     results_component = None
+    results_comments = None
     if request.method == 'POST':
         if request.form.get('submit_main') is None:
             search_word = request.form.get('search_field')
@@ -265,8 +269,7 @@ def start():
             if search_word is "":
                 results_project = data_Structure.Project.query.all()
             elif search_word is not "":
-                results_project = search.search(search_word=search_word, items=data_Structure.Project.query.all())
-                    
+                results_project = search.search(search_word=search_word, items=data_Structure.Project.query.all())                    
             
 
         if search_area == 'Components' or search_area == 'All':
@@ -276,7 +279,13 @@ def start():
                 components = data_Structure.Component.query.all()
                 results_component = search.search(search_word, components)
 
-        if not results_board and not results_project and not results_component:
+        if search_area == 'All':
+            results_comments = None
+            if search_word is not "":
+                results_comments = search.search(search_word=search_word, items=data_Structure.History.query.all())
+                print("Platinen.py "+str(results_comments))
+
+        if not results_board and not results_project and not results_component and not results_comments:
             flash('No results were found', 'warning')
             return render_template('base.html')
 
@@ -289,10 +298,12 @@ def start():
 def show_project_all():
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('table.html', projects=data_Structure.Project.query.all())
+                               search_form=searchForm.SearchForm(), search_word=search_word, components=results_component,
+                               results_comments=results_comments)
+    return render_template('start.html', search_form=search_form)
 
 
 @app.route('/addBoard/', methods=['GET', 'POST'])
-@login_required
 def add__board():
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -300,7 +311,6 @@ def add__board():
     board_form.name.choices = addPlatineForm.load_choices()
     add_project_form = project_forms.AddProjectForm(request.form)
     if request.method == 'POST':
-
         if data_Structure.Board.query.filter_by(
                 code=board_form.code.data).scalar() is not None:  # check if board already exists
             flash('Board does already exist in the database!', 'danger')
@@ -317,6 +327,9 @@ def add__board():
         if data_Structure.Board.query.filter_by(code=new_board.code).scalar() is not None:
             # if Board is now available
             flash('Board was successfully added!', 'success')
+            label_file_cont = board_labels.generate_label(new_board.code)
+            board_labels.write_doc(label_file_cont)
+            board_labels.print_label("labelprinter01.sdi.site", "root", "0000")
             return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
                                    search_form=searchForm.SearchForm())
 
@@ -366,6 +379,7 @@ def add_project():
 
             data_Structure.db.session.add(project_to_add)
             data_Structure.db.session.commit()
+            flash('Project '+project_to_add.project_name+" was added.", "success")
 
             if str(request.form.get('add_platine')) in 'true':
                 return redirect(url_for('add__board'))
@@ -451,8 +465,12 @@ def add_board_history(board, history, file):
     return redirect(url_for('show_board_history', g_code=board.code))
 
 
-# shows board History
-@app.route('/boardHistory/<g_code>/', methods=['POST', 'GET', ])
+
+def getSortKeyHistory(h):
+    return h.time_date_datetime()
+
+
+@app.route('/boardHistory/<g_code>/', methods=['POST', 'GET', ])  # shows board History
 def show_board_history(g_code):
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -476,13 +494,15 @@ def show_board_history(g_code):
 
     if edit_form is not None:
         return render_template('boardHistory.html', g_board=tg_board,
-                               history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
-                                   data_Structure.History.time_and_date).all()[::-1],
+                               history=sorted(data_Structure.History.query.filter_by(board_code=g_code).all(),
+                                              key=getSortKeyHistory, reverse=True),
+                               # .order_by(lambda e:
+                               # data_Structure.History.time_date_datetime(e).desc()).all(),
                                add_form=add_form, edit_form=edit_form)
     else:
         return render_template('boardHistory.html', g_board=tg_board,
-                               history=data_Structure.History.query.filter_by(board_code=g_code).order_by(
-                                   data_Structure.History.time_and_date).all()[::-1],
+                               history=sorted(data_Structure.History.query.filter_by(board_code=g_code).all(),
+                                   key=getSortKeyHistory, reverse=True),
                                add_form=add_form, edit_form=edit_form)
 
 
@@ -723,8 +743,7 @@ def user_forgot_change_password():
         if pbkdf2_sha256.verify(request.form.get('new_password_2'), new_password):
             dumb_user.password_hashed_and_salted = new_password
             data_Structure.db.session.commit()
-            flash('password of ' + dumb_user.username +
-                  ' was changed successfully', 'success')
+            flash('password of ' + dumb_user.username + ' was changed successfully', 'success')
             return redirect(url_for('start'))
         else:
             flash('The new passwords did not match!', 'danger')
@@ -775,6 +794,35 @@ def change_board_patch(board_id):
     data_Structure.db.session.commit()
     return redirect(url_for('show_board_history', g_code=board_id))
 
+@app.route('/upgrade/')
+@login_required
+def upgrade_within_app():
+    migrate_database()
+    return redirect(url_for("start"))
+
+@app.route('/board/edit_args/', methods=['POST'])
+def edit_args():
+    arg_name = request.form.get('name')
+    board_id = request.args.get('board_id')
+    board = data_Structure.Board.query.get(board_id)
+    if request.form.get('delete_btn') is not None:
+        res = board.args(arg_name, delete=True)
+        data_Structure.db.session.commit()
+        if res:
+            flash(res+" was deleted", 'success')
+        return redirect(url_for('show_board_history', g_code=board_id))
+
+    arg_value = request.form.get('value')
+
+    
+    board.args([arg_name,arg_value])
+    data_Structure.db.session.commit()
+
+    return redirect(url_for('show_board_history', g_code=board_id))
+
+def test_queries():
+    with app.app_context():
+        migrate_database()
 
 @app.route('/component/add/', methods=['GET'])
 def add_component():
@@ -1212,5 +1260,9 @@ if __name__ == '__main__':
 
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
+    test_queries()
     app.run(debug=False, port=80, host='0.0.0.0')
+    
+
+    
 # app.run(debug=False, port=80, host='0.0.0.0')

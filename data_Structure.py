@@ -2,13 +2,21 @@ import flask_sqlalchemy
 from flask import Flask
 from os import urandom, path
 from flask import url_for
-import time
 from passlib.hash import pbkdf2_sha256
 from flask_login import current_user, AnonymousUserMixin
+<<<<<<< HEAD
 from migrate.versioning import api
 
 
+=======
+from sqlalchemy.types import TypeDecorator, VARCHAR
+
+import json
+>>>>>>> args
 import datetime
+import time
+
+
 
 DATA_FOLDER = path.dirname(__file__)
 # print(DATA_FOLDER)
@@ -20,13 +28,20 @@ app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 db = flask_sqlalchemy.SQLAlchemy(app)
 
 
-# metadata = sqlalchemy.MetaData(db)
+class JSONEncodedDict(TypeDecorator):
+    "Represents an immutable structure as a json-encoded string."
+    
+    impl = VARCHAR
 
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = json.dumps(value)
+        return value
 
-# db.echo = True
-
-
-# counter = 0;
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = json.loads(value)
+        return value
 
 
 class Board(db.Model):
@@ -43,6 +58,8 @@ class Board(db.Model):
     addedBy = db.relationship('User', backref='user_board', uselist=False)
     stat = db.Column(db.Text)
     patch = db.Column(db.Text)
+    arguments = db.Column(db.Text)
+    
 
     # , history):
     def __init__(self, code: str, project_name: str, ver: str, stat="init", patch="None"):
@@ -64,7 +81,37 @@ class Board(db.Model):
         return hash(self.code)
 
     def reduce(self):
+<<<<<<< HEAD
         return str(self.code)+","+str(self.project_name)+";owner:"+str(self.owner)+";patch:"+str(self.patch)+";state:"+str(self.stat)
+=======
+        arguments = ""
+        for arg in self.args():
+            arguments = arguments+arg+":"+self.args()[arg]+";"
+        return str(self.code)+";"+str(self.project_name)+";owner:"+";patch:"+str(self.patch)+";state:"+str(self.stat)+arguments
+
+    def args(self, to_add=None, delete=False):
+        if delete:
+            arguments = json.loads(self.arguments)
+            deleted = arguments.pop(to_add, None)
+            self.arguments=json.dumps(arguments)
+            return deleted
+            
+        if to_add:
+            if not self.arguments:
+                self.arguments = json.dumps({to_add[0]:to_add[1]})
+            else:
+                val = json.loads(self.arguments)
+                val[to_add[0]]=to_add[1]
+                
+                self.arguments=json.dumps(val)
+
+        elif self.arguments:
+            return json.loads(self.arguments)
+        else:
+            return {}
+
+    
+>>>>>>> args
 
 
 class User(db.Model):
@@ -80,8 +127,11 @@ class User(db.Model):
     def __init__(self, username='Guest', password=None, email=None):
         self.username = username
         if password and email:
+<<<<<<< HEAD
             self.uid = id(username)
 
+=======
+>>>>>>> args
             self.email = email
             self.password_hashed_and_salted = pbkdf2_sha256.hash(password)
 
@@ -152,6 +202,8 @@ class History(db.Model):
     data_objects = db.relationship('Files',
                                    backref=db.backref('belongs_to_history_backref', lazy='dynamic', uselist=True))
 
+
+
     def __init__(self, history: str, board_code: str):
         self.board_code = board_code
         self.history = history.replace('\n', "<br>")
@@ -163,7 +215,36 @@ class History(db.Model):
 
         self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
+<<<<<<< HEAD
         #self.id = id(time.strftime("%d.%m.%Y %H:%M:%S") + board_code + str(current_user.uid) + str(urandom(5)))
+=======
+        
+
+    def time_date_datetime(self):
+        return time.strptime(self.time_and_date, "%d.%m.%Y %H:%M:%S")
+
+    def link(self):
+        return url_for('show_board_history', g_code=self.board_code)+'#comment_id'+str(self.id)
+
+    def reduce(self):
+        return self.history.replace(" ", ";")+";"+str(self.added_by.username)+";"+self.edited_by.username
+
+    def short_result(self, search_word, max_length = 30):
+        
+        start_ind = self.history.index(search_word)
+        
+        if start_ind > 6:
+            start_ind = start_ind-6
+
+        if len(self.history)-start_ind < max_length:
+            end_ind = len(self.history)
+            return self.history[start_ind:end_ind]
+        else:
+            end_ind = start_ind+max_length-1
+            return self.history[start_ind:end_ind]+"..."
+        
+
+>>>>>>> args
 
 
 class Files(db.Model):
@@ -176,7 +257,10 @@ class Files(db.Model):
 
     def __init__(self, history, file_path: str, description='None'):
         self.belongs_to_history = history
+<<<<<<< HEAD
         #self.id = id(file_path)
+=======
+>>>>>>> args
         self.description = description
         self.file_path = file_path
 
@@ -215,6 +299,7 @@ class Project(db.Model):  # //TODO Implement the Project Class and add relations
         self.project_default_image_path = project_default_image_path
 
     def reduce(self):
+<<<<<<< HEAD
         return str(self.project_name)+";"+str(self.project_description.replace("",";"))
 
 # EXB-List from now on
@@ -620,9 +705,13 @@ class Order(db.Model):
         db.session.add(booking)
         db.session.commit()
         return booking
+=======
+        return str(self.project_name)+";"+str(self.project_description.replace(" ",";"))
+>>>>>>> args
 
 
 
+<<<<<<< HEAD
 
 SQLALCHEMY_MIGRATE_REPO = path.join(DATA_FOLDER, "static/Database")
 
@@ -639,6 +728,9 @@ SQLALCHEMY_MIGRATE_REPO = path.join(DATA_FOLDER, "static/Database")
 # print('New migration saved as ' + migration)
 # print('Current database version: ' + str(v))
 
+=======
+eng = db.create_all()
+>>>>>>> args
 
 db.create_all()
 # if not path.exists(SQLALCHEMY_MIGRATE_REPO):

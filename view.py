@@ -30,7 +30,7 @@ def write_code_for_search_bar():
                    placeholder="Search", name="search_field"),
 
         # tags.div(
-        tags.button(tags.i(Class="glyphicon glyphicon-search"),
+        tags.button(tags.i(Class="glyphicon glyphicon-search", style="color:#009999"),
                     Class="btn btn-default",
                     Type="submit"),
         # Class="input-group-btn"),
@@ -48,6 +48,7 @@ search_bar = RawTag(tags.li(write_code_for_search_bar()))
 def nav_bar():
     if current_user.username is 'Guest':
         return ownNavRenderer.ExtendedNavbar(
+<<<<<<< HEAD
             title=View(
                 tags.img(src='/static/staticPictures/logo.png', width=200), 'start'),
             items=(View('Start', 'start'),
@@ -58,14 +59,24 @@ def nav_bar():
                             View('Confirm Order', 'confirm_order')),
 
 
+=======
+            title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left", href=url_for('start')), 'start'),
+            items=(View('Start', 'start'),
+                    View('New Board', 'add__board'),
+>>>>>>> args
                    search_bar
                    ),
 
             right_items=(
+<<<<<<< HEAD
                 Link(
                     'Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
                 Text(tags.span(Class="glyphicon glyphicon-user",
                                style="margin-right: -20px")),
+=======
+                Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
+                Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
+>>>>>>> args
                 Subgroup('Hello, Guest',
                          View(
                              tags.div(tags.span(
@@ -78,8 +89,12 @@ def nav_bar():
 
     else:
         return ownNavRenderer.ExtendedNavbar(
+<<<<<<< HEAD
             title=View(
                 tags.img(src='/static/staticPictures/logo.png', width=200), 'start'),
+=======
+            title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left"), 'start'),
+>>>>>>> args
             items=(View('Start', 'start'),
                    Subgroup('Board',
                             View('New Board', 'add__board')),
@@ -97,17 +112,28 @@ def nav_bar():
 
                    ),
             right_items=(
+<<<<<<< HEAD
                 Link(
                     'Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
                 Text(tags.span(Class="glyphicon glyphicon-user container-inline",
                                style="margin-right: -20px ")),
+=======
+                Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
+                Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
+>>>>>>> args
                 Subgroup('Hello, ' + current_user.username,
                          View(tags.div(tags.span(Class="glyphicon glyphicon-trash", style="margin-right: 5%"),
                                        "Delete User"), 'delete_user'),
                          Separator,
+<<<<<<< HEAD
                          View(tags.div(tags.span(Class="glyphicon glyphicon-user", style="margin-right: 5%"),
                                        current_user.username + "`s Profile"), 'my_profile'),
                          View(tags.div(tags.span(Class="glyphicon glyphicon-log-out", style="margin-right: 5%"),
+=======
+                         View(tags.div(tags.span(Class="glyphicon glyphicon-user", style="margin-right: 5%; color:#009999"),
+                                       current_user.username+"`s Profile"), 'my_profile'),
+                         View(tags.div(tags.span(Class="glyphicon glyphicon-log-out text-danger", style="margin-right: 5%"),
+>>>>>>> args
                                        "Logout"), 'logout'))
             )
 

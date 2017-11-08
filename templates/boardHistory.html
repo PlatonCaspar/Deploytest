@@ -20,7 +20,7 @@
             <div class="media-left media-middle">
                 {% if g_board.project.project_default_image_path is none %}
                 <img
-                    src="/static/staticPictures/logo.jpg"
+                    src="/static/staticPictures/logo.png"
                     class="media-object thumbnail" alt="default_project_image"
                     style="width: 120px">
                 {% else %}
@@ -74,11 +74,38 @@
                         {% endif %}
                     </small>
                 </h2>
+                <h3>
+                    <small>
+                        {% if g_board.args() is not none %}
+                        {% for arg in g_board.args() %}
+                        {{arg|string+": "+g_board.args()[arg]|string}}
+                        {% if current_user.username != 'Guest' %}
+                        <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                                data-target="#args_modal" onclick="set_args_name_modal('{{arg}}')"><span class="glyphicon glyphicon-pencil"></span>
+                        </button>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        {% if current_user.username != 'Guest' %}
+                        <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                                data-target="#args_modal" onclick="set_args_name_modal('')"><span class="glyphicon glyphicon-plus"></span>
+                        </button>
+                        {% endif %}
+                        {% endif %}
+                    </small>
+                </h3>
 
             </div>
             <h4 class="panel-heading ">Board Comments
                 <small class="">{{ "("+g_board.code|string+")" }}</small>
             </h4>
+
+         <!--   <h3>
+                {{g_board.args().keys()|string+" "+g_board.args()["Test_arg"]|string}}
+                <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                                    data-target="#args_modal"><span class="glyphicon glyphicon-pencil"></span>
+                            </button>
+            </h3> -->
 
             {% if current_user.username!='Guest' %}
                 <button type="button" class="btn btn-default center-block" data-toggle="modal"
@@ -146,33 +173,39 @@
                                             <div class=" col-xs-2 col-md-2">
 
                                                 <div class="thumbnail">
-                                                    <a href="/static/Pictures/{{ pic.file_path }}">
-                                                        <img src="/static/staticPictures/index_file_picture.jpg"
-                                                             style="width: 100%">
+                                                    <!--a href="/static/Pictures/{{ pic.file_path }}"-->
+                                                        <img src="/static/staticPictures/file.png"
+                                                             style="width: 50%">
 
                                                         <div class="caption">
                                                             {% set filename=pic.file_path.split('/') %}
-                                                            <button class="btn btn-block btn-default"
+                                                            <div class="btn-group inline">
+                                                                {% if current_user.is_authenticated %}
+                                                            <button class="btn btn-default btn-sm" type="button"
+                                                                    data-toggle="collapse" data-target="#{{ pic.id }}"
+                                                                    aria-expanded="false"
+                                                                    aria-controls="{{ pic.id }}"><span
+                                                                    class="glyphicon glyphicon-remove"></span></button>
+                                                                    {% endif %}
+                                                            <a href="/static/Pictures/{{ pic.file_path }}"
+                                                                    class="btn btn-default btn-sm"
                                                                     id="file_id{{ pic.id }}"
                                                                     type="button"
                                                                     style="white-space: normal; word-break: break-all">
                                                             <span class="text-justify">
                                                                 {{ filename[filename|length-1] }}
                                                             </span>
-                                                            </button>
-                                                            <br>
+                                                            </a>
+                                                            </div>
+                                                            
+                                                    
 
-
-                                                    </a>
+                                                    
                                                     {% if current_user.is_authenticated %}
                                                         <form class=""
                                                               action="{{ url_for('delete_history_image', img_id=pic.id, board_id=g_board.code) }}"
                                                               method="post">
-                                                            <button class="btn btn-default btn-sm" type="button"
-                                                                    data-toggle="collapse" data-target="#{{ pic.id }}"
-                                                                    aria-expanded="false"
-                                                                    aria-controls="{{ pic.id }}"><span
-                                                                    class="glyphicon glyphicon-remove"></span></button>
+                                                            
                                                             <div class="collapse" id="{{ pic.id }}">
                                                                 <div class="">
                                                                     <br><br>
@@ -186,6 +219,7 @@
 
                                                         </form>
                                                     {% endif %}
+                                                    
                                                 </div>
                                             </div>
                                             </div>
@@ -416,12 +450,18 @@
 
         </div>
 
+<<<<<<< HEAD
         {# Owner Change Modal #}
         <div id="owner_modal" class="modal fade" role="dialog">
+=======
+{# Args Change Modal #}
+        <div id="args_modal" class="modal fade" role="dialog">
+>>>>>>> args
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
+<<<<<<< HEAD
                         <h4 class="modal-title">{{ 'Change Owner' }}</h4>
                     </div>
                     <div class="modal-body">
@@ -432,12 +472,48 @@
                             </div>
                             <div class="form-group">
                                 <button class="btn btn-default" type="submit">Change</button>
+=======
+                        <h4 class="modal-title">{{ 'Change args' }}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url_for('edit_args', board_id=g_board.code) }}" method="post">
+                            <div class="form-group">
+                                <input class="form-control" type="text" id="name" name="name" required="required"
+                                       placeholder="Please enter the name of the argument">
+                                       <input class="form-control" type="text" id="value" name="value"
+                                       placeholder="Please enter the value of the argument">
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-default" type="submit">Change</button>
+                                <button class="btn btn-warning" type="button" id="delete_arg_button"
+                                    data-toggle="collapse" data-target="#delete_arg"
+                                    aria-expanded="false"
+                                    aria-controls="delete_arg"><span
+                                    class="glyphicon glyphicon-remove"></span></button>
+>>>>>>> args
                                 <button class="btn btn-default pull-right" type="button" data-dismiss="modal">Cancel
                                 </button>
                             </div>
 
+<<<<<<< HEAD
                         </form>
                         <div class="modal-footer">
+=======
+                       
+                        <div class="modal-footer">
+                            
+                            <div class="collapse" id="delete_arg">
+                            <br>
+                                <button class="btn btn-danger btn-sm btn-block" name="delete_btn" id="delete_btn"
+                                        type="submit"><span
+                                        class="glyphicon glyphicon-ok pull-left"></span>
+                                    <strong>Delete?</strong>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                        
+>>>>>>> args
                         </div>
                     </div>
 
@@ -447,7 +523,25 @@
 
         </div>
 
+<<<<<<< HEAD
     {% endif %}
+=======
+        <script>
+
+            function set_args_name_modal(name) {
+                    var my_input = document.getElementById("name");
+                    my_input.value = name;
+                    }
+            
+            
+                    
+
+            
+            
+        </script>
+
+  {% endif %}
+>>>>>>> args
 
 
 
