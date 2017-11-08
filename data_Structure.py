@@ -4,7 +4,7 @@ from os import urandom
 from flask import url_for, flash
 from passlib.hash import pbkdf2_sha256
 from flask_login import current_user, AnonymousUserMixin
-
+from sqlalchemy import MetaData
 import json
 import datetime
 import time
@@ -13,9 +13,15 @@ import time
 
 # import flask
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///static/Database/data.sql'
+naming_convention = {
+    "fk": "fk_%(table_name)s_(column_0_name)s_%(referred_table_name)s" ,
+    "uq": "uq_%(table_name)s_%(column_0_name)s" 
+}
+metadata = MetaData(naming_convention=naming_convention)
+SQLALCHEMY_DATABASE_URI = 'sqlite:///static/Database/data.sql'
+app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+db = flask_sqlalchemy.SQLAlchemy(app, metadata=metadata)
 
-db = flask_sqlalchemy.SQLAlchemy(app)
 
 
 
