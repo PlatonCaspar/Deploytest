@@ -43,7 +43,6 @@ class Board(db.Model):
     addedBy = db.relationship('User', backref='user_board', uselist=False)
     stat = db.Column(db.Text)
     patch = db.Column(db.Text)
-    owner = db.Column(db.Text, default="None")
 
     # , history):
     def __init__(self, code: str, project_name: str, ver: str, stat="init", patch="None"):
@@ -63,14 +62,6 @@ class Board(db.Model):
 
     def __hash__(self):
         return hash(self.code)
-    
-    def change_owner(self, new_owner):
-        text = "The board's owner changed from "+str(self.owner)+" to "+new_owner+"."
-        self.owner = new_owner
-        new_history = History(history=text, board_code=self.code)
-        db.session.add(new_history)
-
-        db.session.commit()
 
     def reduce(self):
         return str(self.code)+","+str(self.project_name)+";owner:"+str(self.owner)+";patch:"+str(self.patch)+";state:"+str(self.stat)
