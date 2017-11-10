@@ -198,6 +198,7 @@ def start():
     results_project = None
     results_component = None
     results_comments = None
+    results_devices = None
     if request.method == 'POST':
         if request.form.get('submit_main') is None:
             search_word = request.form.get('search_field')
@@ -240,6 +241,11 @@ def start():
             if search_word is not "":
                 results_comments = search.search(search_word=search_word, items=data_Structure.History.query.all())
                 print("Platinen.py "+str(results_comments))
+        if search_area == 'All' or search_area =='Devices':
+            if search_word == "":
+                results_devices = data_Structure.Device.query.all()
+            elif search_word is not "":
+                results_devices = search.search(search_word=search_word, items=data_Structure.Device.query.all()) 
 
         if not results_board and not results_project and not results_component and not results_comments:
             flash('No results were found', 'warning')
@@ -247,7 +253,7 @@ def start():
 
         return render_template('table.html', args=results_board, projects=results_project,
                                search_form=searchForm.SearchForm(), search_word=search_word, components=results_component,
-                               results_comments=results_comments)
+                               results_comments=results_comments, results_devices=results_devices)
     return render_template('start.html', search_form=search_form)
 
 
@@ -752,6 +758,113 @@ def edit_args():
     data_Structure.db.session.commit()
 
     return redirect(url_for('show_board_history', g_code=board_id))
+
+@app.route('/device/add/do/', methods=['POST'])
+def add_device_do():
+    device_name = request.form.get('device_name')
+    device_brand = request.form.get('device_brand')
+    
+    if device_brand and device_name:
+        device = data_Structure.Device(device_name, device_brand)
+        try:
+            data_Structure.db.session.add(device)
+            data_Structure.db.session.commit()
+        except:
+            flash('An error occured while adding the device to the database', 'danger')
+            return redirect(url_for('start'))
+    flash('device \"'+device_name+'\" was added.', "success")
+    return redirect(url_for('add_device'))
+
+@app.route('/device/add/', methods=['GET'])
+def add_device():
+    return render_template('add_device.html')
+
+@app.route('/device/args/change/', methods=['POST'])
+def device_args():
+    arg_name = request.form.get('name')
+    try:
+        device_id = int(request.args.get('device_id'))
+    except:
+        flash('could not convert string to int: device_args()', 'danger')
+        return redirect(url_for('start'))
+    board = data_Structure.Device.query.get(device_id)
+    if request.form.get('delete_btn') is not None:
+        res = device.args(arg_name, delete=True)
+        data_Structure.db.session.commit()
+        if res:
+            flash(res+" was deleted", 'success')
+        return redirect(url_for('show_device', device_id=device_id))
+    elif request.form.get('change_btn'):
+        arg_value = request.form.get('value')
+        device.args([arg_name, arg_value])
+        data_Structure.db.session.commit()
+        return redirect(url_for('show_device', device_id=device_id))
+    flash('some error occured //device_args()//', 'warning')
+
+@app.route('/device/show/<device_id>/', methods=['GET'])
+def show_device(device_id):
+    device=data_Structure.Device.query.get(int(device_id))
+    return render_template('device_page.html', device=device)
+
+@app.route('/device/upload/document/', methods=['POST'])
+def upload_device_document():
+    try:
+        device = data_Structure.Device.query.get(int(request.args.get('device_id')))
+    except:
+        flash('An error occured //upload_device_document()//', 'danger')
+        return redirect(url_for('start'))
+    file = request.files.get('device_documents')
+    if file:
+        file_id = id(file.filename)
+        filename = secure_filename('devdoc_'+str(file_id) + file.filename)
+
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(file_path)
+        file_to_add = data_Structure.DeviceDocument(file_path, device)
+        data_Structure.db.session.add(file_to_add)
+        data_Structure.db.session.commit()
+        flash('file was uploaded successful.', 'success')
+    return redirect(url_for('show_device', device_id=device.device_id))
+
+@app.route('/device/delete/do/', method=[POST])
+def delete_device():
+    try:
+        device = data_Structure.Device.query.get(int(request.args.get('device_id')))
+    except:
+        flash('An error Occured //delete_device()//', 'danger')
+        return redirect(url_for('start'))
+    
+    for doc in device.device_documents:
+        delete_document_func(doc)
+
+    data_Structure.db.session.remove(device)
+    data_Structure.db.session.commit()
+    return redirect(url_for('start'))
+
+@app.route('/device/delete/document/do/', methods=['POST'])
+def delete_document():
+    try:
+        device = int(request.args.get('device_id'))
+        document = data_Structure.DeviceDocument.query.get(int(request.args.get('document_id')))
+    except:
+        flash('An error Occured //delete_document()//', 'danger')
+        return redirect(url_for('start'))
+    if delete_document_func(document):
+        flash('document was deleted successful', 'success')
+    else:
+        flash('An error occured //delete_document_func()', 'danger')
+    
+    return redirect(url_for('show_device', device_id=device_id))
+
+    
+def delete_document_func(document):
+    try:
+        os.remove(document.device_document_path)
+    except:
+        return False
+    data_Structure.db.session.remove(document)
+    data_Structure.db.session.commit()
+    return True
 
 def test_queries():
     with app.app_context():

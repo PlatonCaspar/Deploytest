@@ -258,6 +258,72 @@ class Project(db.Model):
     def reduce(self):
         return str(self.project_name)+";"+str(self.project_description.replace(" ",";"))
 
+class Device(db.Model):
+    device_name = db.Column(db.Text)
+    device_brand = db.Column(db.Text)
+    device_id = db.Column(db.Integer, primary_key=True)
+    device_description = db.Column(db.Text)
+    device_arguments = db.Column(db.Text)
+    device_documents = db.relationship('device_documents', backref='device_device_documents_backref', lazy=True, uselist=True)
+    
+
+    def __init__(self, devive_name, device_brand, device_description=None):
+        self.device_name = device_name
+        self.device_brand = device_brand
+        if device_description:
+            self.device_description = device_description
+    
+    def link(self):
+        #TODO implement view function and create link to device site Here
+        pass
+
+    def reduce(self):
+        arg = ""
+        for a in self.args():
+            arg = arg+a+":"+self.args()[a]*";"
+        return arg+";"+self.device_name+";"+self.device_manufacturer+";"
+
+    def args(self, to_add=None, delete=False):
+        if delete:
+            arguments = json.loads(self.device_arguments)
+            deleted = arguments.pop(to_add, None)
+            self.device_arguments=json.dumps(arguments)
+            return deleted
+            
+        if to_add:
+            if not self.device_arguments:
+                self.device_arguments = json.dumps({to_add[0]:to_add[1]})
+            else:
+                val = json.loads(self.device_arguments)
+                val[to_add[0]]=to_add[1]
+                
+                self.device_arguments=json.dumps(val)
+
+        elif self.device_arguments:
+            return json.loads(self.device_arguments)
+        else:
+            return {}
+
+
+class DeviceDocument(db.Model):
+    device_document_id = db.Column(db.Integer, primary_key=True)
+    device_document_path = db.Column(db.Text)
+    device_document_description = db.Column(db.Text)
+    device_document_device = db.relationship('Device', backref='device_document_device_backref', uselist=False)
+    device_document_device_id = db.Column(db.Integer, db.ForeignKey('device.device_id'))
+
+    def __init__(self, device_document_path, device_document_device, device_document_description=""):
+        self.device_document_path = device_document_path
+        self.device_document_device = device_document_device
+        self.device_document_description = device_document_description
+    
+    def name():
+        only_name = self.device_document_path.replace('/','\\').split('\\')
+        if len(only_name)>1:
+            return only_name[len(only_name)-1]+" "+str(self.device_document_description)
+        else:
+            return only_name[0]+" "+str(self.device_document_description)
+
 
 ##EXB-List from now on
 

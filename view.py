@@ -19,6 +19,7 @@ def write_code_for_search_bar():
 
                     tags.option("Boards", value='Boards', Class="container-fluid panel-body"),
                     tags.option("Projects", value='Projects', Class="container-fluid panel-body"),
+                    tags.option("Devices", value='Devices', Class="container-fluid panel-body"),
                     Class="form-control selectpicker",
                     style="margin: auto data-width: auto", name="Selector"),
 
@@ -65,6 +66,7 @@ def nav_bar():
             title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left"), 'start'),
             items=(View('Start', 'start'),
                    View('New Board', 'add__board'),
+                   View('New Device', 'add_device')
 
                    View('New Project', 'add_project'),
                    search_bar

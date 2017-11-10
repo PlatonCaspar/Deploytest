@@ -10,22 +10,20 @@
         <div class="panel-default panel-collapse">
             <div class="panel-heading">
                 <form class=""
-                      action="{{ url_for('delete_project', project_name=project.project_name) }}"
+                      action="{{ url_for('delete_device', device_id=device.device_id) }}"
                       method="post">
-                    <h1>{{ project.project_name }}
-                        <small>
-                            {% if current_user.is_authenticated %}
+                        {% if current_user.is_authenticated %}
                             <button class="btn btn-group btn-warning btn-sm pull-right" type="button"
-                                    data-toggle="collapse" data-target="#delete_project"
+                                    data-toggle="collapse" data-target="#delete_device"
                                     aria-expanded="false"
-                                    aria-controls="delete_project"><span
+                                    aria-controls="delete_device"><span
                                     class="glyphicon glyphicon-remove"></span></button>
                             {% endif %}
                         </small>
                     </h1>
 
 
-                    <div class="collapse" id="delete_project">
+                    <div class="collapse" id="delete_device">
                         <div class="">
                             <br><br>
                             <button class="btn btn-danger btn-sm btn-block"
