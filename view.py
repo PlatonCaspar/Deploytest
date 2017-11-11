@@ -66,7 +66,7 @@ def nav_bar():
             title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left"), 'start'),
             items=(View('Start', 'start'),
                    View('New Board', 'add__board'),
-                   View('New Device', 'add_device')
+                   View('New Device', 'add_device'),
 
                    View('New Project', 'add_project'),
                    search_bar

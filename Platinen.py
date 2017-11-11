@@ -247,7 +247,7 @@ def start():
             elif search_word is not "":
                 results_devices = search.search(search_word=search_word, items=data_Structure.Device.query.all()) 
 
-        if not results_board and not results_project and not results_component and not results_comments:
+        if not results_board and not results_project and not results_component and not results_comments and not results_devices:
             flash('No results were found', 'warning')
             return render_template('base.html')
 
@@ -266,7 +266,7 @@ def add_board_scripted():
     arg = request.args.get('result')
     comment = request.args.get('comment')
     print(board_id)
-    if not board_id and not project and not ver and not stat and not arg: 
+    if not board_id and not project and not ver and not stat and not arg : 
         print('no Succes')
         return "No Success"
     board = data_Structure.Board.query.get(board_id)
@@ -505,7 +505,7 @@ def delete_project_image(project_name):
     if img_id is not None:
         os.remove(os.path.join(UPLOAD_FOLDER, img_id.replace('_', '\\')))
 
-    # data_Structure.db.session.remove(image_to_delete)
+    # data_Structure.db.session.delete(image_to_delete)
     data_Structure.db.session.commit()
 
     return redirect(url_for('show_project', project_name=project_name))
@@ -777,6 +777,7 @@ def add_device_do():
 
 @app.route('/device/add/', methods=['GET'])
 def add_device():
+    nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('add_device.html')
 
 @app.route('/device/args/change/', methods=['POST'])
@@ -787,33 +788,38 @@ def device_args():
     except:
         flash('could not convert string to int: device_args()', 'danger')
         return redirect(url_for('start'))
-    board = data_Structure.Device.query.get(device_id)
+    device = data_Structure.Device.query.get(device_id)
     if request.form.get('delete_btn') is not None:
         res = device.args(arg_name, delete=True)
         data_Structure.db.session.commit()
         if res:
             flash(res+" was deleted", 'success')
         return redirect(url_for('show_device', device_id=device_id))
-    elif request.form.get('change_btn'):
+    elif request.form.get('change_btn') is not None:
         arg_value = request.form.get('value')
         device.args([arg_name, arg_value])
         data_Structure.db.session.commit()
         return redirect(url_for('show_device', device_id=device_id))
     flash('some error occured //device_args()//', 'warning')
+    return redirect(url_for('show_device', device_id=device_id))
+
 
 @app.route('/device/show/<device_id>/', methods=['GET'])
 def show_device(device_id):
+    nav.nav.register_element("frontend_top", view.nav_bar())
     device=data_Structure.Device.query.get(int(device_id))
     return render_template('device_page.html', device=device)
 
 @app.route('/device/upload/document/', methods=['POST'])
 def upload_device_document():
+    print('UPLOAD')
     try:
         device = data_Structure.Device.query.get(int(request.args.get('device_id')))
     except:
         flash('An error occured //upload_device_document()//', 'danger')
         return redirect(url_for('start'))
-    file = request.files.get('device_documents')
+    file = request.files['device_documents']
+    print(request.method)
     if file:
         file_id = id(file.filename)
         filename = secure_filename('devdoc_'+str(file_id) + file.filename)
@@ -824,9 +830,11 @@ def upload_device_document():
         data_Structure.db.session.add(file_to_add)
         data_Structure.db.session.commit()
         flash('file was uploaded successful.', 'success')
+    else:
+        print('no file attached')
     return redirect(url_for('show_device', device_id=device.device_id))
 
-@app.route('/device/delete/do/', method=[POST])
+@app.route('/device/delete/do/', methods=['POST'])
 def delete_device():
     try:
         device = data_Structure.Device.query.get(int(request.args.get('device_id')))
@@ -844,8 +852,9 @@ def delete_device():
 @app.route('/device/delete/document/do/', methods=['POST'])
 def delete_document():
     try:
-        device = int(request.args.get('device_id'))
+        device_id = int(request.args.get('device_id'))
         document = data_Structure.DeviceDocument.query.get(int(request.args.get('document_id')))
+
     except:
         flash('An error Occured //delete_document()//', 'danger')
         return redirect(url_for('start'))
@@ -862,7 +871,7 @@ def delete_document_func(document):
         os.remove(document.device_document_path)
     except:
         return False
-    data_Structure.db.session.remove(document)
+    data_Structure.db.session.delete(document)
     data_Structure.db.session.commit()
     return True
 

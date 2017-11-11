@@ -14,7 +14,7 @@ import time
 # import flask
 app = Flask(__name__)
 naming_convention = {
-    "fk": "fk_%(table_name)s_(column_0_name)s_%(referred_table_name)s" ,
+    "fk": "fk_%(table_name)s_(column_0_name)s" ,
     "uq": "uq_%(table_name)s_%(column_0_name)s" 
 }
 metadata = MetaData(naming_convention=naming_convention)
@@ -258,30 +258,50 @@ class Project(db.Model):
     def reduce(self):
         return str(self.project_name)+";"+str(self.project_description.replace(" ",";"))
 
+class DeviceDocument(db.Model):
+    device_document_id = db.Column(db.Integer, primary_key=True)
+    device_document_path = db.Column(db.Text)
+    device_document_description = db.Column(db.Text)
+    device_document_device = db.relationship('Device', backref='device_document_device_backref', uselist=False)
+    device_document_device_id = db.Column(db.Integer, db.ForeignKey('device.device_id'))
+
+    def __init__(self, device_document_path, device_document_device, device_document_description=""):
+        self.device_document_path = device_document_path
+        self.device_document_device = device_document_device
+        self.device_document_description = device_document_description
+    
+    def name():
+        only_name = self.device_document_path.replace('/','\\').split('\\')
+        if len(only_name)>1:
+            return only_name[len(only_name)-1]+" "+str(self.device_document_description)
+        else:
+            return only_name[0]+" "+str(self.device_document_description)
+
+
 class Device(db.Model):
     device_name = db.Column(db.Text)
     device_brand = db.Column(db.Text)
     device_id = db.Column(db.Integer, primary_key=True)
     device_description = db.Column(db.Text)
     device_arguments = db.Column(db.Text)
-    device_documents = db.relationship('device_documents', backref='device_device_documents_backref', lazy=True, uselist=True)
-    
+    device_documents = db.relationship('DeviceDocument', backref='device_device_documents_backref', lazy=True, uselist=True)
+    #device_documents_id = db.Column(db.Integer, db.ForeignKey('deviceDocument.device_document_id'))
 
-    def __init__(self, devive_name, device_brand, device_description=None):
+    def __init__(self, device_name, device_brand, device_description=None):
         self.device_name = device_name
         self.device_brand = device_brand
         if device_description:
             self.device_description = device_description
     
     def link(self):
-        #TODO implement view function and create link to device site Here
-        pass
+    
+        return url_for('show_device', device_id=self.device_id)
 
     def reduce(self):
         arg = ""
         for a in self.args():
-            arg = arg+a+":"+self.args()[a]*";"
-        return arg+";"+self.device_name+";"+self.device_manufacturer+";"
+            arg = arg+a+":"+self.args()[a]+";"
+        return arg+";"+self.device_name+";"+self.device_brand+";"
 
     def args(self, to_add=None, delete=False):
         if delete:
@@ -305,24 +325,6 @@ class Device(db.Model):
             return {}
 
 
-class DeviceDocument(db.Model):
-    device_document_id = db.Column(db.Integer, primary_key=True)
-    device_document_path = db.Column(db.Text)
-    device_document_description = db.Column(db.Text)
-    device_document_device = db.relationship('Device', backref='device_document_device_backref', uselist=False)
-    device_document_device_id = db.Column(db.Integer, db.ForeignKey('device.device_id'))
-
-    def __init__(self, device_document_path, device_document_device, device_document_description=""):
-        self.device_document_path = device_document_path
-        self.device_document_device = device_document_device
-        self.device_document_description = device_document_description
-    
-    def name():
-        only_name = self.device_document_path.replace('/','\\').split('\\')
-        if len(only_name)>1:
-            return only_name[len(only_name)-1]+" "+str(self.device_document_description)
-        else:
-            return only_name[0]+" "+str(self.device_document_description)
 
 
 ##EXB-List from now on
@@ -330,4 +332,4 @@ class DeviceDocument(db.Model):
 eng = db.create_all()
 
 
-# session = flask_sqlalchemy.SQLAlchemy.(bind=eng)
+#session = db.sessionmaker(bind=eng)

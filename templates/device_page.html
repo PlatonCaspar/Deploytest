@@ -6,7 +6,7 @@
 <div class="row">
     <div class="col-xs-3 col-md-3 col-ld-3"></div>
     <div class="col-xs-6 col-md-6 col-ld-6">
-        <div class="container">
+        <div class="">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">
@@ -54,13 +54,13 @@
                         </button>
                         {% endif %}
                         {% endif %}
-
+                        <br>
                         {% if device.device_documents %}
-                        <div id="myCarousel" class="carousel slide" data-ride="carousel">
+                        <div id="myCarousel" class="carousel slide col-xs-3 col-md-3 col-ld-3" data-ride="carousel">
                             <!-- Indicators -->
                             <ol class="carousel-indicators">
-                                <li data-target="#myCarousel" data-slide-to="0" class="active"
-                                {% for i in range(1, device.device_documents|length)}
+                                <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                                {% for i in range(1, device.device_documents|length) %}
                                 <li data-target="#myCarousel" data-slide-to="{{i|string}}"></li>
                                 {% endfor %}
                             </ol>
@@ -68,16 +68,16 @@
                             <!-- Wrapper for slides -->
                             <div class="carousel-inner">
                                 {% for document in device.device_documents %}
-                                {% if document is device.device_documents[0] %}
+                                {% if document == device.device_documents[0] %}
                                 <div class="item active">
                                 {% else %}
                                 <div class="item">
-                                {% endif $}
-                                    <a href="{{document.device_document_path}}"
+                                {% endif %}
+                                    <a href="{{document.device_document_path}}">
                                     <img src="/static/staticPictures/file.png">
                                     </a>
                                     <div class="carousel-caption">
-                                        <form action="{{url_for('delete_document', document_id=document.device_document_id, device_id=device.device_id)}}", method="POST">
+                                        <form action="{{url_for('delete_document', document_id=document.device_document_id, device_id=device.device_id)}}" method="POST">
                                             
                                             <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-remove"></span></button>
 
@@ -98,22 +98,24 @@
                             </a>
                         </div>
                     {% endif %}
-                    <form action="{{url_for('upload_device_document', device_id=device.device_id)}}" method="POST">
+                    <form action="{{url_for('upload_device_document', device_id=device.device_id)}}" 
+                    method="post" enctype="multipart/form-data">
                         <div class="form-group">
                             <label for="device_documents">Upload Documents</label>
-                            <input type="file" id="device_documents" enctype=multipart/form-data>
+                            <input type="file" id="device_documents" name="device_documents">
                             <p class="help-block">Upload device related Documents here.</p>
                             <button class="btn btn-default" type="submit">Upload!</button>
                         </div>
                     </form>
-
+                    
                 </div><!-- panel body -->
             </div><!-- panel -->
         </div><!-- container -->
     </div><!-- col -->
+    <div class="col-xs-3 col-md-3 col-ld-3"></div>
 </div><!-- row -->
 
-
+{% if current_user.username != 'Guest' %}
 {# Args Change Modal #}
         <div id="args_modal" class="modal fade" role="dialog">
             <div class="modal-dialog">
