@@ -270,7 +270,7 @@ class DeviceDocument(db.Model):
         self.device_document_device = device_document_device
         self.device_document_description = device_document_description
     
-    def name():
+    def name(self):
         only_name = self.device_document_path.replace('/','\\').split('\\')
         if len(only_name)>1:
             return only_name[len(only_name)-1]+" "+str(self.device_document_description)

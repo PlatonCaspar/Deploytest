@@ -39,6 +39,7 @@
                 <div class="panel-body">
 
                     <!-- args -->
+                    <p>
                     <div class="col-xs-6 col-md-6 col-ld-6">
                         {% if device.args() is not none %}
                         {% for arg in device.args() %}
@@ -57,8 +58,10 @@
                         {% endif %}
                         {% endif %}
                     </div>
+                    </p>
                         {% if device.device_documents %}
-                        <div id="myCarousel" class="carousel slide col-xs-7 col-md-7 col-ld-7" data-ride="carousel">
+                        <p>
+                        <div id="myCarousel" class="carousel slide col-xs-6 col-md-6 col-ld-6" data-ride="carousel">
                             <!-- Indicators -->
                             <ol class="carousel-indicators">
                                 <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
@@ -79,6 +82,7 @@
                                     <img src="/static/staticPictures/file.png">
                                     </a>
                                     <div class="carousel-caption">
+                                        {{document.name()}}
                                         <form action="{{url_for('delete_document', document_id=document.device_document_id, device_id=device.device_id)}}" method="POST">
                                             
                                             <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-remove"></span></button>
@@ -99,12 +103,13 @@
                                 <span class="sr-only">Next</span>
                             </a>
                         </div>
+                        </div>
                     {% endif %}
                     <form action="{{url_for('upload_device_document', device_id=device.device_id)}}" 
                     method="post" enctype="multipart/form-data">
-                        <div class="form-group">
+                        <div class="col-xs-6 col-md-6 col-ld-6">
                             <label for="device_documents">Upload Documents</label>
-                            <input type="file" id="device_documents" name="device_documents">
+                            <input class="" type="file" id="device_documents" name="device_documents">
                             <p class="help-block">Upload device related Documents here.</p>
                             <button class="btn btn-default" type="submit">Upload!</button>
                         </div>
