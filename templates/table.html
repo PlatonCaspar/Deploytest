@@ -96,6 +96,8 @@
                     <tr>
                         <th class="text-info">Device Name</th>
                         <th class="text-info">Device Brand</th>
+                        <th class="text-info">Network Name</th>
+                        <th class="text-info">MAC Address</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -106,6 +108,20 @@
                             </td>
                             <td class="text-justify">
                                 {{ row.device_brand }}
+                            </td>
+                            <td class="text-justify">
+                                {% if "NetworkName" in row.args().keys() %}
+                                {{row.args()['NetworkName']}}
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                            <td class="text-justify">
+                                {% if "MAC" in row.args().keys() %}
+                                {{row.args()["MAC"]}}
+                                {% else %}
+                                N/A
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
@@ -207,6 +223,46 @@
             {% endfor %}
             </tbody>
         </table>
+        {% endif %}
+
+        {% if results_devices %}
+                <table class="print_website table table-bordered table-striped">
+                    <thead class="print_website">
+                    <tr>
+                        <th class="print_website">Device Name</th>
+                        <th class="print_website">Device Brand</th>
+                        <th class="print_website">Network Name</th>
+                        <th class="print_website">MAC Address</th>
+                    </tr>
+                    </thead>
+                    <tbody class="print_website">
+                    {% for row in results_devices %}
+                        <tr class="print_website" onclick="window.document.location='{{ row.link() }}';">
+                            <td class="print_website">
+                                {{ row.device_name }}
+                            </td>
+                            <td class="print_website">
+                                {{ row.device_brand }}
+                            </td>
+                            
+                            <td class="print_website">
+                                {% if "NetworkName" in row.args().keys() %}
+                                {{row.args()['NetworkName']}}
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                            <td class="print_website">
+                                {% if "MAC" in row.args().keys() %}
+                                {{row.args()["MAC"]}}
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
         {% endif %}
     </div>
 {% endblock %}

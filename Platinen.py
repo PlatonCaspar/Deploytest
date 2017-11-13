@@ -845,7 +845,7 @@ def delete_device():
     for doc in device.device_documents:
         delete_document_func(doc)
 
-    data_Structure.db.session.remove(device)
+    data_Structure.db.session.delete(device)
     data_Structure.db.session.commit()
     return redirect(url_for('start'))
 

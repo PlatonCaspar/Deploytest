@@ -301,7 +301,7 @@ class Device(db.Model):
         arg = ""
         for a in self.args():
             arg = arg+a+":"+self.args()[a]+";"
-        return arg+";"+self.device_name+";"+self.device_brand+";"
+        return "Device;"+arg+";"+self.device_name+";"+self.device_brand+";"
 
     def args(self, to_add=None, delete=False):
         if delete:

@@ -11,7 +11,8 @@
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         {{device.device_brand+" "+device.device_name}}
-                    
+                    </h3>
+                
                     <form class=""
                       action="{{ url_for('delete_device', device_id=device.device_id) }}"
                       method="post">
@@ -34,34 +35,38 @@
                     </div>
 
                 </form>
-                </h3>
-                </div>
-                <div class="panel-body">
-
+            </div>
+            <div class="panel-body">
                     <!-- args -->
-                    <p>
-                    <div class="col-xs-6 col-md-6 col-ld-6">
+                    <p class="container container-fluid">
+                    <div class="col-xs-12 col-md-12 col-ld-12">
                         {% if device.args() is not none %}
                         {% for arg in device.args() %}
+                        <p class="border_args inline-block col-xs-6 col-md-6 col-ld-6">
                         {{arg|string+": "+device.args()[arg]|string}}
+                        
                         {% if current_user.username != 'Guest' %}
                         <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
                                 data-target="#args_modal" onclick="set_args_name_modal('{{arg}}')"><span class="glyphicon glyphicon-pencil"></span>
                         </button>
+                        </p>
                         {% endif %}
                         {% endfor %}
-                        
                         {% if current_user.username != 'Guest' %}
+                        <p class="inline-block col-xs-6 col-md-6 col-ld-6">
                         <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
                                 data-target="#args_modal" onclick="set_args_name_modal('')"><span class="glyphicon glyphicon-plus"></span>
                         </button>
+                        </p>
                         {% endif %}
                         {% endif %}
+                    
                     </div>
+                        
                     </p>
                         {% if device.device_documents %}
-                        <p>
-                        <div id="myCarousel" class="carousel slide col-xs-6 col-md-6 col-ld-6" data-ride="carousel">
+                        <p class="container container-fluid">
+                        <div id="myCarousel" class="carousel slide col-xs-12 col-md-12 col-ld-12" data-ride="carousel">
                             <!-- Indicators -->
                             <ol class="carousel-indicators">
                                 <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
@@ -79,7 +84,7 @@
                                 <div class="item">
                                 {% endif %}
                                     <a href="{{document.device_document_path}}">
-                                    <img src="/static/staticPictures/file.png">
+                                    <img src="/static/staticPictures/file.png" style="margin: auto">
                                     </a>
                                     <div class="carousel-caption">
                                         {{document.name()}}
@@ -105,16 +110,18 @@
                         </div>
                         </div>
                     {% endif %}
+                    <div class="container container-fluid">
                     <form action="{{url_for('upload_device_document', device_id=device.device_id)}}" 
                     method="post" enctype="multipart/form-data">
-                        <div class="col-xs-6 col-md-6 col-ld-6">
+                        <div class="col-xs-12 col-md-12 col-ld-12">
                             <label for="device_documents">Upload Documents</label>
                             <input class="" type="file" id="device_documents" name="device_documents">
                             <p class="help-block">Upload device related Documents here.</p>
                             <button class="btn btn-default" type="submit">Upload!</button>
+                            <br>
                         </div>
                     </form>
-                    
+                    </div>
                 </div><!-- panel body -->
             </div><!-- panel -->
         </div><!-- container -->
