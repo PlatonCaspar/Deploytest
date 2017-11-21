@@ -1,229 +1,260 @@
 {%- extends 'base.html' %} {% block title %} {% if component.exb_number %} {{ component.exb_number.exb_number }} {% else
 %} Component {{component.id}} {% endif %} {% endblock %} {% block content %}
-<div class="col-xs-10 col-md-10 col-ld-10 col-xs-offset-1 col-md-offset-1 col-ld-offset-1">
-    <div class="container">
 
-        <div class="">
-            <div class="col-xs-5 col-md-5">
-                <div class="container">
-                    {% if component.exb_number.exb_number %}
-                    <span class="page-header"><h3>{{ component.exb_number.exb_number }}</h3></span> {% else %}
-                    <span class="page-header"><h3>Internal ID: {{ component.id }}</h3></span> {% endif %}
-                    <address>
-                        Description: {{ component.description }}<br> Category: {{ component.category() }}<br> Value: {{ component.value
-                        }}
-                        <br><br> Manufacturer: {{ component.manufacturer }} // Manufacturer ID: {{ component.manufacturer_id
-                        }}
-                        <br> Package: {{ component.package() }}
+<div class="container container-fluid">
+<div class="row"> <!-- first row -->
+    <div class="col-xs-2 col-md-2 col-ld-2"></div>
+    <div class="col-xs-4 col-md-4 col-ld-4" id="Descripton">
+        <!-- Place Data from Part here! -->
+        {% if component.exb_number.exb_number %}
+        <span class="page-header"><h3>{{ component.exb_number.exb_number }}</h3></span> {% else %}
+        <span class="page-header"><h3>ID: {{ component.id }}</h3></span> {% endif %}
+        <address>
+            Description: {{ component.description }}<br> Category: {{ component.category() }}<br> 
+            Value: {{ component.value}}
+            <br><br> Manufacturer: {{ component.manufacturer }} // Manufacturer ID: 
+            {{ component.manufacturer_id }}
+            <br> Package: {{ component.package() }}
 
-                    </address>
+        </address>
+    </div>
+    <div class="col-xs-4 col-md-4 col-ld-4" id="availability">
+        <!-- Place information about availability here! -->
+        <span class="page-header">
+            <h3>Availability</h3>
+        </span>
+        <h4>
+            <p class="label label-success">
+                Available: {{ component.stock()-component.reserved() }}
+            </p>
+            <br>
+        </h4>
+        <h4>
+            <p class="label label-warning">
+                Reserved: {{ component.reserved() }}
+            </p>
+            <br>
+        </h4>
+        <h4>
+            <p class="label label-danger" style="width: auto">
+                In Stock: {{ component.stock() }}
+            </p>
+            <br>
+        </h4>
+        <h4>
+            <p class="label label-info" style="width: auto">
+                Lab: {{ component.stock_lab() }}
+            </p>
+            <br>
+        </h4>
+                
+    </div>
+</div><!-- first row -->
 
 
-                </div>
-                <div class="container">
-
-
-                    <span class="page-header"><h3>Actions</h3></span> {% if current_user.username != 'Guest' %} {# user is
-                    logged in #}
-                    <p>
-                        <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#reserve_modal"><span class="glyphicon glyphicon-hourglass"></span>
+<div class="row"> <!-- second row -->
+    <div class="col-xs-2 col-md-2 col-ld-2"></div>
+    <div class="col-xs-4 col-md-4 col-ld-4" id="actions">
+        <span class="page-header">
+            <h3>Actions</h3>
+        </span> 
+        {% if current_user.username != 'Guest' %} 
+        {# user is logged in #}
+        <div class="col-xs-6 col-md-6 col-ld-6">
+        <p>
+            <button class="btn btn-primary btn-block" type="button" 
+                    data-toggle="modal" 
+                    data-target="#reserve_modal">
+                <span class="glyphicon glyphicon-hourglass"></span>
                         Reserve
-                    </button>
-                    </p>
-                    <p>
-                        <button class="btn btn-danger" type="button"><span class="glyphicon glyphicon-pencil"></span>
-                        Stocktaking
-                    </button>
-                    </p>
-                    <p>
-                        <button class="btn btn-info" type="button" data-toggle="collapse" data-target="#lab_actions" aria-expanded="false" aria-controls="lab_actions"><span class="glyphicon glyphicon-menu-down"></span> Lab
-                    </button>
-                    </p>
-                    <div class="collapse" id="lab_actions">
-                        <div class="well">
-                            <!-- If someone takes out a few parts of the lab stock -->
-                            <p>
-                                <div>
-                                    <form action="{{ url_for('take_lab',component_id=component.id) }}" method="post">
-                                        <div class="form-inline input-group">
-                                            <span class="input-group-addon">Take out</span>
-                                            <input class="form-control" id="qty_lab_out" name="qty_lab_out" type="number" required="required" placeholder="Please enter the quantity you want to take...">
-                                            <div class="input-group-btn">
-                                                <button class="btn btn-primary" type="submit">Take</button>
-                                            </div>
-                                        </div>
-                                    </form>
+            </button>
+        </p>
+        <p>
+            <button class="btn btn-danger btn-block" type="button">
+                <span class="glyphicon glyphicon-pencil"></span>
+                Stocktaking
+            </button>
+        </p>
+        <p>
+            <button class="btn btn-default btn-block" 
+            type="button" data-toggle="modal" 
+            data-target="#order_modal">
+            Order</button>
+        </p>
+        <p>
+            <button class="btn btn-info btn-block" type="button" 
+            data-toggle="collapse" data-target="#lab_actions" 
+            aria-expanded="false" aria-controls="lab_actions">
+            <span class="glyphicon glyphicon-menu-down"></span> 
+                Lab
+            </button>
+        </p>
+        </div>
+        <div class="collapse" id="lab_actions">
+            <div class="col-xs-12 col-md-12 col-ld-12 well">
+            <!-- If someone takes out a few parts of the lab stock -->
+                <p>
+                    <div>
+                        <form action="{{ url_for('take_lab',component_id=component.id) }}" method="post">
+                            <div class="form-inline input-group">
+                                <span class="input-group-addon">Take out</span>
+                                <input class="form-control" id="qty_lab_out" 
+                                name="qty_lab_out" type="number" 
+                                required="required" placeholder="Please enter the quantity you want to take...">
+                                <div class="input-group-btn">
+                                    <button class="btn btn-primary" type="submit">Take</button>
                                 </div>
-                            </p>
-
-                            <!-- If someone counted the parts in the lab -->
-                            <p>
-                                <div>
-                                    <form action="{{ url_for('stocktaking_lab', component_id=component.id) }}" method="post">
-                                        <div class="form-inline input-group">
-                                            <span class="input-group-addon">Stocktaking</span>
-                                            <input class="form-control" id="stock_lab" name="stock_lab" type="number" required="required" placeholder="Please enter the amount of this component available...">
-                                            <div class="input-group-btn">
-                                                <button class="btn btn-warning" type="submit">Go!</button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </p>
-                        </div>
-                    </div>
-                    <!-- End of Lab cllapse -->
-
-                    <p>
-                        <button class="btn btn-default" type="button" data-toggle="modal" data-target="#order_modal">Order</button>
-                    </p>
-
-
-                    {% else %}
-                    <div class="info">
-                        <form action="{{ url_for('login', last_page_1=url_for('show_component',component_id=component.id)|replace('/','_')) }}" method="get">
-                            Please
-                            <button class="btn btn-primary" type="submit" {# //TODO login button!#} {# onclick="window.document.location='{{ url_for('login', last_page_1=url_for('show_component',component_id=component.id)) }}';"
-                                #}>
-                            
-                            Log in
-                        </button> to make any changes!
+                            </div>
                         </form>
                     </div>
-                    {% endif %}
+                </p>
 
-
-                </div>
-
-            </div>
-
-            <div class="col-xs-5 col-md-5">
-                <div class="container">
-                    <span class="page-header"><h3>Availability</h3></span>
-                    <h4>
-                        <p class="label label-success">Available: {{ component.stock()-component.reserved() }}</p><br>
-                    </h4>
-                    <h4>
-                        <p class="label label-warning">Reserved: {{ component.reserved() }}</p><br></h4>
-                    <h4>
-                        <p class="label label-danger" style="width: auto">In Stock: {{ component.stock() }}</p><br></h4>
-                    <h4>
-                        <p class="label label-info" style="width: auto">Lab: {{ component.stock_lab() }}</p><br></h4>
-                </div>
-            </div>
-
-
-
-
-            <div class="col-xs-5 col-md-5">
-                <span class="page-header"><h3>Documents</h3></span> {% if component.datasheet() %} {% set datasheet = component.datasheet()
-                %}
-                <div class="container-fluid">
-                    <div class="">
-                        <a href="/static/data_folder/{{ datasheet.file_name }}" class="btn btn-default btn-large" role="button" {% if component.exb_number
-                            %} download="{{ component.exb_number.exb_number+" _ "+component.description|replace(' ','_') }}">
-                                {% else %}
-                                    download="id_{{ component.id|string+"_"+component.description|replace(' ','_') }}">
-                                {% endif %}
-                        <span
-                                class="glyphicon glyphicon-save-file" style="font-size: xx-large "></span>
-                        </a>
-                        <div class="h5">
-                            <p>Datasheet</p>
-
-
-
-
-                            {% if current_user.username!='Guest' %}
-
-
-
-                            <button class="btn btn-danger" data-target="#delete_datasheet" data-toggle="modal" type="button"><span class="glyphicon glyphicon-remove"></span>
-                                </button> {% endif %}
-                        </div>
-                    </div>
-
-                </div>
-
-
-
-                {% else %} {% if current_user.username!='Guest' %}
-                <form action="{{ url_for('upload_datasheet',component_id=component.id) }}" method="post" enctype=multipart/form-data>
-
-                    <p>
-                        <div class="input-group">
-                            <label class="input-group-btn">
-                            <span class="btn btn-default">
-                            <input id="datasheet" name="datasheet" type="file"
-                                   onchange="change_file_input(this)" style="display: none;">Select datasheet...
-                            </span>
-                            </label>
-                            <input type="text" placeholder="Select a datasheet..." class="form-control" id="datasheet_name" readonly>                            {# Clear button for datasheet input #}
-                            <div class="input-group-btn">
-                                <button id="clear_file_btn" type="button" onclick="clear_file_input(this)" class="btn btn-danger disabled">
-                                    <span class="glyphicon glyphicon-remove"></span>
-                                </button>
+            <!-- If someone counted the parts in the lab -->
+                <p>
+                    <div>
+                        <form action="{{ url_for('stocktaking_lab', component_id=component.id) }}" method="post">
+                            <div class="form-inline input-group">
+                                <span class="input-group-addon">Stocktaking</span>
+                                <input class="form-control" id="stock_lab" 
+                                name="stock_lab" type="number" 
+                                required="required" placeholder="Please enter the amount of this component available...">
+                                <div class="input-group-btn">
+                                    <button class="btn btn-warning" type="submit">Go!</button>
+                                </div>
                             </div>
-
-                        </div>
-                    </p>
-                    <div class="input">
-                        <p>
-                            <button class="btn btn-success" type="submit"><span
-                                        class="glyphicon glyphicon-upload"></span> Send!
-                                </button>
-                        </p>
+                        </form>
                     </div>
+                </p>
+            </div>
+        </div>
+                    <!-- End of Lab cllapse -->
 
-                </form>
+        
+
+
+        {% else %}
+        <div class="info">
+            <form action="{{ url_for('login', last_page_1=url_for('show_component',component_id=component.id)|replace('/','_')) }}" method="get">
+            Please
+                <button class="btn btn-primary btn-sm" type="submit">
+                    Log in
+                </button> to make any changes!
+            </form>
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-xs-4 col-md-4 col-ld-4" id="documents">
+        <!-- Place document part here! -->
+        <span class="page-header">
+            <h3>Datasheet
+            </h3>
+        </span> 
+        {% if component.datasheet() %} 
+        {% set datasheet = component.datasheet()%}
+        <div class="">
+            <div class="col-xs-4 col-md-4 col-ld-4 pull-left">
+                <a href="/static/data_folder/{{ datasheet.file_name }}" 
+                class="btn btn-default btn-large btn-block" role="button" 
+                {% if component.exb_number %} 
+                download="{{ component.exb_number.exb_number+" _ "+component.description|replace(' ','_') }}">
+                {% else %}
+                download="id_{{ component.id|string+"_"+component.description|replace(' ','_') }}">
+                {% endif %}
+                    <span class="glyphicon glyphicon-save-file" 
+                        style="font-size: xx-large ">
+                    </span>
+                </a>
+                <div class="h5">
+                    {% if current_user.username!='Guest' %}
+                    <button class="btn btn-danger btn-block" 
+                    data-target="#delete_datasheet" 
+                    data-toggle="modal" 
+                    type="button">
+                        <span class="glyphicon glyphicon-remove">
+                        </span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %} 
+        {% if current_user.username!='Guest' %}
+        <form action="{{ url_for('upload_datasheet',component_id=component.id) }}" method="post" enctype=multipart/form-data>
+            <p>
+                <div class="input-group">
+                    <label class="input-group-btn">
+                        <span class="btn btn-default">
+                            <input id="datasheet" name="datasheet" 
+                                type="file" onchange="change_file_input(this)" 
+                                style="display: none;">
+                                Select datasheet...
+                        </span>
+                    </label>
+                    <input type="text" placeholder="Select a datasheet..." 
+                        class="form-control" id="datasheet_name" readonly>                            {# Clear button for datasheet input #}
+                    <div class="input-group-btn">
+                        <button id="clear_file_btn" type="button" onclick="clear_file_input(this)" class="btn btn-danger disabled">
+                            <span class="glyphicon glyphicon-remove"></span>
+                        </button>
+                    </div>
+                </div>
+            </p>
+            <div class="input">
+                <p>
+                    <button class="btn btn-success" 
+                        type="submit">
+                        <span class="glyphicon glyphicon-upload">
+                        </span>
+                         Send!
+                    </button>
+                </p>
+            </div>
+        </form>
 
                 <script>
-                                                                                   //More beautiful select field :)
-                                                                                   function change_file_input(file_input) {
-                                                                                       var text_box = document.getElementById("datasheet_name");
-                                                                                       //var file_path = document.getElementById("datasheet");
-                                                                                       var file_path = file_input.value;
-                                                                                       var file_btn = document.getElementById("clear_file_btn");
-                                                                                       //print(file_path);
-                                                                                       if (file_path) {
-                                                                                           var startIndex = (file_path.indexOf('\\') >= 0 ? file_path.lastIndexOf('\\') : file_path.lastIndexOf('/'));
-                                                                                           var filename = file_path.substring(startIndex);
-                                                                                           if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
-                                                                                               filename = filename.substring(1);
-                                                                                           }
-                                                                                           //filename = "Hallo"
-                                                                                           text_box.value = filename;//(name = "value", value = filename);
-                                                                                           file_btn.setAttribute("class", "btn btn-danger")
-                                                                                       }
-
-                                                                                   }
-
-                                                                                   //clear button action
-                                                                                   function clear_file_input(clear_btn) {
-                                                                                       var file_input = document.getElementById("datasheet");
-                                                                                       file_input.value = "";
-                                                                                       var file_name_box = document.getElementById("datasheet_name");
-                                                                                       file_name_box.value = "";
-                                                                                       if (file_input.value === "") {
-                                                                                           clear_btn.setAttribute("class", "btn btn-danger disabled");
-                                                                                       }
-                                                                                   }
+                //More beautiful select field :)
+                function change_file_input(file_input) {
+                var text_box = document.getElementById("datasheet_name");
+                //var file_path = document.getElementById("datasheet");
+                var file_path = file_input.value;
+                var file_btn = document.getElementById("clear_file_btn");
+                //print(file_path);
+                if (file_path) {
+                var startIndex = (file_path.indexOf('\\') >= 0 ? file_path.lastIndexOf('\\') : file_path.lastIndexOf('/'));
+                var filename = file_path.substring(startIndex);
+                if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
+                filename = filename.substring(1);
+                }
+                //filename = "Hallo"
+                text_box.value = filename;//(name = "value", value = filename);
+                file_btn.setAttribute("class", "btn btn-danger")
+                }
+                }
+                //clear button action
+                function clear_file_input(clear_btn) {
+                var file_input = document.getElementById("datasheet");
+                file_input.value = "";
+                var file_name_box = document.getElementById("datasheet_name");
+                file_name_box.value = "";
+                if (file_input.value === "") {
+                clear_btn.setAttribute("class", "btn btn-danger disabled");
+                }
+                }
                 </script>
                 {% endif %} {% endif %}
 
-
-
-
-            </div>
-        </div>
     </div>
-</div>
-<div class="container container-fluid row col-xs-offset-1 col-md-offset-1 col-ld-offset-1">
-    <div class="col-xs-6 col-md-6 col-ld-6">
-        <span class="page-header"><h3>Reservations</h3></span>
+</div><!-- second row -->
 
+
+<div class="row"> <!-- third row -->
+    <div class="col-xs-2 col-md-2 col-ld-2"></div>
+    <div class="col-xs-4 col-md-4 col-ld-4" id="reservations">
+        <!-- Place reservations here! -->
+        <span class="page-header">
+            <h3>Reservations</h3>
+        </span>
         <table class="table table-striped table-hover table-responsive table-condensed table_links">
-
             <thead>
                 <tr>
                     <th class="text-info">User</th>
@@ -233,11 +264,8 @@
                 </tr>
             </thead>
             <tbody>
-
                 {% for r in component.reservations()[::-1] %}
                 <tr> {#class="table_links" onclick="window.document.location='{{ row.link }}';">#}
-
-
                     <td class="text-justify">
                         {{ r.user().username }}
                     </td>
@@ -247,36 +275,28 @@
                     <td class="text-justify">
                         {{ r.quantity }}
                     </td>
-
                 </tr>
-
                 {% endfor %}
             </tbody>
         </table>
 
-
     </div>
-    {# Orders listed #}
-    <div class="col-xs-6 col-md-6 col-ld-6">
-        <span class="page-header"><h3>Open Orders</h3></span>
-
-
+    <div class="col-xs-4 col-md-4 col-ld-4" id="orders">
+        <!-- Place order informations here! -->
+        <span class="page-header">
+            <h3>Open Orders</h3>
+        </span>
         <table class="table table-striped table-hover table-responsive table-condensed table_links">
-
             <thead>
                 <tr>
                     <th class="text-info">User</th>
                     <th class="text-info">Date (dd.mm.yyy)</th>
                     <th class="text-info">Quantity</th>
-
                 </tr>
             </thead>
             <tbody>
-
                 {% for r in component.orders()[::-1] %}
                 <tr> {#class="table_links" onclick="window.document.location='{{ row.link }}';">#}
-
-
                     <td class="text-justify">
                         {{ r.user.username }}
                     </td>
@@ -286,18 +306,15 @@
                     <td class="text-justify">
                         {{ r.quantity }}
                     </td>
-
                 </tr>
-
                 {% endfor %}
             </tbody>
         </table>
     </div>
+</div><!-- third row -->
+</div><!-- container -->
 
-
-</div>
-<!--/div>
-</div-->
+<!-- Modals -->
 
 {# Delete Datasheet Modal #}
 <div class="container">
@@ -387,4 +404,7 @@
         </div>
     </div>
 </div>
+
+
+
 {% endblock %}

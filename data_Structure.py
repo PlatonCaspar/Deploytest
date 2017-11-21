@@ -694,6 +694,7 @@ class Order(db.Model):
     description = db.Column(db.Text)
     quantity = db.Column(db.Integer)
     process_id = db.Column(db.Integer, db.ForeignKey('process.id'))
+    ordered = db.Column(db.Boolean, default=False)
 
 
     def __init__(self, component, qty: int, description=None):
@@ -714,6 +715,10 @@ class Order(db.Model):
             return self.date_time.strftime("%d.%m.%Y")
         else:
             return None
+    def ordered(self):
+        descr = "Order was done: "+str(quantity)
+        self.ordered = True
+
 
     def confirm(self, quantity=None):
         if not quantity:
