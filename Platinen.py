@@ -823,10 +823,11 @@ def upload_device_document():
     if file:
         file_id = id(file.filename)
         filename = secure_filename('devdoc_'+str(file_id) + file.filename)
+        
 
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(file_path)
-        file_to_add = data_Structure.DeviceDocument(file_path, device)
+        file_to_add = data_Structure.DeviceDocument(os.path.join(RELATIVE_PICTURE_PATH, filename), device)
         data_Structure.db.session.add(file_to_add)
         data_Structure.db.session.commit()
         flash('file was uploaded successful.', 'success')
@@ -868,7 +869,7 @@ def delete_document():
     
 def delete_document_func(document):
     try:
-        os.remove(document.device_document_path)
+        os.remove(os.path.join(DATA_FOLDER, document.device_document_path))
     except:
         return False
     data_Structure.db.session.delete(document)

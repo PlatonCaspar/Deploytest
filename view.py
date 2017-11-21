@@ -53,7 +53,7 @@ def nav_bar():
             right_items=(
                 Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
                 Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
-                Subgroup('Hello, Guest',
+                Subgroup('Hello Guest',
                          View(
                              tags.div(tags.span(Class="glyphicon glyphicon-log-in", style="margin-right: 5%"), "Login"),
                              'login',
@@ -75,7 +75,7 @@ def nav_bar():
             right_items=(
                 Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
                 Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
-                Subgroup('Hello, ' + current_user.username,
+                Subgroup('Hello ' + current_user.username,
                          View(tags.div(tags.span(Class="glyphicon glyphicon-trash", style="margin-right: 5%"),
                                        "Delete User"), 'delete_user'),
                          Separator,

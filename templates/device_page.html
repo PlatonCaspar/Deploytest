@@ -9,21 +9,23 @@
         <div class="">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title">
+                    <h3 class="panel-title inline-block">
                         {{device.device_brand+" "+device.device_name}}
-                    </h3>
-                
+                        {% if current_user.is_authenticated %}
+                        <small>
+                        <button class="btn btn-warning btn-sm pull-right" type="button"
+                                    data-toggle="collapse" data-target="#delete_device"
+                                    aria-expanded="false"
+                                    aria-controls="delete_device"><span
+                                    class="glyphicon glyphicon-remove"></span></button>
+                        </small>
                     <form class=""
                       action="{{ url_for('delete_device', device_id=device.device_id) }}"
                       method="post">
-                            {% if current_user.is_authenticated %}
-                            <button class="btn btn-group btn-warning btn-sm pull-right" type="button"
-                                    data-toggle="collapse" data-target="#delete_project"
-                                    aria-expanded="false"
-                                    aria-controls="delete_project"><span
-                                    class="glyphicon glyphicon-remove"></span></button>
-                            {% endif %}
-                    <div class="collapse" id="delete_project">
+                            
+                            
+                            
+                    <div class="collapse" id="delete_device">
                         <div class="">
                             <br><br>
                             <button class="btn btn-danger btn-sm btn-block"
@@ -35,10 +37,13 @@
                     </div>
 
                 </form>
+                {% endif %}
+                                    </h3>
+
             </div>
             <div class="panel-body">
                     <!-- args -->
-                    <p class="container container-fluid">
+                <p class="container container-fluid">
                     <div class="col-xs-12 col-md-12 col-ld-12">
                         {% if device.args() is not none %}
                         {% for arg in device.args() %}
@@ -46,7 +51,7 @@
                         {{arg|string+": "+device.args()[arg]|string}}
                         
                         {% if current_user.username != 'Guest' %}
-                        <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                        <button class="btn btn-default btn-sm pull-right" type="button" data-toggle="modal"
                                 data-target="#args_modal" onclick="set_args_name_modal('{{arg}}')"><span class="glyphicon glyphicon-pencil"></span>
                         </button>
                         </p>
@@ -63,10 +68,12 @@
                     
                     </div>
                         
-                    </p>
+                </p>
+                <div class="col-xs-12 col-md-12 col-ld-12">
+                <div class="row container container-fluid">
                         {% if device.device_documents %}
-                        <p class="container container-fluid">
-                        <div id="myCarousel" class="carousel slide col-xs-12 col-md-12 col-ld-12" data-ride="carousel">
+                    <div class="col-xs-6 col-md-6 col-ld-6">
+                        <div id="myCarousel" class="carousel slide" data-ride="carousel">
                             <!-- Indicators -->
                             <ol class="carousel-indicators">
                                 <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
@@ -83,21 +90,27 @@
                                 {% else %}
                                 <div class="item">
                                 {% endif %}
-                                    <a href="{{document.device_document_path}}">
                                     <img src="/static/staticPictures/file.png" style="margin: auto">
-                                    </a>
                                     <div class="carousel-caption">
-                                        {{document.name()}}
-                                        <form action="{{url_for('delete_document', document_id=document.device_document_id, device_id=device.device_id)}}" method="POST">
-                                            
-                                            <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-remove"></span></button>
+                                        {{document.name()}}<br>
+                                        <div class="btn-group">
+                                                                {% if current_user.username != 'Guest' %}
 
-                                        </form>
+                                            <button class="btn btn-default" type="button" onclick="confirm_custom('del_doc{{document.device_document_id}}')"><span class="glyphicon glyphicon-remove"></span></button>
+                                                                            {% endif %}
+                                            <button class="btn btn-success" type="button" onclick="document.getElementById('down_doc{{document.device_document_id}}').submit()"><span class="glyphicon glyphicon-download"></span></button>
+                                        </div>
                                     </div>
                                 </div>
+                                                                {% if current_user.username != 'Guest' %}
+
+                                <form action="{{url_for('delete_document', document_id=document.device_document_id, device_id=device.device_id)}}" id="del_doc{{document.device_document_id}}" 
+                                method="POST" ></form>
+                                                                            {% endif %}                                
+                                <form action="{{'/'+document.device_document_path}}" id="down_doc{{document.device_document_id}}" method="GET"></form>
                                 {% endfor %}
                             </div>
-
+                            
                             <!-- Left and right controls -->
                             <a class="left carousel-control" href="#myCarousel" data-slide="prev">
                                 <span class="glyphicon glyphicon-chevron-left"></span>
@@ -109,19 +122,25 @@
                             </a>
                         </div>
                         </div>
+                    </div>
                     {% endif %}
-                    <div class="container container-fluid">
-                    <form action="{{url_for('upload_device_document', device_id=device.device_id)}}" 
+                    <div class="row">
+                    <div class="col-xs-2 col-md-2 col-ld-2"></div>  
+                    <div class="col-xs-8 col-md-8 col-ld-8">
+                        {% if current_user.username != 'Guest' %}
+                    <form action="{{url_for('upload_device_document', device_id=device.device_id)}}" id="docUp"
                     method="post" enctype="multipart/form-data">
-                        <div class="col-xs-12 col-md-12 col-ld-12">
+                        <div class="">
                             <label for="device_documents">Upload Documents</label>
-                            <input class="" type="file" id="device_documents" name="device_documents">
+                            <input class="" type="file" id="device_documents" name="device_documents" onchange="document.getElementById('docUp').submit()">
                             <p class="help-block">Upload device related Documents here.</p>
-                            <button class="btn btn-default" type="submit">Upload!</button>
-                            <br>
                         </div>
                     </form>
+                    {% endif %}
                     </div>
+                    </div>
+                </div>
+                </div>
                 </div><!-- panel body -->
             </div><!-- panel -->
         </div><!-- container -->
@@ -174,6 +193,8 @@
                         </div>
                     </div>
 
+            
+
                 </div>
             </div>
 
@@ -183,11 +204,16 @@
         <script>
 
             function set_args_name_modal(name) {
-                    var my_input = document.getElementById("name");
+                    var my_input = document.getElementById(name);
                     my_input.value = name;
                     }
             
-            
+            function confirm_custom(name){
+                var my_form = document.getElementById(name);
+                if(confirm("Delete Document?")){
+                    my_form.submit();
+                }
+            }
                     
 
             
