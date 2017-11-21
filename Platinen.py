@@ -866,7 +866,18 @@ def delete_document():
     
     return redirect(url_for('show_device', device_id=device_id))
 
-    
+@app.route('/label/print/do/', methods=['POST'])
+def print_label():
+    text = request.form.get('text')
+    label = board_labels.generate_label(text)
+    board_labels.write_doc(label)
+    board_labels.print_label("labelprinter01.sdi.site")
+    return redirect(url_for('show_new_label'))
+
+@app.route('/label/print/new/', methods=['GET'])
+def show_new_label():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template('new_label.html')
 def delete_document_func(document):
     try:
         os.remove(os.path.join(DATA_FOLDER, document.device_document_path))

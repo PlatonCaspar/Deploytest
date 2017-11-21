@@ -47,6 +47,7 @@ def nav_bar():
             title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left", href=url_for('start')), 'start'),
             items=(View('Start', 'start'),
                     View('New Board', 'add__board'),
+                    View('Print Label', 'show_new_label'),
                    search_bar
                    ),
 
@@ -69,6 +70,8 @@ def nav_bar():
                    View('New Device', 'add_device'),
 
                    View('New Project', 'add_project'),
+                    View('Print Label', 'show_new_label'),
+
                    search_bar
 
                    ),
