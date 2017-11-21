@@ -1,6 +1,9 @@
 import os
 import time
+import urllib
+import tempfile
 
+from markupsafe import Markup
 from flask import render_template, request, redirect, url_for, session, flash
 from flask_bootstrap import Bootstrap
 from flask_login import login_user, logout_user, login_required, current_user
@@ -8,7 +11,9 @@ from flask_nav import register_renderer
 from flask_sqlalchemy import SQLAlchemy
 from passlib.hash import pbkdf2_sha256
 from werkzeug.utils import secure_filename
+from werkzeug.datastructures import MultiDict
 from upgrade import migrate_database
+
 
 import addPlatineForm
 import data_Structure
@@ -20,21 +25,38 @@ import project_forms
 import registerUserForm
 import searchForm
 import view
-import board_labels
+import BOM_Converter
 import search
-from data_Structure import app
+from data_Structure import app, db
+import board_labels
 from historyForm import HistoryForm, EditHistoryForm
 
 nav.login_manager.anonymous_user = data_Structure.User
 
 RELATIVE_PICTURE_PATH = 'static/Pictures'
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), RELATIVE_PICTURE_PATH)
+UPLOAD_FOLDER = os.path.join(os.path.dirname(
+    os.path.abspath(__file__)), RELATIVE_PICTURE_PATH)
 DATA_FOLDER = os.path.dirname(os.path.abspath(__file__))
+
+RELATIVE_DATA_UPLOAD_FOLDER = 'static/data_folder'
+DATA_UPLOAD_FOLDER = os.path.join(os.path.dirname(
+    os.path.abspath(__file__)), RELATIVE_DATA_UPLOAD_FOLDER)
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 
 # def set_logged_user(state):
 #    logged_user = state
+
+
+
+@app.template_filter('urlencode')
+def urlencode_filter(s):
+    if type(s) == 'Markup':
+        s = s.unescape()
+    s = s.encode('utf8')
+    s = urllib.parse.quote(s)
+
+    return Markup(s)
 
 
 # data_Structure.db.create_all()
@@ -47,6 +69,13 @@ def is_logged_in():
 
 def delete_project():
     pass
+
+
+def clean_exb_scan(exb_scan):
+    exb_scan = exb_scan.split('@')
+    exb_scan = exb_scan[1].split('P')[1]
+
+    return exb_scan
 
 
 @nav.login_manager.user_loader
@@ -70,7 +99,8 @@ def register_user():
                 return render_template('registerUserForm.html', form=user_to_register,
                                        search_form=searchForm.SearchForm())
             if data_Structure.User.query.filter_by(email=new_user.email).all() != []:
-                flash('There is already somone registered with the same Email adress!', 'danger')
+                flash(
+                    'There is already somone registered with the same Email adress!', 'danger')
                 return redirect(url_for('register_user'))
 
             data_Structure.db.session.add(new_user)
@@ -129,14 +159,17 @@ def login(last_page_1=None):
                 username=user_form.username.data).scalar() is None:  # check if User exists
             flash('User does not exist!', 'danger')
             return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
-        login_to_user = data_Structure.User.query.filter_by(username=user_form.username.data).first()
+        login_to_user = data_Structure.User.query.filter_by(
+            username=user_form.username.data).first()
         if pbkdf2_sha256.verify(user_form.password.data, login_to_user.password_hashed_and_salted):
             if request.form.get('rememberMe') is True:
                 login_user(login_to_user, remember=True)
-                flash('Hi ' + login_to_user.username + ' - Your Login was succesfull', 'success')
+                flash('Hi ' + login_to_user.username +
+                      ' - Your Login was succesfull', 'success')
             else:
                 login_user(login_to_user, remember=False)
-                flash('Hi ' + login_to_user.username + ' - Your Login was succesfull', 'success')
+                flash('Hi ' + login_to_user.username +
+                      ' - Your Login was succesfull', 'success')
         else:
             flash('Password was not correct', 'danger')
             return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
@@ -149,7 +182,8 @@ def login(last_page_1=None):
     return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
 
 
-nav.login_manager.login_view = '/login/'  # //TODO I have to define where to redirect when login_required is not okay
+# //TODO I have to define where to redirect when login_required is not okay
+nav.login_manager.login_view = '/login/'
 
 
 @app.route('/deleteUser/', methods=['GET', 'POST'])
@@ -165,7 +199,8 @@ def delete_user():
             return redirect(url_for('delete_user'))
         dele_user = data_Structure.User.query.get(user_form.uid.data)
         if pbkdf2_sha256.verify(user_form.password.data, dele_user.password_hashed_and_salted):
-            data_Structure.db.session.object_session(dele_user).delete(dele_user)
+            data_Structure.db.session.object_session(
+                dele_user).delete(dele_user)
             data_Structure.db.session.commit()
         else:
             flash('Password was incorrect!', 'danger')
@@ -175,7 +210,8 @@ def delete_user():
         #       code=board_form.code.data).scalar() is not None:  # check if board already exists
         #    return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm(),
         #                          messages=messages.Messages(True, 'Board was not deleted!'))
-        if data_Structure.User.query.get(user_form.uid.data) is None:  # check if User exists
+        # check if User exists
+        if data_Structure.User.query.get(user_form.uid.data) is None:
             flash('User was deleted successfully!', 'success')
             return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
     return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
@@ -234,7 +270,15 @@ def start():
             if search_word is "":
                 results_project = data_Structure.Project.query.all()
             elif search_word is not "":
-                results_project = search.search(search_word=search_word, items=data_Structure.Project.query.all())
+                results_project = search.search(search_word=search_word, items=data_Structure.Project.query.all())                    
+            
+
+        if search_area == 'Components' or search_area == 'All':
+            if search_word is "":
+                results_component = data_Structure.Component.query.all()
+            else:
+                components = data_Structure.Component.query.all()
+                results_component = search.search(search_word, components)
 
         if search_area == 'All':
             results_comments = None
@@ -255,6 +299,7 @@ def start():
                                search_form=searchForm.SearchForm(), search_word=search_word, components=results_component,
                                results_comments=results_comments, results_devices=results_devices)
     return render_template('start.html', search_form=search_form)
+
 
 
 @app.route('/addBoard/scripted/test/', methods=['POST'])
@@ -288,6 +333,15 @@ def add_board_scripted():
         return "Success"
 
 
+@app.route('/Project/show/all/', methods=['GET'])
+def show_project_all():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template('table.html', projects=data_Structure.Project.query.all())
+                               
+    return render_template('start.html', search_form=search_form)
+
+
+
 @app.route('/addBoard/', methods=['GET', 'POST'])
 def add__board():
     view.logged_user = view.get_logged_user()
@@ -305,7 +359,8 @@ def add__board():
                                          ver=board_form.ver.data)
         data_Structure.db.session.add(new_board)
         data_Structure.db.session.commit()
-        project = data_Structure.db.session.query(data_Structure.Project).get(new_board.project_name)
+        project = data_Structure.db.session.query(
+            data_Structure.Project).get(new_board.project_name)
         project.project_boards.append(new_board)
         data_Structure.db.session.commit()
         if data_Structure.Board.query.filter_by(code=new_board.code).scalar() is not None:
@@ -339,7 +394,8 @@ def add_project():
     if request.method == 'POST':
         # check if Project already exists
         if data_Structure.Project.query.get(add_project_form.project_name.data) is not None:
-            flash('Project ' + add_project_form.project_name.data + ' already exists!', 'danger')
+            flash('Project ' + add_project_form.project_name.data +
+                  ' already exists!', 'danger')
             return render_template('add_project.html', add_project_form=add_project_form)
         elif data_Structure.Project.query.get(add_project_form.project_name.data) is None:
             image_path = 'NE'
@@ -372,7 +428,8 @@ def add_project():
 
 def delete_history_all(history):
     for obj in history.data_objects:
-        image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(obj.id))
+        image_to_delete = data_Structure.db.session.query(
+            data_Structure.Files).get(int(obj.id))
         # board = data_Structure.db.session.query(data_Structure.board).get(int(board_id))
 
         os.remove(os.path.join(UPLOAD_FOLDER, image_to_delete.file_path))
@@ -394,7 +451,8 @@ def del_board(board_delete=None):
             flash('Board does not exist!', 'danger')
             return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
         if board_delete is None:
-            dele_board = data_Structure.Board.query.filter_by(code=board_form.code.data).first()
+            dele_board = data_Structure.Board.query.filter_by(
+                code=board_form.code.data).first()
         elif board_delete is not None:
             dele_board = board_delete
         for history in data_Structure.History.query.filter_by(board_code=dele_board.code).all():
@@ -403,8 +461,8 @@ def del_board(board_delete=None):
         data_Structure.db.session.delete(dele_board)
         data_Structure.db.session.commit()
         if data_Structure.Board.query.filter_by(
-                code=board_form.code.data).scalar() is not None or data_Structure.db.session.query(
-            data_Structure.Board).get(dele_board.code):  # check if board still exists
+            code=board_form.code.data).scalar() is not None or data_Structure.db.session.query(
+                data_Structure.Board).get(dele_board.code):  # check if board still exists
             flash('Somehow the board could not be deleted', 'danger')
             return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
         if data_Structure.Board.query.filter_by(
@@ -428,20 +486,23 @@ def edit_board_history(board, history_id, history):
 
 
 def add_board_history(board, history, file):
-    new_history = data_Structure.History(history=history, board_code=board.code)
+    new_history = data_Structure.History(
+        history=history, board_code=board.code)
     if file:
         file_id = id(file.filename)
         filename = secure_filename(str(file_id) + file.filename)
 
         image_path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(image_path)
-        file_to_add = data_Structure.Files(history=new_history, file_path=filename)
+        file_to_add = data_Structure.Files(
+            history=new_history, file_path=filename)
         data_Structure.db.session.add(file_to_add)
 
     data_Structure.db.session.add(new_history)
 
     data_Structure.db.session.commit()
     return redirect(url_for('show_board_history', g_code=board.code))
+
 
 
 def getSortKeyHistory(h):
@@ -460,11 +521,14 @@ def show_board_history(g_code):
 
         file = request.files.get('file')
 
-        add_board_history(board=tg_board, history=add_form.history.data, file=file)
+        add_board_history(
+            board=tg_board, history=add_form.history.data, file=file)
     elif request.method == 'POST' and edit_form.send_edit.data:
-        edit_board_history(board=tg_board, history=edit_form.history.data, history_id=edit_form.history_id.data)
+        edit_board_history(board=tg_board, history=edit_form.history.data,
+                           history_id=edit_form.history_id.data)
     elif request.method == 'POST' and edit_form.delete.data:
-        history = data_Structure.History.query.get(int(edit_form.history_id.data))
+        history = data_Structure.History.query.get(
+            int(edit_form.history_id.data))
         delete_history_all(history)
 
     if edit_form is not None:
@@ -490,7 +554,18 @@ def show_project(project_name):
         flash('Project "' + project_name + '" was not found!', 'danger')
         return render_template('start.html')
     # boards_of_project = data_Structure.Board.query.filter_by(project_name=project_name)
-    return render_template('ProjectPage.html', project=project, boards=project.project_boards)  # boards_of_project)
+    # boards_of_project)
+    return render_template('ProjectPage.html', project=project, boards=project.project_boards)
+
+
+@app.route('/project/change/description/<project_name>/', methods=['POST'])
+@login_required
+def change_project_description(project_name):
+    project = data_Structure.Project.query.get(project_name)
+    new_description = request.form.get('project_description_form')
+    project.project_description = new_description
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_project', project_name=project_name))
 
 
 @app.route('/project/delete/image/<project_name>/', methods=['POST'])
@@ -498,7 +573,8 @@ def show_project(project_name):
 def delete_project_image(project_name):
     view.logged_user = view.get_logged_user()
     # image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
-    project = data_Structure.db.session.query(data_Structure.Project).get(project_name)
+    project = data_Structure.db.session.query(
+        data_Structure.Project).get(project_name)
     img_id = project.project_default_image_path
     # img_id = None
     project.project_default_image_path = None
@@ -515,7 +591,8 @@ def delete_project_image(project_name):
 @login_required
 def edit_project_image(project_name):
     view.logged_user = view.get_logged_user()
-    project = data_Structure.db.session.query(data_Structure.Project).get(project_name)
+    project = data_Structure.db.session.query(
+        data_Structure.Project).get(project_name)
     file = request.files.get('new_upfile')
     if file:
         file_id = id(file.filename)
@@ -524,9 +601,10 @@ def edit_project_image(project_name):
             file.save(os.path.join(UPLOAD_FOLDER, filename))
 
             if project.project_default_image_path is not None:
-                os.remove(os.path.join(UPLOAD_FOLDER, project.project_default_image_path))
+                os.remove(os.path.join(UPLOAD_FOLDER,
+                                       project.project_default_image_path))
             project.project_default_image_path = filename
-            print(filename)
+            # print(filename)
             data_Structure.db.session.commit()
             flash('Picture was changed successfully!', 'success')
         else:
@@ -540,7 +618,8 @@ def edit_project_image(project_name):
 @login_required
 def delete_history_image(img_id, board_id):
     view.logged_user = view.get_logged_user()
-    image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
+    image_to_delete = data_Structure.db.session.query(
+        data_Structure.Files).get(int(img_id))
     # board = data_Structure.db.session.query(data_Structure.board).get(int(board_id))
 
     os.remove(os.path.join(UPLOAD_FOLDER, image_to_delete.file_path))
@@ -555,7 +634,8 @@ def delete_history_image(img_id, board_id):
 @login_required
 def board_history_add_file(history_id, board_id):
     view.logged_user = view.get_logged_user()
-    history = data_Structure.db.session.query(data_Structure.History).get(int(history_id))
+    history = data_Structure.db.session.query(
+        data_Structure.History).get(int(history_id))
     file = request.files.get(str(history_id) + 'new_upfile')
     if file:
         file_id = id(file.filename)
@@ -573,7 +653,8 @@ def board_history_add_file(history_id, board_id):
 @login_required
 def delete_project(project_name):
     view.logged_user = view.get_logged_user()
-    project_to_delete = data_Structure.db.session.query(data_Structure.Project).get(project_name)
+    project_to_delete = data_Structure.db.session.query(
+        data_Structure.Project).get(project_name)
 
     for board in project_to_delete.project_boards:
         for history in board.history:
@@ -585,7 +666,8 @@ def delete_project(project_name):
         data_Structure.db.session.delete(board)
     data_Structure.db.session.commit()
     if project_to_delete.project_default_image_path is not None:
-        os.remove(os.path.join(UPLOAD_FOLDER, project_to_delete.project_default_image_path))
+        os.remove(os.path.join(UPLOAD_FOLDER,
+                               project_to_delete.project_default_image_path))
     data_Structure.db.session.delete(project_to_delete)
     data_Structure.db.session.commit()
     return redirect(url_for('start'))
@@ -604,18 +686,28 @@ def my_profile():
 @app.route('/my_profile/change/username/<uid>/', methods=['POST'])
 @login_required
 def change_username(uid):
-    user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
+    user_to_change = data_Structure.db.session.query(
+        data_Structure.User).filter_by(uid=uid).first()
 
     new_username = request.form.get('new_username')
-    user_to_change.username = new_username
-    data_Structure.db.session.commit()
+
+    if not data_Structure.db.session.query(data_Structure.User).filter_by(username=str(new_username)).all():
+        user_to_change.username = new_username
+        data_Structure.db.session.commit()
+        flash("Username was changed sucesfully to \"" +
+              new_username + "\"", "success")
+    else:
+        flash("Username \"" + new_username +
+              "\" already exists. Please choose another Username", "danger")
+        print("Hallo")
     return redirect(url_for('my_profile'))
 
 
 @app.route('/my_profile/change/email/<uid>/', methods=['POST'])
 @login_required
 def change_email(uid):
-    user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
+    user_to_change = data_Structure.db.session.query(
+        data_Structure.User).filter_by(uid=uid).first()
 
     new_email = request.form.get('new_email')
     user_to_change.email = new_email
@@ -626,10 +718,12 @@ def change_email(uid):
 @app.route('/my_profile/change/password/<uid>/', methods=['POST'])
 @login_required
 def change_password(uid):
-    user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
+    user_to_change = data_Structure.db.session.query(
+        data_Structure.User).filter_by(uid=uid).first()
 
     if pbkdf2_sha256.verify(request.form.get('old_password'), user_to_change.password_hashed_and_salted):
-        new_password_hash = pbkdf2_sha256.hash(request.form.get('new_password_1'))
+        new_password_hash = pbkdf2_sha256.hash(
+            request.form.get('new_password_1'))
         if pbkdf2_sha256.verify(request.form.get('new_password_2'), new_password_hash):
             user_to_change.password_hashed_and_salted = new_password_hash
             data_Structure.db.session.commit()
@@ -644,7 +738,8 @@ def change_password(uid):
 @app.route('/my_profile/delete/me_myself_and_i/and_really_me_so_i_wont_be_able_to_visit_this_site_anymore/',
            methods=['POST'])
 def delete_myself():
-    user_to_delete = data_Structure.db.session.query(data_Structure.User).get(current_user.uid)
+    user_to_delete = data_Structure.db.session.query(
+        data_Structure.User).get(current_user.uid)
     password_1 = request.form.get('password_1')
     password_2 = request.form.get('password_2')
     if pbkdf2_sha256.verify(password_1, user_to_delete.password_hashed_and_salted) \
@@ -672,11 +767,13 @@ def user_forgot_password():
 @app.route('/user_forgot_password/change_password/', methods=['POST'])
 @login_required
 def user_forgot_change_password():
-    logged_user = data_Structure.db.session.query(data_Structure.User).get(current_user.uid)
+    logged_user = data_Structure.db.session.query(
+        data_Structure.User).get(current_user.uid)
     dumb_user_id = request.form.get('uid')
     dumb_user = None
     if dumb_user_id:
-        dumb_user = data_Structure.db.session.query(data_Structure.User).get(int(dumb_user_id))
+        dumb_user = data_Structure.db.session.query(
+            data_Structure.User).get(int(dumb_user_id))
     if not dumb_user:
         flash('User does not exist! (UID: ' + str(dumb_user_id) + ')', 'danger')
         return redirect(url_for(user_forgot_password))
@@ -700,7 +797,8 @@ def user_forgot_change_password():
 def change_board_version(board_id):
     board = data_Structure.Board.query.get(board_id)
     new_version = request.form.get('version_form')
-    comment_string = "Version was changed from " + board.version + " to " + new_version
+    comment_string = "Version was changed from " + \
+        board.version + " to " + new_version
     change_comment = data_Structure.History(comment_string, board.code)
     data_Structure.db.session.add(change_comment)
     board.version = new_version
@@ -713,7 +811,8 @@ def change_board_version(board_id):
 def change_board_state(board_id):
     board = data_Structure.Board.query.get(board_id)
     new_state = request.form.get('state_form')
-    comment_string = "State was changed from " + str(board.stat) + " to " + new_state
+    comment_string = "State was changed from " + \
+        str(board.stat) + " to " + new_state
     change_comment = data_Structure.History(comment_string, board.code)
     data_Structure.db.session.add(change_comment)
     board.stat = new_state
@@ -726,7 +825,8 @@ def change_board_state(board_id):
 def change_board_patch(board_id):
     board = data_Structure.Board.query.get(board_id)
     new_patch = request.form.get('patch_form')
-    comment_string = "Patch was changed from " + str(board.patch) + " to " + new_patch
+    comment_string = "Patch was changed from " + \
+        str(board.patch) + " to " + new_patch
     change_comment = data_Structure.History(comment_string, board.code)
     data_Structure.db.session.add(change_comment)
     board.patch = new_patch
@@ -891,7 +991,427 @@ def test_queries():
     with app.app_context():
         migrate_database()
 
+@app.route('/component/add/', methods=['GET'])
+def add_component():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template('add_component.html')
 
+
+@app.route('/component/add/do/create/', methods=['POST'])
+def create_component():
+    # flash("create_component was called!", "danger")
+    # print(request.form)
+    # print(request.files)
+    new_component = data_Structure.Component()
+    if request.form.get('description'):
+        description = request.form.get('description')
+
+    else:
+        description = None
+        flash('The field description is required!', "danger")
+        return redirect(url_for('add_component'))
+    new_component.description = description
+    if request.form.get('select_smd_thd') == 'SMD':
+        smd = True
+    else:
+        smd = False
+    new_component.smd = smd
+    if request.form.get('select_housing') is not '':
+        housing_id = int(request.form.get('select_housing'))
+    else:
+        # housing_id = None
+        flash(
+            "you did something interesting. please remember your action and mail to" +
+            " <a href=\"mailto:stefan.steinmueller@siemens.com?Subject=create_component_error\">Stefan Steinmueller</a>",
+            "danger")
+        return redirect(url_for('add_component'))
+    new_component.housing_id = housing_id
+    if request.form.get('select_category') is not '0':
+        category_id = int(request.form.get('select_category'))
+    elif request.form.get('select_category') is '0':
+        category_id = 0
+        flash("Please select a category!", "warning")
+        return redirect(url_for('add_component'))
+
+    new_component.category_id = category_id
+    if request.form.get('man_id') is not '':
+        man_id = request.form.get('man_id')
+    else:
+        flash("Please enter the manufacturer ID", "warning")
+        return redirect(url_for('add_component'))
+    new_component.manufacturer_id = man_id
+    if request.form.get('manufacturer') is not '':
+        print('manufacturer is not none')
+        manufacturer = request.form.get('manufacturer')
+        new_component.manufacturer = manufacturer
+        print(new_component.manufacturer)
+    else:
+        flash("Please enter the name of a manufacturer!")
+        return redirect(url_for('add_component'))
+    # new_component.manufacturer = manufacturer
+    if request.form.get('packaging_type') is not '':
+        packaging_id = int(request.form.get('packaging_type'))
+    else:
+        packaging_id = None
+        flash("you did something interesting. please remember your action and mail to" +
+              " <a href=\"mailto:stefan.steinmueller@siemens.com?Subject=create_component_error_packaging_type\">Stefan Steinmueller</a>",
+              "danger")
+    new_component.packaging_id = packaging_id
+    value = ''
+
+    if request.form.get('value') is not '':
+        value += str(request.form.get('value'))
+
+    if request.form.get('scale') is not '':
+        value += str(data_Structure.scale[int(request.form.get('scale'))])
+    if request.form.get('unit') is not '':
+        value += str(data_Structure.unit[int(request.form.get('unit'))])
+        # print("value  : " + value)
+    new_component.value = value
+    if request.form.get('chip_form') is not '':
+        chip_form = request.form.get('chip_form')
+        if chip_form not in data_Structure.chip_forms:
+
+            new_component.chip_form = ''
+        else:
+            new_component.chip_form = chip_form
+
+    # datasheet = None
+    if 'datasheet' not in request.files:
+        flash('No datasheet was selected!', "warning")
+
+    elif 'datasheet' in request.files:
+        file = request.files['datasheet']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No datasheet was selected!', "warning")
+
+        if file:
+            filename = str(id(os.urandom(6))) + secure_filename(file.filename)
+            filepath = os.path.join(DATA_UPLOAD_FOLDER, filename)
+            file.save(filepath)
+            datasheet = data_Structure.Documents(document_type="Datasheet",file_name=filename)
+            data_Structure.db.session.add(datasheet)
+            new_component.datasheet = datasheet
+
+    # EXB Number
+
+    exb = request.form.get('exb_number')
+    if '@' in exb:
+        exb = clean_exb_scan(exb)
+
+    # print("exb :" + exb)
+    if exb is '' or exb is None:
+        if request.form.get('division_select') is None:
+            flash("Please enter either a EXB number or your division!", "warning")
+            return redirect(url_for('add_component'))
+            # print('new_exb should be called!')
+        exb_number = data_Structure.Exb(
+            division=request.form.get('division_select'))
+    elif data_Structure.db.session.query(data_Structure.Exb).get(exb) is None:
+        exb_number = data_Structure.Exb(exb_number=exb)
+
+    else:
+        flash("The Exb Number does already exist. Please take another one!", "warning")
+        return redirect(url_for('add_component'))
+    data_Structure.db.session.add(exb_number)
+    new_component.exb_number = exb_number
+
+    data_Structure.db.session.add(new_component)
+    data_Structure.db.session.commit()
+    return redirect(url_for('add_component'))
+
+
+@app.route('/component/show/', methods=['GET'])
+def show_all_components():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    exb_numbers = data_Structure.Exb.query.all()
+    print (exb_numbers)
+    return render_template('component_table.html', exb_numbers=exb_numbers)
+
+
+@app.route('/component/show/<component_id>/', methods=['GET'])
+def show_component(component_id):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    component = data_Structure.Component.query.get(component_id)
+    if component.taken_out:
+        booking = data_Structure.Booking.query.filter_by(component_id = component.id).all()[::-1][0]
+        process = data_Structure.Process.query.get(booking.process_id)
+        flash("Component is out for placement. ("+process.user().username+")","danger")
+    return render_template('component.html', component=component)
+
+
+@app.route('/component/stocktaking/stock/', methods=['GET'])
+@app.route('/component/stocktaking/stock/<component_id>/', methods=['GET'])
+@login_required
+def stocktaking_stock(component_id=None):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template('stocktaking.html')
+
+
+@app.route('/component/stocktaking/stock/post/', methods=['POST'])
+@login_required
+def stocktaking_stock_do():
+    exb_number = request.form.get('exb_number')
+    if '@' in exb_number:
+        exb_number = clean_exb_scan(exb_number)
+    component = data_Structure.db.session.query(
+        data_Structure.Exb).get(exb_number)
+
+    if component is None:
+        flash("Some error occured, maybe your EXB number is invalid?")
+        return redirect(url_for('stocktaking_stock'))
+    else:
+        component = component.associated_components
+    if component.taken_out:  # if this component is taken out, it is not very good to count it while its away
+        flash("Component was taken out by " + data_Structure.db.session.query(data_Structure.Booking).filter_by(
+            component_id=component.id).order_by(data_Structure.Booking.date_time).first().user().username, "danger")
+        return redirect(url_for('stocktaking_stock'))
+    for b in data_Structure.Booking.query.filter_by(deprecated=False, lab=False).join(data_Structure.Component,
+                                                                                      data_Structure.Booking.component_id == component.id).all():
+        b.deprecated = True
+    booking = data_Structure.Booking(
+        int(request.form.get('qty')), "Stocktaking")
+    booking.component = component
+    data_Structure.db.session.add(booking)
+    data_Structure.db.session.commit()
+    return redirect(url_for('stocktaking_stock'))
+
+
+@app.route('/component/edit/datasheet/<component_id>/', methods=['POST'])
+def upload_datasheet(component_id):
+    component = data_Structure.Component.query.get(int(component_id))
+    print(request.files)
+    if 'datasheet' in request.files:
+        file = request.files['datasheet']
+
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No datasheet was selected!', "warning")
+
+        if file:
+            filename = str(id(os.urandom(6))) + secure_filename(file.filename)
+            filepath = os.path.join(DATA_UPLOAD_FOLDER, filename)
+            file.save(filepath)
+            datasheet = data_Structure.Documents(
+                document_type="Datasheet", file_name=filename)
+            data_Structure.db.session.add(datasheet)
+            component.documents.append(datasheet)
+            data_Structure.db.session.commit()
+    elif not 'datasheet' in request.files:
+        flash('No datasheet was selected!', "warning")
+
+    return redirect(url_for('show_component', component_id=component_id))
+
+
+@app.route('/component/stocktakiing/lab/do/<component_id>/', methods=['POST'])
+def stocktaking_lab(component_id):
+    component = data_Structure.Component.query.get(int(component_id))
+    for b in data_Structure.Booking.query.filter_by(component_id=component_id, lab=True).all():
+        b.deprecated = True
+
+    new_booking = data_Structure.Booking(
+        booking_type="purchase", qty=int(request.form.get('stock_lab')), component=component)
+    new_booking.lab = True
+
+    data_Structure.db.session.add(new_booking)
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_component', component_id=component_id))
+
+
+@app.route('/component/take/lab/do/<component_id>/', methods=['POST'])
+def take_lab(component_id):
+    component = data_Structure.Component.query.get(int(component_id))
+    new_booking = data_Structure.Booking(booking_type="removal", qty=int(
+        request.form.get('qty_lab_out')), component=component)
+    new_booking.lab = True
+
+    data_Structure.db.session.add(new_booking)
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_component', component_id=component_id))
+
+
+@app.route('/component/datasheet/delete/<component_id>/do/', methods=['POST'])
+def delete_datasheet(component_id):
+    component = data_Structure.Component.query.get(int(component_id))
+    file = component.datasheet()
+    filepath = os.path.join(DATA_UPLOAD_FOLDER, file.file_name)
+    component.datasheet = None
+    data_Structure.db.session.delete(file)
+
+    try:
+        os.remove(filepath)
+    except:
+        flash("File could not be deleted", "danger")
+        return redirect(url_for('show_component', component_id=component_id))
+    flash("file was deleted succesful", "success")
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_component', component_id=component_id))
+
+
+@app.route('/component/bringback/', methods=['GET', 'POST'])
+@app.route("/component/bringback/<component_id>/", methods=['GET', 'POST'])
+@login_required
+def bring_back(component_id=None):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+
+    if component_id:
+        component = data_Structure.Component.query.get(int(component_id))
+    else:
+        component = None
+
+    if request.method == 'POST':
+
+        if not component:
+            exb = data_Structure.Exb.query.get(request.form.get('exb'))
+            if exb:
+                component = exb.associated_components
+        if not component:
+            flash("Component cannot be found!", "danger")
+            return redirect(url_for('bring_back'))
+        component.taken_out = False
+
+        if request.form.get('qty'):
+            #print("Stocktaking started...")
+            for b in data_Structure.Booking.query.filter_by(deprecated=False, lab=False).join(data_Structure.Component,
+                                                                                              data_Structure.Booking.component_id == component.id).all():
+                b.deprecated = True
+            booking = data_Structure.Booking(
+                int(request.form.get('qty')), "Stocktaking")
+            booking.component = component
+            data_Structure.db.session.add(booking)
+        data_Structure.db.session.commit()
+        return redirect(url_for('bring_back'))
+    return render_template('bringback.html', component=component)
+
+
+@app.route('/component/reserve/<component_id>/', methods=['POST'])
+@login_required
+def reserve_component(component_id):
+    qty = int(request.form.get('qty'))
+    r = data_Structure.Reservation(qty)
+    r.component = data_Structure.Component.query.get(int(component_id))
+    p = data_Structure.Process()
+    p.reservations.append(r)
+    data_Structure.db.session.add(r)
+    data_Structure.db.session.add(p)
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_component', component_id=component_id))
+
+
+@app.route('/process/book/<process_id>/', methods=['POST'])
+@login_required
+def book_process(process_id):
+    process = data_Structure.Process.query.get(process_id)
+    process.book()
+    return redirect('my_profile')
+
+
+@app.route('/process/order/component/', methods=['POST'])
+def order_component():
+    component_id = request.args.get('component_id')
+    qty = request.form.get('qty')
+    if component_id and qty:
+        component = data_Structure.Component.query.get(int(component_id))
+        order = data_Structure.Order(component=component, qty=qty)
+        process = data_Structure.Process()
+        data_Structure.db.session.commit()
+        process.orders.append(order)
+        data_Structure.db.session.add(process)
+        data_Structure.db.session.commit()
+        flash('order was placed!', 'success')
+    return redirect(url_for('show_component', component_id=component_id))
+
+
+@app.route('/process/order/confirm/', methods=['GET'])
+def confirm_order():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+
+    process = data_Structure.Process.query.filter_by(reservations=None, bookings=None).all()
+
+    return render_template('confirm_order.html', process=process)
+
+@app.route('/process/order/confirm/do/', methods=['POST'])
+@login_required
+def order_confirm_do():
+    p = data_Structure.Process()
+    form_data = request.form
+    print(form_data)
+    for key, qty in form_data.items():
+        order = data_Structure.Order.query.get(int(key))
+        if order.quantity == int(qty):
+            p.bookings.append(order.book())
+
+        else:
+            p.bookings.append(order.book(quantity=int(qty)))
+            flash('Order was not delivered completely!', 'warning')
+    flash('order was confirmed succesfull', 'success')
+    return redirect(url_for('confirm_order'))
+
+@app.route('/process/reservations/delete/do/', methods=['POST'])
+@login_required
+def delete_process():
+    process_id = int(request.args.get('process_id'))
+    process = data_Structure.Process.query.get(process_id)
+
+    for r in process.reservations:
+        data_Structure.db.session.delete(r)
+    data_Structure.db.session.delete(process)
+    data_Structure.db.session.commit()
+    flash('Process was deleted succesfully', "success")
+    return redirect(url_for('my_profile'))
+
+@app.route('/process/reservation/bom/', methods=['GET'])
+@login_required
+def bom_upload():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template('bom_upload.html')
+
+@app.route('/process/reservation/bom/do/', methods=['POST'])
+@login_required
+def bom_upload_do():
+    bom_file = request.files['bom_file']
+    description = request.form.get('description')
+    #print(bom_file.read())
+    temp = tempfile.mkstemp(dir=DATA_UPLOAD_FOLDER)
+    with open(temp[1], 'wb') as open_temp:
+        open_temp.write(bom_file.read())
+    with open(temp[1], 'rt') as temp_bom:
+        reservations = BOM_Converter.read_csv(temp_bom)
+        print("REservations ReservationsReservations: "+str(reservations))
+        process = data_Structure.Process(description=description)
+        data_Structure.db.session.add(process)
+        data_Structure.db.session.commit()
+        for e in reservations:
+            r = data_Structure.Reservation(int(e[1]))
+            exb = data_Structure.Exb.query.get(e[0])
+            if not exb:
+                flash(e[0]+" was not found!", 'warning')
+            else:
+                r.component = data_Structure.Exb.query.get(e[0]).associated_components
+                data_Structure.db.session.add(r)
+                data_Structure.db.session.commit()
+                print(r)
+                process.reservations.append(r)
+                print(process.reservations.all())
+                data_Structure.db.session.commit()
+                print("After Commit: "+str(process.reservations.all()))
+        
+        flash("reservation was made")
+
+    
+        
+    return redirect(url_for('bom_upload'))
+
+@app.route('/board/change/owner/do/<board_id>', methods=["POST"])
+@login_required
+def change_board_owner(board_id):
+    board = data_Structure.Board.query.get(board_id)
+    new_owner = request.form.get('owner_form')
+    board.change_owner(new_owner)
+    return redirect(url_for('show_board_history', g_code=board_id))
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'
@@ -904,6 +1424,7 @@ if __name__ == '__main__':
     register_renderer(app, 'own_nav_renderer', ownNavRenderer.own_nav_renderer)
     app.secret_key = os.urandom(12)
     nav.login_manager.init_app(app)
+
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
     test_queries()

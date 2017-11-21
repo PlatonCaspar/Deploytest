@@ -1,0 +1,57 @@
+{%- extends 'base.html' %} {% block title %} Confirm Order {% endblock %} {% block content %}
+<div class="page-header">
+    <h3>Confirm Order</h3>
+</div>
+<div class="panel panel-default">
+    <div class="panel panel-header">
+        <h4>Orders</h4>
+    </div>
+
+    <div class="panel-body">
+
+        {# Collapse with inner table - foreach process with forms to Confirm #} {% for p in process %} {% if p.data(hide_delivered=True) %}
+        <button class="btn btn-default btn-block" type="button" data-toggle="collapse" data-target=#collapse{{p.id}} aria-expanded="false"
+            aria-controls="collapseExample">
+            {{p.description}}
+        </button>
+
+        <div class="collapse" id="collapse{{p.id}}">
+            <div class="well">
+                <form action="{{url_for('order_confirm_do')}}" method="POST">
+                    <table class="table table-striped table-hover table-responsive table-condensed table_links">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Quantity</th>
+                                <th>Component</th>
+                                <th>Delivered?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in p.data(hide_delivered=True) %}
+                            <tr>
+                                <th>{{d.date()}}</th>
+                                <th>{{d.quantity}}</th>
+                                <th>{{d.component.description}}</th>
+                                <th>
+                                    <div class="input-group">
+                                        <span class="input-group-addon">number of delivered parts</span>
+                                        <input class="form-control" type="number" name="{{d.id}}" id="{{d.id}}" value="{{d.quantity}}">
+                                    </div>
+                                </th>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+
+                    <button class="btn btn-success btn-block" type="submit">Confirm Order</button>
+                </form>
+            </div>
+        </div>
+        {% endif %} {% endfor %}
+
+    </div>
+
+</div>
+{% endblock %}

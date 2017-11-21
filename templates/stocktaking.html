@@ -1,0 +1,40 @@
+{%- extends 'base.html' %}
+{%- import 'own_wtf.html' as wtf %}
+{% block title %}
+    stocktaking
+{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-2 col-md-2"></div>
+        {# New component form #}
+        <div class="container container-fluid col-xs-6 col-md-6">
+            <div class="page-header">
+                <h2>
+                    <small><span class="glyphicon glyphicon-asterisk"></span></small>
+                    Stocktaking
+                </h2>
+            </div>
+            <form action="{{ url_for('stocktaking_stock_do') }}" method="POST">
+
+                <div class="input-group">
+                    <span class="input-group-addon">Exb</span>
+                    <input id="exb_number" type="text" class="form-control" name="exb_number" required="required"
+                           placeholder="Please enter the Exb number here...">
+                </div>
+                <br>
+                <div class="input-group">
+                    <span class="input-group-addon">Quantity</span>
+                    <input id="qty" type="number" class="form-control" name="qty" required="required"
+                           placeholder="Please enter the quantity here...">
+                </div>
+                <br>
+                <button class="btn btn-success btn-block" type="submit">Apply Changes</button>
+
+
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+

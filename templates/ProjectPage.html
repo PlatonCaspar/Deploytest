@@ -118,6 +118,7 @@
                             <th class="text-info ">Version</th>
                             <th class="text-info ">Status</th>
                             <th class="text-info ">Patch</th>
+                            <th class="text-info ">Owner</th>
                         </tr>
                         </thead>
 
@@ -142,6 +143,11 @@
                                 </td>
                                 <td class="text-justify table_links ">
                                     {{ b.patch }}
+                                </td>
+                                <td class="text-justify table_links ">
+                                    {% if b.owner %}{{ b.owner }}
+                                    {% else %}None
+                                    {% endif %}
                                 </td>
 
 

@@ -1,0 +1,44 @@
+{%- extends 'base.html' %}
+{% block title %}
+    Return Component {% if component %}{{component.value}}{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+<div class="col-xs-4 col-md-4 col-ld-4"></div>
+<div class="container container-fluid col-xs-4 col-md-4 col-ld-4">
+
+    <div class="page-header">
+
+        <h3>Return Component</h3>
+
+    </div>
+    <div class="form-group">
+        
+        {% if component %}
+        <form action="{{url_for('bring_back', component_id=component.id)}}" method="post">
+        {% else %}
+        <form action="{{url_for('bring_back')}}" method="post">
+            <div class="input-group">
+                <div class="input-group-addon">EXB-Number</div>
+                <input class="form-control" type="text" name="exb">
+            </div> 
+            <br>
+        {% endif %}
+            
+            <div class="input-group">
+                <div class="input-group-addon">Remaining Pieces</div>
+                <input class="form-control" type="number" name='qty'>
+                <div class="input-group-btn">
+                    <button class="btn btn-primary" type="submit">
+                        Submit
+                    </button>
+                 </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+</div>
+
+{% endblock %}

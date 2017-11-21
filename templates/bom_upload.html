@@ -1,0 +1,126 @@
+{%- extends 'base.html' %}
+{% block title %}
+    BOM Upload
+{% endblock %}
+
+{% block content %}
+
+    <div class="container container-fluid">
+        <div class="col-xs-6 col-md-6 col-ld-6 col-xs-offset-3 col-md-offset-3 col-ld-offset-3">
+            {% if process %}
+
+            <table class="table table-striped table-hover table-responsive table-condensed table_links">
+
+                        <thead>
+                            <tr>
+                                <th class="text-info">EXB/ID</th>
+                                <th class="text-info">Description</th>
+                                <th class="text-info">Quantity</th>
+                                <th class="text-info">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% for d in process.data() %}
+                            <tr> {#class="table_links" onclick="window.document.location='{{ row.link }}';">#}
+
+
+                                <td class="text-justify">
+                                    {% if d.component.exb_number %} {{ d.component.exb_number.exb_number }} {% else %} {{d.component.id}} {% endif %}
+                                </td>
+                                <td class="text-justify">
+                                    {{ d.component.description }}
+                                </td>
+                                <td class="text-justify">
+                                    {{ d.quantity }}
+                                </td>
+                                <td class="text-justify">
+                                    {% if d.booking_type %} {{ d.booking_type }} {% else %} Reservation {% endif %}
+
+                                </td>
+                            </tr>
+
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+            {% else %}
+            <div class="page-header"><h3>BOM Upload</h3></div>
+            
+             <form action="{{url_for('bom_upload_do')}}" method="POST" enctype=multipart/form-data>
+
+                    <p>
+                        <div class="input-group">
+                            <span class="input-group-addon">Description</span>
+                            <input class="form-control" type="text" name="descrption" id="description" placeholder="Please enter a Description for the Reservation...">
+                        </div>
+                    </p>
+                    <p>
+                        <div class="input-group">
+                            <label class="input-group-btn">
+                            <span class="btn btn-default">
+                            <input id="bom_file" name="bom_file" type="file"
+                                   onchange="change_file_input(this)" style="display: none;">Select BOM...
+                            </span>
+                            </label>
+                            <input type="text" placeholder="Select a BOM..." class="form-control" id="bom_name" readonly>                            {# Clear button for datasheet input #}
+                            <div class="input-group-btn">
+                                <button id="clear_file_btn" type="button" onclick="clear_file_input(this)" class="btn btn-danger disabled">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                </button>
+                            </div>
+
+                        </div>
+                    </p>
+                    <div class="input">
+                        <p>
+                            <button class="btn btn-success" type="submit"><span
+                                        class="glyphicon glyphicon-upload"></span> Upload!
+                                </button>
+                        </p>
+                    </div>
+
+                </form>
+
+                <script>
+                                                                                   //More beautiful select field :)
+                                                                                   function change_file_input(file_input) {
+                                                                                       var text_box = document.getElementById("bom_name");
+                                                                                       //var file_path = document.getElementById("datasheet");
+                                                                                       var file_path = file_input.value;
+                                                                                       var file_btn = document.getElementById("clear_file_btn");
+                                                                                       //print(file_path);
+                                                                                       if (file_path) {
+                                                                                           var startIndex = (file_path.indexOf('\\') >= 0 ? file_path.lastIndexOf('\\') : file_path.lastIndexOf('/'));
+                                                                                           var filename = file_path.substring(startIndex);
+                                                                                           if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
+                                                                                               filename = filename.substring(1);
+                                                                                           }
+                                                                                           //filename = "Hallo"
+                                                                                           text_box.value = filename;//(name = "value", value = filename);
+                                                                                           file_btn.setAttribute("class", "btn btn-danger")
+                                                                                       }
+
+                                                                                   }
+
+                                                                                   //clear button action
+                                                                                   function clear_file_input(clear_btn) {
+                                                                                       var file_input = document.getElementById("bom_file");
+                                                                                       file_input.value = "";
+                                                                                       var file_name_box = document.getElementById("bom_name");
+                                                                                       file_name_box.value = "";
+                                                                                       if (file_input.value === "") {
+                                                                                           clear_btn.setAttribute("class", "btn btn-danger disabled");
+                                                                                       }
+                                                                                   }
+                </script>       
+
+        
+        
+        
+        
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

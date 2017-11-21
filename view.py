@@ -16,14 +16,16 @@ def get_logged_user():
 def write_code_for_search_bar():
     bar = tags.div(tags.form(tags.div(
         tags.select(tags.option('All', value='All', Class="container-fluid panel-body"),
-
                     tags.option("Boards", value='Boards', Class="container-fluid panel-body"),
                     tags.option("Projects", value='Projects', Class="container-fluid panel-body"),
                     tags.option("Devices", value='Devices', Class="container-fluid panel-body"),
+                    tags.option("Components", value='Components',
+                                Class="container-fluid panel-body"),
                     Class="form-control selectpicker",
                     style="margin: auto data-width: auto", name="Selector"),
 
-        tags.input(Type="text", Class="form-control ", placeholder="Search", name="search_field"),
+        tags.input(Type="text", Class="form-control ",
+                   placeholder="Search", name="search_field"),
 
         # tags.div(
         tags.button(tags.i(Class="glyphicon glyphicon-search", style="color:#009999"),
@@ -48,6 +50,11 @@ def nav_bar():
             items=(View('Start', 'start'),
                     View('New Board', 'add__board'),
                     View('Print Label', 'show_new_label'),
+                   Subgroup('Project',
+                            View('Projects', 'show_project_all')),
+                   Subgroup('Component',
+                            View('Components', 'show_all_components'),
+                            View('Confirm Order', 'confirm_order')),
                    search_bar
                    ),
 
@@ -56,22 +63,34 @@ def nav_bar():
                 Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
                 Subgroup('Hello Guest',
                          View(
-                             tags.div(tags.span(Class="glyphicon glyphicon-log-in", style="margin-right: 5%"), "Login"),
+                             tags.div(tags.span(
+                                 Class="glyphicon glyphicon-log-in", style="margin-right: 5%"), "Login"),
                              'login',
                              last_page_1=request.path.replace('/', '_')))
             )
 
         )
+
     else:
         return ownNavRenderer.ExtendedNavbar(
             title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left"), 'start'),
             items=(View('Start', 'start'),
-                   View('New Board', 'add__board'),
-                   View('New Device', 'add_device'),
-
-                   View('New Project', 'add_project'),
-                    View('Print Label', 'show_new_label'),
-
+                   Subgroup('Label',
+                            View('Print Label', 'show_new_label')),
+                   Subgroup('Board',
+                            View('New Board', 'add__board')),
+                   Subgroup('Project',
+                            View('Projects', 'show_project_all'),
+                            View('New Project', 'add_project')),
+                   Subgroup('Component',
+                            View('Components', 'show_all_components'),
+                            View('New Component', 'add_component'),
+                            View('Stocktaking Stock', 'stocktaking_stock'),
+                            View('Return Component', 'bring_back'),
+                            View('Confirm Order', 'confirm_order'),
+                            View('BOM Reservation', 'bom_upload')),
+                    Subgroup('Device', 
+                            View('New Device', 'add_device')),
                    search_bar
 
                    ),
