@@ -1,6 +1,5 @@
 import flask_sqlalchemy
 from flask import Flask
-<<<<<<< HEAD
 from os import urandom, path
 from flask import url_for, flash
 from passlib.hash import pbkdf2_sha256
@@ -18,7 +17,7 @@ DATA_FOLDER = path.dirname(__file__)
 app = Flask(__name__)
 naming_convention = {
     #"fk": "fk_%(table_name)s_(column_0_name)s" ,
-    "uq": "uq_%(table_name)s_%(column_0_name)s" 
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
 
     "fk": "fk_%(table_name)s_(column_0_name)s_%(referred_table_name)s"  
 }

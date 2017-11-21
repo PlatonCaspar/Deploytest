@@ -48,8 +48,10 @@ def nav_bar():
         return ownNavRenderer.ExtendedNavbar(
             title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left", href=url_for('start')), 'start'),
             items=(View('Start', 'start'),
-                    View('New Board', 'add__board'),
-                    View('Print Label', 'show_new_label'),
+                    Subgroup('Label',
+                            View('Print Label', 'show_new_label')),
+                   Subgroup('Board',
+                            View('New Board', 'add__board')),
                    Subgroup('Project',
                             View('Projects', 'show_project_all')),
                    Subgroup('Component',
@@ -59,14 +61,16 @@ def nav_bar():
                    ),
 
             right_items=(
-                Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
                 Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
                 Subgroup('Hello Guest',
                          View(
                              tags.div(tags.span(
                                  Class="glyphicon glyphicon-log-in", style="margin-right: 5%"), "Login"),
                              'login',
-                             last_page_1=request.path.replace('/', '_')))
+                             last_page_1=request.path.replace('/', '_')),
+                Separator,
+                Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
+)
             )
 
         )
@@ -75,7 +79,7 @@ def nav_bar():
         return ownNavRenderer.ExtendedNavbar(
             title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left"), 'start'),
             items=(View('Start', 'start'),
-                   Subgroup('Label',
+                    Subgroup('Label',
                             View('Print Label', 'show_new_label')),
                    Subgroup('Board',
                             View('New Board', 'add__board')),
@@ -95,7 +99,6 @@ def nav_bar():
 
                    ),
             right_items=(
-                Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
                 Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
                 Subgroup('Hello ' + current_user.username,
                          View(tags.div(tags.span(Class="glyphicon glyphicon-trash", style="margin-right: 5%"),
@@ -104,7 +107,10 @@ def nav_bar():
                          View(tags.div(tags.span(Class="glyphicon glyphicon-user", style="margin-right: 5%; color:#009999"),
                                        current_user.username+"`s Profile"), 'my_profile'),
                          View(tags.div(tags.span(Class="glyphicon glyphicon-log-out text-danger", style="margin-right: 5%"),
-                                       "Logout"), 'logout'))
+                                       "Logout"), 'logout'),
+                                       Separator,
+                        Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
+)
             )
 
         )

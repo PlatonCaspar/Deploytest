@@ -450,18 +450,12 @@
 
         </div>
 
-<<<<<<< HEAD
         {# Owner Change Modal #}
         <div id="owner_modal" class="modal fade" role="dialog">
-=======
-{# Args Change Modal #}
-        <div id="args_modal" class="modal fade" role="dialog">
->>>>>>> args
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
-<<<<<<< HEAD
                         <h4 class="modal-title">{{ 'Change Owner' }}</h4>
                     </div>
                     <div class="modal-body">
@@ -472,7 +466,28 @@
                             </div>
                             <div class="form-group">
                                 <button class="btn btn-default" type="submit">Change</button>
-=======
+                                <button class="btn btn-default pull-right" type="button" data-dismiss="modal">Cancel
+                                </button>
+                            </div>
+                            </form>
+                        <div class="modal-footer">
+                               </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+
+
+
+{# Args Change Modal #}
+        <div id="args_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
                         <h4 class="modal-title">{{ 'Change args' }}</h4>
                     </div>
                     <div class="modal-body">
@@ -490,17 +505,10 @@
                                     aria-expanded="false"
                                     aria-controls="delete_arg"><span
                                     class="glyphicon glyphicon-remove"></span></button>
->>>>>>> args
-                                <button class="btn btn-default pull-right" type="button" data-dismiss="modal">Cancel
+                                    <button class="btn btn-default pull-right" type="button" data-dismiss="modal">Cancel
                                 </button>
                             </div>
-
-<<<<<<< HEAD
-                        </form>
-                        <div class="modal-footer">
-=======
-                       
-                        <div class="modal-footer">
+                            <div class="modal-footer">
                             
                             <div class="collapse" id="delete_arg">
                             <br>
@@ -512,20 +520,7 @@
                             </form>
                         </div>
                     </div>
-                        
->>>>>>> args
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-
-        </div>
-
-<<<<<<< HEAD
-    {% endif %}
-=======
+                            
         <script>
 
             function set_args_name_modal(name) {
@@ -541,7 +536,7 @@
         </script>
 
   {% endif %}
->>>>>>> args
+
 
 
 
@@ -578,6 +573,6 @@
 
     </div>
 
-{%- endblock %}
+{% endblock %}
 
 
