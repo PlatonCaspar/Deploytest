@@ -394,7 +394,7 @@ class Component(db.Model):
             smd = "smd"
         else: 
             smd = ""
-        return self.description+";"+self.manufacturer+";"+self.manufacturer_id+";"+self.value+";"+smd+";"+self.housing()+";"+self.category()+";"+self.package()+";"+str(self.chip_form_id)
+        return self.description+" "+self.manufacturer+" "+self.manufacturer_id+" "+self.value+" "+smd+" "+self.housing()+" "+self.category()+" "+self.package()+" "+str(self.chip_form_id)
 
     def reduce(self):
         return self.reduced_description().replace(" ",";")

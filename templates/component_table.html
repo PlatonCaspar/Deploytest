@@ -21,14 +21,14 @@
         </thead>
         <tbody>
 
-        {% if exb_numbers %}
+        {% if components %}
 
-            {% for exb in exb_numbers %}
-                {% set c = exb.associated_components %}
+            {% for component in components %}
+                {% set c = component %}
 
                 <tr onclick="window.document.location='{{ url_for('show_component',component_id=c.id) }}';">
 
-                    <td class="text-justify">{{ exb.exb_number }}</td>
+                    <td class="text-justify">{{ c.exb_number.exb_number }}</td>
                     <td class="text-justify">{{c.reduced_description()}}
                     <td class="text-justify">{{ c.stock() }}</td>
                     <td class="text-justify">{{ c.reserved() }}</td>
