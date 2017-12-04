@@ -205,10 +205,10 @@ class History(db.Model):
 
         if len(self.history)-start_ind < max_length:
             end_ind = len(self.history)
-            return self.history[start_ind:end_ind]
+            return self.history[start_ind:end_ind].replace("<br>"," ")
         else:
             end_ind = start_ind+max_length-1
-            return self.history[start_ind:end_ind]+"..."
+            return self.history[start_ind:end_ind].replace("<br>"," ")+"..."
         
 
 
