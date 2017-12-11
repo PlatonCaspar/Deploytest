@@ -30,7 +30,7 @@ class Board(db.Model):
     code = db.Column(db.String(500), primary_key=True)
     project_name = db.Column(db.Text, db.ForeignKey('project.project_name'))
     project = db.relationship('Project', backref=db.backref('project_boards_backref', lazy='dynamic'))
-    link = db.Column(db.String(500))
+    #link = db.Column(db.String(500))
     version = db.Column(db.String(20))
     id = db.Column(db.Integer, primary_key=False)
     dateAdded = db.Column(db.String(10))
@@ -49,7 +49,7 @@ class Board(db.Model):
         self.code = code
         self.id = id(code)
         self.version = ver
-        self.link = str(url_for('show_board_history', g_code=self.code))
+        #self.link = str(url_for('show_board_history', g_code=self.code))
         self.dateAdded = time.strftime("%d.%m.%Y %H:%M:%S")
         self.addedBy = current_user
         self.stat = stat
@@ -88,6 +88,9 @@ class Board(db.Model):
             return json.loads(self.arguments)
         else:
             return {}
+
+    def link(self):
+        return url_for('show_board_history', g_code=self.code)
 
     
 
