@@ -62,7 +62,7 @@ def nav_bar():
                          View(
                              tags.div(tags.span(Class="glyphicon glyphicon-log-in", style="margin-right: 5%"), "Login"),
                              'login',
-                             last_page_1=request.path.replace('/', '_')))
+                             next=request.path))
             )
 
         )

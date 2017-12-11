@@ -2,15 +2,20 @@
 {%- import 'own_wtf.html' as wtf %}
 
 {% block content %}
-    <div class = "page-header">
-    <h1>Register User:</h1>
+<div class="row">
+    <div class="col-xs-1 col-md-4 col-ld-3"></div>
+    <div class="col-xs-10 col-md-4 col-ld-6">
+        <div class = "page-header">
+            <h2>Register:</h2>
+        </div>
+        <form action="{{url_for('register_user', next=next)}}" method="POST">
+            {{ wtf.form_field(form.username, placeholder="Please enter your username...") }}
+            {{ wtf.form_field(form.email_adress, placeholder="Please enter your email address...") }}
+            {{ wtf.form_field(form.password, placeholder="Please enter your password...") }}
+            {{ wtf.form_field(form.password_again, placeholder="Please repeat your password...") }}
+            <button class="btn btn-success btn-block" type="submit">Register</button>
+        </form>
     </div>
-    <div class=col-md-4 class = col-xs-1 >
-    {{ wtf.quick_form(form) }}
-    {{ form.hidden_tag }}
-
-
-
-    </div>
+</div>
 
 {% endblock %}

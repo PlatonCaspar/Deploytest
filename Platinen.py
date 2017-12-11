@@ -58,6 +58,8 @@ def load_user(user_id):
 def register_user():
     nav.nav.register_element("frontend_top", view.nav_bar())
     user_to_register = registerUserForm.RegisterUser(request.form)
+    next = request.values.get('next')
+    print(next)
     if request.method == 'POST':
         if user_to_register.password.data == user_to_register.password_again.data:
             new_user = data_Structure.User(username=user_to_register.username.data,
@@ -67,24 +69,22 @@ def register_user():
             if data_Structure.User.query.filter_by(username=new_user.username).all() != []:
                 # check if user already exists
                 flash('User does already exist!', 'danger')
-                return render_template('registerUserForm.html', form=user_to_register,
-                                       search_form=searchForm.SearchForm())
+                return redirect(url_for('register_user', redir=redir))
             if data_Structure.User.query.filter_by(email=new_user.email).all() != []:
                 flash('There is already somone registered with the same Email adress!', 'danger')
-                return redirect(url_for('register_user'))
-
+                return redirect(url_for('register_user', next=next))
             data_Structure.db.session.add(new_user)
             data_Structure.db.session.commit()
             if data_Structure.User.query.filter_by(email=new_user.email).scalar() is not None:
-                # if Board is no longer not available
+                # if user is no longer not available
                 flash('User was successfully added!', 'success')
-                return render_template('registerUserForm.html', form=user_to_register,
-                                       search_form=searchForm.SearchForm())
+                return redirect(url_for('login', next=next) or url_for('login'))
+
         else:
             flash('The Passwords do not match!', 'danger')
-            return render_template('registerUserForm.html', form=user_to_register, search_form=searchForm.SearchForm())
+            return redirect(url_for('register_user', next=next))
 
-    return render_template('registerUserForm.html', form=user_to_register, search_form=searchForm.SearchForm())
+    return render_template('registerUserForm.html', form=user_to_register, search_form=searchForm.SearchForm(), next=next)
 
 
 @app.route('/logout/')
@@ -98,53 +98,37 @@ def logout():
 
 
 @app.route('/login/', methods=['GET', 'POST'])
-@app.route('/login/<last_page_1>/', methods=['GET', 'POST'])
-def login(last_page_1=None):
-    last_page = request.args.get('next')
-
-    no_url_for = False
-    url = None
-    if last_page is None:
-        last_page = last_page_1
-        if last_page:
-            last_page = last_page.replace('_', '/')  # [1:len(last_page) - 2]
-
-    try:
-        url = url_for(last_page)
-    except:
-        no_url_for = True
-        try:
-            redirect(last_page)
-
-        except:
-            last_page = None
-            url = None
-            no_url_for = False
-    url = last_page
+def login():
+    next = request.values.get('next')
     nav.nav.register_element("frontend_top", view.nav_bar())
     user_form = registerUserForm.LoginUser(request.form)
+
     if request.method == 'POST':
-        if data_Structure.User.query.filter_by(
+        if 'register_button' in request.form:
+                if next:
+                    return redirect(url_for('register_user', next=next))
+                else:
+                    return redirect(url_for('register_user'))
+        if user_form.username.data and data_Structure.User.query.filter_by(
                 username=user_form.username.data).scalar() is None:  # check if User exists
             flash('User does not exist!', 'danger')
             return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
         login_to_user = data_Structure.User.query.filter_by(username=user_form.username.data).first()
-        if pbkdf2_sha256.verify(user_form.password.data, login_to_user.password_hashed_and_salted):
+        if user_form.username.data and pbkdf2_sha256.verify(user_form.password.data, login_to_user.password_hashed_and_salted):
             if request.form.get('rememberMe') is True:
                 login_user(login_to_user, remember=True)
                 flash('Hi ' + login_to_user.username + ' - Your Login was succesfull', 'success')
             else:
                 login_user(login_to_user, remember=False)
                 flash('Hi ' + login_to_user.username + ' - Your Login was succesfull', 'success')
+        
         else:
             flash('Password was not correct', 'danger')
-            return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
+            return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm(), next=next)
 
-        nav.nav.register_element("frontend_top", view.nav_bar())
-        if url:
-            return redirect(url)
-        else:
-            return redirect(url_for('start'))
+            
+        return redirect(next or url_for('start'))
+       
     return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
 
 
@@ -675,12 +659,12 @@ def user_forgot_password():
 @login_required
 def user_forgot_change_password():
     logged_user = data_Structure.db.session.query(data_Structure.User).get(current_user.uid)
-    dumb_user_id = request.form.get('uid')
+    dumb_user_username = request.form.get('username')
     dumb_user = None
-    if dumb_user_id:
-        dumb_user = data_Structure.db.session.query(data_Structure.User).get(int(dumb_user_id))
+    if dumb_user_username:
+        dumb_user = data_Structure.User.query.filter_by(username=dumb_user_username).first()
     if not dumb_user:
-        flash('User does not exist! (UID: ' + str(dumb_user_id) + ')', 'danger')
+        flash('User does not exist! (Username: ' + str(dumb_user_id) + ')', 'danger')
         return redirect(url_for(user_forgot_password))
     if pbkdf2_sha256.verify(request.form.get('current_user_password'), logged_user.password_hashed_and_salted):
         new_password = pbkdf2_sha256.hash(request.form.get('new_password_1'))
@@ -688,6 +672,7 @@ def user_forgot_change_password():
             dumb_user.password_hashed_and_salted = new_password
             data_Structure.db.session.commit()
             flash('password of ' + dumb_user.username + ' was changed successfully', 'success')
+            logout_user()
             return redirect(url_for('start'))
         else:
             flash('The new passwords did not match!', 'danger')
