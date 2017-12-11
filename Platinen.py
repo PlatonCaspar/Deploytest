@@ -54,7 +54,7 @@ def load_user(user_id):
     return data_Structure.User.get(user_id)
 
 
-@app.route('/register_user/', methods=['GET', 'POST'])
+@app.route('/registeruser/', methods=['GET', 'POST'])
 def register_user():
     nav.nav.register_element("frontend_top", view.nav_bar())
     user_to_register = registerUserForm.RegisterUser(request.form)
@@ -151,7 +151,7 @@ def login(last_page_1=None):
 nav.login_manager.login_view = '/login/'  # //TODO I have to define where to redirect when login_required is not okay
 
 
-@app.route('/delete_user/', methods=['GET', 'POST'])
+@app.route('/deleteuser/', methods=['GET', 'POST'])
 @login_required
 def delete_user():
     view.logged_user = view.get_logged_user()
@@ -180,7 +180,7 @@ def delete_user():
     return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
 
 
-@app.route('/registered_users/')
+@app.route('/registeredusers/')
 @login_required
 def show_registered_users():
     view.logged_user = view.get_logged_user()
@@ -255,7 +255,7 @@ def start():
     return render_template('start.html', search_form=search_form)
 
 
-@app.route('/add_board/scripted/test/', methods=['POST'])
+@app.route('/addboard/scripted/test/', methods=['POST'])
 def add_board_scripted():
     board_id = request.args.get('board_id')
     project_name = request.args.get('project')
@@ -286,7 +286,7 @@ def add_board_scripted():
         return "Success"
 
 
-@app.route('/add_board/', methods=['GET', 'POST'])
+@app.route('/addboard/', methods=['GET', 'POST'])
 def add__board():
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -309,7 +309,7 @@ def add__board():
         if data_Structure.Board.query.filter_by(code=new_board.code).scalar() is not None:
             # if Board is now available
             flash('Board was successfully added!', 'success')
-            label_file_cont = board_labels.generate_label(new_board.code)
+            label_file_cont = board_labels.generate_label(code_number=new_board.code, code_url=url_for('show_board_history', g_code=new_board.code, _external=True))
             board_labels.write_doc(label_file_cont)
             board_labels.print_label("labelprinter01.sdi.site", "root", "0000")
             return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
@@ -321,14 +321,14 @@ def add__board():
                            search_form=searchForm.SearchForm())
 
 
-@app.route('/projects/boards_belonging_to/<project_name>/', methods=['POST', 'GET'])
+@app.route('/projects/boardsbelongingto/<project_name>/', methods=['POST', 'GET'])
 def show_boards_of_project(project_name):
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('table.html', args=data_Structure.Board.query.filter_by(project_name=project_name).all())
 
 
-@app.route('/add_project/', methods=['POST', 'GET'])
+@app.route('/addproject/', methods=['POST', 'GET'])
 @login_required
 def add_project():
     view.logged_user = view.get_logged_user()
@@ -380,7 +380,7 @@ def delete_history_all(history):
     data_Structure.db.session.commit()
 
 
-@app.route('/delete_board/', methods=['GET', 'POST'])
+@app.route('/deleteboard/', methods=['GET', 'POST'])
 @login_required
 def del_board(board_delete=None):
     view.logged_user = view.get_logged_user()
@@ -413,7 +413,7 @@ def del_board(board_delete=None):
 
 
 def edit_board_history(board, history_id, history):
-    nav.nav.register_element("frontend_top", view.nav_bar())
+    nav.nav.register_element("frontendtop", view.nav_bar())
 
     history_to_edit = data_Structure.History.query.get(history_id)
     history_to_edit.history = history.replace('\n', "<br>")
@@ -446,7 +446,7 @@ def getSortKeyHistory(h):
     return h.time_date_datetime()
 
 
-@app.route('/board/<g_code>/', methods=['POST', 'GET', ])  # shows board History
+@app.route('/board/show/<g_code>/', methods=['POST', 'GET', ])  # shows board History
 def show_board_history(g_code):
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -538,7 +538,7 @@ def edit_project_image(project_name):
     return redirect(url_for('show_project', project_name=project_name))
 
 
-@app.route('/board_history/delete/image/<img_id>/<board_id>/', methods=['POST'])
+@app.route('/board/delete/image/<img_id>/<board_id>/', methods=['POST'])
 @login_required
 def delete_history_image(img_id, board_id):
     view.logged_user = view.get_logged_user()
@@ -553,7 +553,7 @@ def delete_history_image(img_id, board_id):
     return redirect(url_for('show_board_history', g_code=board_id))
 
 
-@app.route('/board_history/add/file/<history_id>/<board_id>', methods=['POST'])
+@app.route('/board/add/file/<history_id>/<board_id>', methods=['POST'])
 @login_required
 def board_history_add_file(history_id, board_id):
     view.logged_user = view.get_logged_user()
@@ -593,7 +593,7 @@ def delete_project(project_name):
     return redirect(url_for('start'))
 
 
-@app.route('/my_profile/')
+@app.route('/myprofile/')
 def my_profile():
     view.logged_user = view.get_logged_user()
     if current_user.username is 'Guest':
@@ -603,7 +603,7 @@ def my_profile():
     return render_template('userProfile.html')
 
 
-@app.route('/my_profile/change/username/<uid>/', methods=['POST'])
+@app.route('/myprofile/change/username/<uid>/', methods=['POST'])
 @login_required
 def change_username(uid):
     user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
@@ -614,7 +614,7 @@ def change_username(uid):
     return redirect(url_for('my_profile'))
 
 
-@app.route('/my_profile/change/email/<uid>/', methods=['POST'])
+@app.route('/myprofile/change/email/<uid>/', methods=['POST'])
 @login_required
 def change_email(uid):
     user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
@@ -625,7 +625,7 @@ def change_email(uid):
     return redirect(url_for('my_profile'))
 
 
-@app.route('/my_profile/change/password/<uid>/', methods=['POST'])
+@app.route('/myprofile/change/password/<uid>/', methods=['POST'])
 @login_required
 def change_password(uid):
     user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
@@ -643,7 +643,7 @@ def change_password(uid):
     return redirect(url_for('my_profile'))
 
 
-@app.route('/my_profile/delete/me_myself_and_i/and_really_me_so_i_wont_be_able_to_visit_this_site_anymore/',
+@app.route('/myprofile/delete/me_myself_and_i/and_really_me_so_i_wont_be_able_to_visit_this_site_anymore/',
            methods=['POST'])
 def delete_myself():
     user_to_delete = data_Structure.db.session.query(data_Structure.User).get(current_user.uid)
@@ -661,7 +661,7 @@ def delete_myself():
         return redirect(url_for('my_profile'))
 
 
-@app.route('/user_forgot_password/', methods=['GET'])
+@app.route('/userforgotpassword/', methods=['GET'])
 @login_required
 def user_forgot_password():
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -671,7 +671,7 @@ def user_forgot_password():
 
 
 # Sorry for the dumb user, I could not find a better word for this variable... :D
-@app.route('/user_forgot_password/change_password/', methods=['POST'])
+@app.route('/userforgotpassword/change_password/', methods=['POST'])
 @login_required
 def user_forgot_change_password():
     logged_user = data_Structure.db.session.query(data_Structure.User).get(current_user.uid)
@@ -697,7 +697,7 @@ def user_forgot_change_password():
         return redirect(url_for(user_forgot_password))
 
 
-@app.route('/board_history/change/version/<board_id>/', methods=['POST'])
+@app.route('/boardhistory/change/version/<board_id>/', methods=['POST'])
 @login_required
 def change_board_version(board_id):
     board = data_Structure.Board.query.get(board_id)
@@ -710,7 +710,7 @@ def change_board_version(board_id):
     return redirect(url_for('show_board_history', g_code=board_id))
 
 
-@app.route('/board_history/change/state/<board_id>/', methods=['POST'])
+@app.route('/boardhistory/change/state/<board_id>/', methods=['POST'])
 @login_required
 def change_board_state(board_id):
     board = data_Structure.Board.query.get(board_id)
@@ -723,7 +723,7 @@ def change_board_state(board_id):
     return redirect(url_for('show_board_history', g_code=board_id))
 
 
-@app.route('/board_history/change/patch/<board_id>/', methods=['POST'])
+@app.route('/boardhistory/change/patch/<board_id>/', methods=['POST'])
 @login_required
 def change_board_patch(board_id):
     board = data_Structure.Board.query.get(board_id)
@@ -770,10 +770,21 @@ def add_device_do():
         device = data_Structure.Device(device_name, device_brand)
         try:
             data_Structure.db.session.add(device)
+
             data_Structure.db.session.commit()
+            code_url=None
+            try:
+                code_url = url_for('show_device', device_id=device.device_id, _external=True)
+            except:
+                pass
+            label = board_labels.generate_label(device_name, code_url=code_url)
+            board_labels.write_doc(label)
+            board_labels.print_label("labelprinter01.sdi.site")
         except:
             flash('An error occured while adding the device to the database', 'danger')
-            return redirect(url_for('start'))
+            return redirect(url_for('add_device'))
+    
+    
     flash('device \"'+device_name+'\" was added.', "success")
     return redirect(url_for('add_device'))
 
@@ -869,9 +880,13 @@ def delete_document():
 @app.route('/label/print/do/', methods=['POST'])
 def print_label():
     text = request.form.get('text')
-    label = board_labels.generate_label(text)
+    code_url = None
+    if data_Structure.Board.query.get(text):
+        code_url = url_for('show_board_history', g_code=text, _external=True)
+    
+    label = board_labels.generate_label(text, code_url=code_url)
     board_labels.write_doc(label)
-    board_labels.print_label("labelprinter01.sdi.site")
+    board_labels.print_label(address="labelprinter01.sdi.site")
     return redirect(url_for('show_new_label'))
 
 @app.route('/label/print/new/', methods=['GET'])

@@ -24,31 +24,33 @@ def generate_code(code, number, text=None):
     if not text:
         text = ['m m\r\n']
     text.append('J\r\n')
-    text.append('S 0,0,19,42,100\r\n')
+    text.append('S l1;0,0,15,18,15,18,2;Board_Label\r\n')
     text.append('O R\r\n')
-    text.append('T 3,15,0,5,3;'+code_number+'\r\n')
-    text.append('B 3,3,0,QRCODE+MODEL1,0.3;'+code_number+'\r\n')
-    text.append('A 1\r\n')
+    text.append('T 0.5,14,0,5,2;'+code_number+'\r\n')
+    text.append('B 0.5,0,0,QRCODE+MODEL2,0.5;'+code_number+'\r\n')
+    text.append('A 2\r\n')
     return text
 
-def generate_label(code_number):
+def generate_label(code_number, code_url=None):
     """generates code for each line"""
+    #print(code_url or code_number)
     text = ['m m\r\n']
     text.append('J\r\n')
-    text.append('S 0,0,19,42,100\r\n')
+    text.append('S l1;0,0,15,18,15,18,2;Board_Label\r\n')
     text.append('O R\r\n')
-    text.append('T 3,15,0,5,3;'+code_number+'\r\n')
-    text.append('B 3,3,0,QRCODE+MODEL1,0.3;'+url_for('show_board_history', g_code=code_number)+'\r\n')
-    text.append('A 1\r\n')
+    text.append('T 0.5,14,0,5,2;'+code_number+'\r\n')
+    text.append('B 0.5,0,0,QRCODE+MODEL2,0.5;'+(code_url or code_number)+'\r\n')
+    text.append('A 2\r\n')
+    
     return text
 
-def print_label(adress, user='anonymous', passwd=None):
-    #print(adress+' '+user+" "+passwd)
+def print_label(address, user='anonymous', passwd=None):
+    #print(address+' '+user+" "+str(passwd))
     try:
-        with FTP(adress, user='root', passwd='0000') as ftp:
+        with FTP(address, user='root', passwd='0000') as ftp:
             ftp.cwd('/execute')
             with open(LABEL_PATH, 'rb') as file:
-                print('Sending File')
+                #print('Sending File')
                 ftp.storbinary("STORE LABEL.txt", file, callback=None)
     except:
         flash("Label could not be printed", 'warning')
