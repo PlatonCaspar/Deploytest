@@ -1,7 +1,7 @@
 """File generates Board labels for any project."""
 import os
 from ftplib import FTP
-from flask import flash
+from flask import flash, url_for
 
 
 DATA_FOLDER = os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +38,7 @@ def generate_label(code_number):
     text.append('S 0,0,19,42,100\r\n')
     text.append('O R\r\n')
     text.append('T 3,15,0,5,3;'+code_number+'\r\n')
-    text.append('B 3,3,0,QRCODE+MODEL1,0.3;'+code_number+'\r\n')
+    text.append('B 3,3,0,QRCODE+MODEL1,0.3;'+url_for('show_board_history', g_code=code_number)+'\r\n')
     text.append('A 1\r\n')
     return text
 
@@ -90,7 +90,7 @@ if __name__=='__main__':
         print('init needed.')
     if not config:
         with open('./config.ini', 'w') as file:
-            config = ['10.11.5.2\n']
+            config = ['labelprinter01.sdi.site\n']
             config.append('root\n')
             config.append('0000\n')
             file.writelines(config)

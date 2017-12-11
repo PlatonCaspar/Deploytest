@@ -46,15 +46,19 @@ def nav_bar():
         return ownNavRenderer.ExtendedNavbar(
             title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left", href=url_for('start')), 'start'),
             items=(View('Start', 'start'),
-                    View('New Board', 'add__board'),
-                    View('Print Label', 'show_new_label'),
+                    Subgroup('Label',
+                            View('Print Label', 'show_new_label')),
+                    Subgroup('Board',
+                            View('New Board', 'add__board')),
+                    Subgroup('Project',
+                            View('All Projects', 'show_project_all')),
                    search_bar
                    ),
 
             right_items=(
                 Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
                 Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
-                Subgroup('Hello Guest',
+                Subgroup('Hello Guest!',
                          View(
                              tags.div(tags.span(Class="glyphicon glyphicon-log-in", style="margin-right: 5%"), "Login"),
                              'login',
@@ -66,19 +70,22 @@ def nav_bar():
         return ownNavRenderer.ExtendedNavbar(
             title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left"), 'start'),
             items=(View('Start', 'start'),
-                   View('New Board', 'add__board'),
-                   View('New Device', 'add_device'),
-
-                   View('New Project', 'add_project'),
-                    View('Print Label', 'show_new_label'),
-
-                   search_bar
+                    Subgroup('Label',
+                            View('Print Label', 'show_new_label')),
+                    Subgroup('Board',
+                            View('New Board', 'add__board')),
+                    Subgroup('Project',
+                            View('All Projects', 'show_project_all'),
+                            View('New Project', 'add_project')),
+                    Subgroup('Device', 
+                            View('New Device', 'add_device')),
+                    search_bar
 
                    ),
             right_items=(
                 Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
                 Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
-                Subgroup('Hello ' + current_user.username,
+                Subgroup('Hello ' + current_user.username+'!',
                          View(tags.div(tags.span(Class="glyphicon glyphicon-trash", style="margin-right: 5%"),
                                        "Delete User"), 'delete_user'),
                          Separator,

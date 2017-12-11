@@ -54,7 +54,7 @@ def load_user(user_id):
     return data_Structure.User.get(user_id)
 
 
-@app.route('/registerUser/', methods=['GET', 'POST'])
+@app.route('/register_user/', methods=['GET', 'POST'])
 def register_user():
     nav.nav.register_element("frontend_top", view.nav_bar())
     user_to_register = registerUserForm.RegisterUser(request.form)
@@ -110,7 +110,6 @@ def login(last_page_1=None):
             last_page = last_page.replace('_', '/')  # [1:len(last_page) - 2]
 
     try:
-        # print(last_page)
         url = url_for(last_page)
     except:
         no_url_for = True
@@ -152,7 +151,7 @@ def login(last_page_1=None):
 nav.login_manager.login_view = '/login/'  # //TODO I have to define where to redirect when login_required is not okay
 
 
-@app.route('/deleteUser/', methods=['GET', 'POST'])
+@app.route('/delete_user/', methods=['GET', 'POST'])
 @login_required
 def delete_user():
     view.logged_user = view.get_logged_user()
@@ -181,7 +180,7 @@ def delete_user():
     return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
 
 
-@app.route('/registeredUsers/')
+@app.route('/registered_users/')
 @login_required
 def show_registered_users():
     view.logged_user = view.get_logged_user()
@@ -240,7 +239,6 @@ def start():
             results_comments = None
             if search_word is not "":
                 results_comments = search.search(search_word=search_word, items=data_Structure.History.query.all())
-                print("Platinen.py "+str(results_comments))
         if search_area == 'All' or search_area =='Devices':
             if search_word == "":
                 results_devices = data_Structure.Device.query.all()
@@ -257,7 +255,7 @@ def start():
     return render_template('start.html', search_form=search_form)
 
 
-@app.route('/addBoard/scripted/test/', methods=['POST'])
+@app.route('/add_board/scripted/test/', methods=['POST'])
 def add_board_scripted():
     board_id = request.args.get('board_id')
     project_name = request.args.get('project')
@@ -288,7 +286,7 @@ def add_board_scripted():
         return "Success"
 
 
-@app.route('/addBoard/', methods=['GET', 'POST'])
+@app.route('/add_board/', methods=['GET', 'POST'])
 def add__board():
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -323,14 +321,14 @@ def add__board():
                            search_form=searchForm.SearchForm())
 
 
-@app.route('/Projects/Boards_belonging_to/<project_name>/', methods=['POST', 'GET'])
+@app.route('/projects/boards_belonging_to/<project_name>/', methods=['POST', 'GET'])
 def show_boards_of_project(project_name):
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('table.html', args=data_Structure.Board.query.filter_by(project_name=project_name).all())
 
 
-@app.route('/add_Project/', methods=['POST', 'GET'])
+@app.route('/add_project/', methods=['POST', 'GET'])
 @login_required
 def add_project():
     view.logged_user = view.get_logged_user()
@@ -382,7 +380,7 @@ def delete_history_all(history):
     data_Structure.db.session.commit()
 
 
-@app.route('/deleteBoard/', methods=['GET', 'POST'])
+@app.route('/delete_board/', methods=['GET', 'POST'])
 @login_required
 def del_board(board_delete=None):
     view.logged_user = view.get_logged_user()
@@ -448,7 +446,7 @@ def getSortKeyHistory(h):
     return h.time_date_datetime()
 
 
-@app.route('/boardHistory/<g_code>/', methods=['POST', 'GET', ])  # shows board History
+@app.route('/board/<g_code>/', methods=['POST', 'GET', ])  # shows board History
 def show_board_history(g_code):
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -481,7 +479,7 @@ def show_board_history(g_code):
                                add_form=add_form, edit_form=edit_form)
 
 
-@app.route('/ProjectPage/<project_name>/', methods=['POST', 'GET'])
+@app.route('/project/show/<project_name>/', methods=['POST', 'GET'])
 def show_project(project_name):
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -491,6 +489,11 @@ def show_project(project_name):
         return render_template('start.html')
     # boards_of_project = data_Structure.Board.query.filter_by(project_name=project_name)
     return render_template('ProjectPage.html', project=project, boards=project.project_boards)  # boards_of_project)
+
+@app.route('/project/show/all/', methods=['GET'])
+def show_project_all():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template('table.html', projects=data_Structure.Project.query.all())
 
 
 @app.route('/project/delete/image/<project_name>/', methods=['POST'])
@@ -526,7 +529,6 @@ def edit_project_image(project_name):
             if project.project_default_image_path is not None:
                 os.remove(os.path.join(UPLOAD_FOLDER, project.project_default_image_path))
             project.project_default_image_path = filename
-            print(filename)
             data_Structure.db.session.commit()
             flash('Picture was changed successfully!', 'success')
         else:
@@ -536,7 +538,7 @@ def edit_project_image(project_name):
     return redirect(url_for('show_project', project_name=project_name))
 
 
-@app.route('/boardHistory/delete/image/<img_id>/<board_id>/', methods=['POST'])
+@app.route('/board_history/delete/image/<img_id>/<board_id>/', methods=['POST'])
 @login_required
 def delete_history_image(img_id, board_id):
     view.logged_user = view.get_logged_user()
@@ -551,7 +553,7 @@ def delete_history_image(img_id, board_id):
     return redirect(url_for('show_board_history', g_code=board_id))
 
 
-@app.route('/boardHistory/add/file/<history_id>/<board_id>', methods=['POST'])
+@app.route('/board_history/add/file/<history_id>/<board_id>', methods=['POST'])
 @login_required
 def board_history_add_file(history_id, board_id):
     view.logged_user = view.get_logged_user()
@@ -695,7 +697,7 @@ def user_forgot_change_password():
         return redirect(url_for(user_forgot_password))
 
 
-@app.route('/boardHistory/change/version/<board_id>/', methods=['POST'])
+@app.route('/board_history/change/version/<board_id>/', methods=['POST'])
 @login_required
 def change_board_version(board_id):
     board = data_Structure.Board.query.get(board_id)
@@ -708,7 +710,7 @@ def change_board_version(board_id):
     return redirect(url_for('show_board_history', g_code=board_id))
 
 
-@app.route('/boardHistory/change/state/<board_id>/', methods=['POST'])
+@app.route('/board_history/change/state/<board_id>/', methods=['POST'])
 @login_required
 def change_board_state(board_id):
     board = data_Structure.Board.query.get(board_id)
@@ -721,7 +723,7 @@ def change_board_state(board_id):
     return redirect(url_for('show_board_history', g_code=board_id))
 
 
-@app.route('/boardHistory/change/patch/<board_id>/', methods=['POST'])
+@app.route('/board_history/change/patch/<board_id>/', methods=['POST'])
 @login_required
 def change_board_patch(board_id):
     board = data_Structure.Board.query.get(board_id)
@@ -812,14 +814,12 @@ def show_device(device_id):
 
 @app.route('/device/upload/document/', methods=['POST'])
 def upload_device_document():
-    print('UPLOAD')
     try:
         device = data_Structure.Device.query.get(int(request.args.get('device_id')))
     except:
         flash('An error occured //upload_device_document()//', 'danger')
         return redirect(url_for('start'))
     file = request.files['device_documents']
-    print(request.method)
     if file:
         file_id = id(file.filename)
         filename = secure_filename('devdoc_'+str(file_id) + file.filename)

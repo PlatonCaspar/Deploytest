@@ -20,6 +20,7 @@ naming_convention = {
 metadata = MetaData(naming_convention=naming_convention)
 SQLALCHEMY_DATABASE_URI = 'sqlite:///static/Database/data.sql'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = flask_sqlalchemy.SQLAlchemy(app, metadata=metadata)
 
 

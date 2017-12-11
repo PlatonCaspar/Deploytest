@@ -20,7 +20,7 @@ def migrate_database():
     try:
         migrate(directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), MIGRATIONS_FOLDER))
     except:
-        flash('Database could not be migrated!','danger')
+        print('Database could not be migrated!','danger')
     upgrade(directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), MIGRATIONS_FOLDER))
 
 # if __name__ == '__main__':
