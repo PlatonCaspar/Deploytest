@@ -151,6 +151,9 @@ class User(db.Model):
             return False
 
     def get_id(self):
+        if self.is_anonymus:
+            return None
+        
         return str(self.uid).encode("utf-8").decode("utf-8")
 
     # //TODO Here was everything returning the username as primary key

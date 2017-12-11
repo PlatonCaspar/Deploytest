@@ -4,13 +4,6 @@ from dominate import tags
 import ownNavRenderer
 from flask import request, url_for
 from flask_login import current_user
-import data_Structure
-
-logged_user = data_Structure.db.session.query(data_Structure.User).get('Guest')
-
-
-def get_logged_user():
-    return current_user
 
 
 def write_code_for_search_bar():
