@@ -56,7 +56,7 @@ def nav_bar():
                    ),
 
             right_items=(
-                Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
+                Link('gitlab', 'http://git.sdi.site/sdi/platos'),
                 Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
                 Subgroup('Hello Guest!',
                          View(
@@ -83,7 +83,7 @@ def nav_bar():
 
                    ),
             right_items=(
-                Link('Feedback', 'mailto:stefan.steinmueller@siemens.com?Subject=Feedback for SDI Board application'),
+                Link('gitlab', 'http://git.sdi.site/sdi/platos'),
                 Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
                 Subgroup('Hello ' + current_user.username+'!',
                          View(tags.div(tags.span(Class="glyphicon glyphicon-trash", style="margin-right: 5%"),
