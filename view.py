@@ -56,7 +56,7 @@ def nav_bar():
                    ),
 
             right_items=(
-                Link('gitlab', 'http://git.sdi.site/sdi/platos'),
+                Text(tags.a('gitlab', href='http://git.sdi.site/sdi/platos',  target="_blank")),
                 Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
                 Subgroup('Hello Guest!',
                          View(
