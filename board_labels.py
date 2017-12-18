@@ -38,8 +38,8 @@ def generate_label(code_number, code_url=None):
     text.append('J\r\n')
     text.append('S l1;0,0,15,18,15,18,2;Board_Label\r\n')
     text.append('O R\r\n')
-    text.append('T 0.5,14,0,5,2;'+code_number+'\r\n')
-    text.append('B 0.5,0,0,QRCODE+MODEL2,0.5;'+(code_url or code_number)+'\r\n')
+    text.append('T 1,13.5,0,5,2;'+code_number+'\r\n')
+    text.append('B 1,0,0,QRCODE+MODEL2,0.4;'+(code_url or code_number)+'\r\n')
     text.append('A 2\r\n')
     
     return text
