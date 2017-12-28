@@ -11,3 +11,4 @@ dominate
 datetime
 flask_migrate
 sqlalchemy
+markdown

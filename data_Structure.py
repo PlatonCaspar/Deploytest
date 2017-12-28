@@ -8,6 +8,7 @@ from sqlalchemy import MetaData
 import json
 import datetime
 import time
+import markdown
 
 
 
@@ -91,6 +92,8 @@ class Board(db.Model):
 
     def link(self):
         return url_for('show_board_history', g_code=self.code)
+
+    
 
     
 
@@ -213,6 +216,9 @@ class History(db.Model):
         else:
             end_ind = start_ind+max_length-1
             return self.history[start_ind:end_ind].replace("<br>"," ")+"..."
+
+    def md_history(self):
+        return markdown.markdown(self.history.replace('<br>', '\n'))
         
 
 
