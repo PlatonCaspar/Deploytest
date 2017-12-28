@@ -25,6 +25,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = flask_sqlalchemy.SQLAlchemy(app, metadata=metadata)
 
 
+# needed for many to many relationship bewteen patch and board
+patch_board = db.Table('patch_board',
+                       db.Column('board_code', db.String(500), db.ForeignKey('board.code', primary_key=True)),
+                       db.Column('patch_id', db.Integer, db.ForeignKey('patch.patch_id', primary_key=True))
+                       )
 
 
 class Board(db.Model):
@@ -41,8 +46,7 @@ class Board(db.Model):
     stat = db.Column(db.Text)
     patch = db.Column(db.Text)
     arguments = db.Column(db.Text)
-    
-
+    patches = db.relationship('Patch', secondary=patch_board)
 
     def __init__(self, code: str, project_name: str, ver: str, stat="init", patch="None"):  # , history):
 
@@ -50,18 +54,14 @@ class Board(db.Model):
         self.code = code
         self.id = id(code)
         self.version = ver
-        #self.link = str(url_for('show_board_history', g_code=self.code))
+        # self.link = str(url_for('show_board_history', g_code=self.code))
         self.dateAdded = time.strftime("%d.%m.%Y %H:%M:%S")
         self.addedBy = current_user
         self.stat = stat
         self.patch = patch
 
-
     def __repr__(self):
         return '<Board %r>' % self.code
-
-    def __hash__(self):
-        return hash(self.code)
 
     def reduce(self):
         arguments = ""
@@ -92,10 +92,6 @@ class Board(db.Model):
 
     def link(self):
         return url_for('show_board_history', g_code=self.code)
-
-    
-
-    
 
 
 class User(db.Model):
@@ -258,15 +254,49 @@ class Project(db.Model):
     project_history = db.relationship('History',
                                       backref=db.backref('project_history_backref', lazy='dynamic', uselist=True))
     project_history_id = db.Column(db.Integer, db.ForeignKey('history.id'))
+    project_patches = db.relationship("Patch", lazy='dynamic', uselist=True)
 
-
-    def __init__(self, project_name: str, project_description: str, project_default_image_path: str):
+    def __init__(self, project_name: str,
+                 project_description: str, project_default_image_path: str):
         self.project_name = project_name
         self.project_description = project_description
         self.project_default_image_path = project_default_image_path
 
     def reduce(self):
-        return str(self.project_name)+";"+str(self.project_description.replace(" ",";"))
+        return str(self.project_name)+";"+str(self.project_description.replace(" ", ";"))
+
+
+class Patch(db.Model):
+    patch_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text)
+    description = db.Column(db.Text)
+    patch_number = db.Column(db.Integer)
+    project = db.relationship('Project', uselist=False)
+    project_id = db.Column(db.Text, db.ForeignKey('project.project_name'))
+    boards = db.relationship("Board", secondary=patch_board, uselist=True)
+    files = db.relationship("PatchDocument", backref='patch', uselist=True)
+
+    def __init__(self, project):
+        self.project.append(Project)
+        self.patch_number = len(Patch.query().filter_by(project_id=self.project_id).all()) + 1
+
+    def md_description(self):
+        return markdown.markdown(self.description)
+
+    def addFile(self, doc):
+        self.files.append(doc)
+
+
+class PatchDocument(db.Model):
+    patch_document_id = db.Column(db.Integer, primary_key=True)
+    patch_document_path = db.Column(db.Text)
+    patch_document_description = db.Column(db.Text)
+    patch_document_patch_id = db.Column(db.Integer, db.ForeignKey('patch.patch_id'))
+
+    def __init__(self, path, descr=""):
+        self.patch_document_path = path
+        self.patch_document_description = descr
+
 
 class DeviceDocument(db.Model):
     device_document_id = db.Column(db.Integer, primary_key=True)
@@ -279,10 +309,10 @@ class DeviceDocument(db.Model):
         self.device_document_path = device_document_path
         self.device_document_device = device_document_device
         self.device_document_description = device_document_description
-    
+
     def name(self):
         only_name = self.device_document_path.replace('/','\\').split('\\')
-        if len(only_name)>1:
+        if len(only_name) > 1:
             return only_name[len(only_name)-1]+" "+str(self.device_document_description)
         else:
             return only_name[0]+" "+str(self.device_document_description)
