@@ -106,6 +106,80 @@
             <div class="panel-footer">
 
             </div>
+        {# Patches #}
+<div class="panel-body">
+<div class="panel panel-default">
+    <div class="panel-heading"><h3 class="panel-title">Patches</h3></div>
+    <div class="panel-body">
+    
+    <!--New Patch panel-->
+    <div class="panel-group" id="panelidNewPanel" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading" role="button" id="headingNewPanel" data-toggle="collapse" data-parent="#panelidNewPanel" 
+                        href="#collapseNewPanel" aria-controls="collapseNewPanel" aria-expanded="false" toggle="false">
+                <h4 class="panel-title">
+                        New Patch <span class="glyphicon glyphicon-edit"></span>
+                        <span class="glyphicon glyphicon-menu-down pull-right"></span>
+                </h4>
+            </div>
+            <div id="collapseNewPanel" class="panel-collapse collapse" role="tabpanel" 
+                 aria-labelledby="headingNewPanel">
+                <div class="panel-body">
+                    <form action="{{url_for('add_new_patch', project_id=project.project_name)}}" method="post">
+                        <div class="form-group">
+                            <textarea class="form-control" name="patch_description" rows="10"
+                            placeholder="Markdown is supported!"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-success btn-block" type="submit">Create</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end of new patch panel-->
+    
+    {% for patch in project.project_patches %}
+    <div class="panel-group" id="panelid{{patch.patch_id|string}}" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading" role="button" data-toggle="collapse" data-parent="#panelid{{patch.patch_id|string}}" 
+                        href="#collapse{{patch.patch_id|string}}" aria-controls="collapse{{patch.patch_id|string}}" 
+                        id="heading{{patch.patch_id|string}}">
+                <h4 class="panel-title">
+                        Patch {{patch.patch_number|string}}
+                        <span class="glyphicon glyphicon-menu-down pull-right"></span>
+                </h4>
+            </div>
+            <div id="collapse{{patch.patch_id|string}}" class="panel-collapse collapse" role="tabpanel" 
+                 aria-labelledby="heading{{patch.patch_id|string}}">
+                <div class="panel-body">
+                    {{patch.md_description()|safe}}
+                </div>
+                <div class="panel-body">
+                    <div class="row" id="patch_files">
+                        <div class="col-xs-4 col-md-2 col-ld-1">
+                            <button class="btn btn-default"><span class="glyphicon glyphicon-plus" style="font-size: 3rem"></span></button>
+                        </div>
+                        {% for file in patch.files %}
+                            <div class="col-xs-4 col-md-2 col-ld-1">
+
+                            </div>
+
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+</div>
+</div>
+
+
+{# End of patches #}
+
             <div class="panel-body">
                 <div class="panel-default panel-collapse">
                     <div class="panel-heading">

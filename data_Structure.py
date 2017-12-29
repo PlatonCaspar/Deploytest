@@ -277,9 +277,9 @@ class Patch(db.Model):
     files = db.relationship("PatchDocument", backref='patch', uselist=True)
 
     def __init__(self, project):
-        self.project.append(Project)
-        self.patch_number = len(Patch.query().filter_by(project_id=self.project_id).all()) + 1
-
+        self.project = project
+        self.patch_number = len(Patch.query.filter_by(project_id=project.project_name).all()) + 1
+        
     def md_description(self):
         return markdown.markdown(self.description)
 

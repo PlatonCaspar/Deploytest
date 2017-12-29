@@ -59,7 +59,6 @@ def register_user():
     nav.nav.register_element("frontend_top", view.nav_bar())
     user_to_register = registerUserForm.RegisterUser(request.form)
     next = request.values.get('next')
-    print(next)
     if request.method == 'POST':
         if user_to_register.password.data == user_to_register.password_again.data:
             new_user = data_Structure.User(username=user_to_register.username.data,
@@ -874,10 +873,25 @@ def print_label():
     board_labels.print_label(address="labelprinter01.sdi.site")
     return redirect(url_for('show_new_label'))
 
+@app.route('/project/patch/new/do/', methods=['POST'])
+def add_new_patch():
+    project = request.args.get('project_id')
+    project = data_Structure.Project.query.get(project)
+    print(project)
+    description = request.form.get('patch_description')
+    new_patch = data_Structure.Patch(project)
+    new_patch.description = description
+    data_Structure.db.session.add(new_patch)
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_project', 
+                            project_name=project.project_name))
+
+
 @app.route('/label/print/new/', methods=['GET'])
 def show_new_label():
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template('new_label.html')
+
 def delete_document_func(document):
     try:
         os.remove(os.path.join(DATA_FOLDER, document.device_document_path))
@@ -890,6 +904,8 @@ def delete_document_func(document):
 def test_queries():
     with app.app_context():
         migrate_database()
+
+
 
 
 
