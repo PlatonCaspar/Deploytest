@@ -143,7 +143,7 @@
     {% for patch in project.project_patches %}
     <div class="panel-group" id="panelid{{patch.patch_id|string}}" role="tablist" aria-multiselectable="true">
         <div class="panel panel-default">
-            <div class="panel-heading" role="button" data-toggle="collapse" data-parent="#panelid{{patch.patch_id|string}}" 
+            <div class="panel-heading"  role="button" data-toggle="collapse" data-parent="#panelid{{patch.patch_id|string}}" 
                         href="#collapse{{patch.patch_id|string}}" aria-controls="collapse{{patch.patch_id|string}}" 
                         id="heading{{patch.patch_id|string}}">
                 <h4 class="panel-title">
@@ -299,6 +299,13 @@ role="dialog" aria-labelledby="editPatchModalLabel{{patch.patch_id}}" aria-hidde
   </div>
 </div>
 {% endfor %}
+
+<script>
+
+    //console.log(window.location.hash.substr(0));
+
+</script>
+
     {# Print Area #}
 
     <div class="container container-fluid print_website print_website_parent">

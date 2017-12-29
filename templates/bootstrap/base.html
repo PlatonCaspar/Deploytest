@@ -5,7 +5,7 @@
   <head>
     {%- block head %}
     <title>{% block title %}{{title|default}}{% endblock title %}</title>
-
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>    
     {%- block metas %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {%- endblock metas %}
@@ -25,7 +25,8 @@
     {%- endblock content %}
 
     {% block scripts %}
-    <script src="{{bootstrap_find_resource('jquery.js', cdn='jquery')}}"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="{{bootstrap_find_resource('jquery.js', cdn='jquery')}}"></script>
     <script src="{{bootstrap_find_resource('js/bootstrap.js', cdn='bootstrap')}}"></script>
     {%- endblock scripts %}
     {%- endblock body %}

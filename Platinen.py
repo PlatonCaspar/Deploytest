@@ -929,6 +929,32 @@ def patch_add_file():
 
     return redirect(url_for('show_project', project_name=patch.project_id))
 
+@app.route('/board/patch/check/', methods=['POST'])
+def check_patch():
+    patch_id = request.args.get('patch_id')
+    board_code = request.args.get('board_code')
+    
+    try:
+        patch = data_Structure.Patch.query.get(int(patch_id))
+        board = data_Structure.Board.query.get(board_code)
+    except:
+        flash("An error occured in //check_patch()//", 'danger')
+        return redirect(url_for('start'))
+    if "check" in request.form:
+        try:
+            board.patches.append(patch)                    
+        except:
+            flash("could not append //check_patch()//")
+    else:
+        try:
+            board.patches.remove(patch)
+        except:
+            flash("Could not remove //check_patch()//")      
+        
+            
+    data_Structure.db.session.commit()
+    return redirect(url_for('show_board_history', g_code=board_code))
+
 @app.route('/label/print/new/', methods=['GET'])
 def show_new_label():
     nav.nav.register_element("frontend_top", view.nav_bar())

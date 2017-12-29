@@ -15,6 +15,11 @@
 
 {% block content -%}
 
+
+
+
+
+
     <div class="well well-sm">
         <div class="media">
             <div class="media-left media-middle">
@@ -45,7 +50,8 @@
 
         <div class="panel">
             <div class="page-header">
-
+                <div class="row">
+                    <div class="col-xs-12 col-md-6 col-ld-6">
                 <h2 class=" center-block">{{ g_board.code|string }}
                     <small class="">
                         Version: {{ g_board.version|string }}
@@ -88,6 +94,39 @@
                         {% endif %}
                     </small>
                 </h3>
+                </div>
+                    <!-- patches -->
+                    <div class="col-xs-12 col-md-6 col-ld-6">
+                        <div class="row">
+                        {% for patch in g_board.project.project_patches %}
+                            <div class="col-xs-3 col-md-3 col-ld-2">
+                            <form action="{{url_for('check_patch', patch_id=patch.patch_id, board_code=g_board.code)}}"
+                            method="POST" id=form_id{{patch.patch_id|string}}>
+                            <div class="form-group">
+                                <div class="checkbox">
+                                    <label><input type="checkbox" value=""
+                                    {% if patch in g_board.patches %}
+                                    checked="checked"
+                                    {% else %}
+                                    {% endif %}
+                                    onchange="document.getElementById('form_id{{patch.patch_id|string}}').submit()"
+                                    name="check">
+                                    Patch {{patch.patch_number|string}}</label>
+                                    <button class="btn btn-sm" type="button"
+                                    data-toggle="popover" data-placement="bottom" 
+                                    data-html="true" data-trigger="hover"
+                                    container='body'
+                                    data-content="{{patch.md_description()}}"
+                                    onclick="window.document.location='{{url_for('show_project', project_name=patch.project_id)}}#collapseid{{patch.patch_id|string}}'">
+                                    <span class="glyphicon glyphicon-info-sign"></span></button>
+                                </div>
+                            </div>
+                            </form>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
 
             </div>
             <h4 class="panel-heading ">Board Comments
@@ -502,14 +541,20 @@
                     }
             
             
-                    
+                  
 
             
             
         </script>
 
   {% endif %}
-
+<script>
+$(function () {
+                $('[data-toggle="popover"]').popover({
+                    container: 'body'
+                });
+            })  
+</script>
 
 
     {# Print Area #}
