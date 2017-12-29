@@ -297,6 +297,13 @@ class PatchDocument(db.Model):
         self.patch_document_path = path
         self.patch_document_description = descr
 
+    def name(self):
+        only_name = self.patch_document_path.replace('/','\\').split('\\')
+        if len(only_name) > 1:
+            return only_name[len(only_name)-1]+" "+str(self.patch_document_description)
+        else:
+            return only_name[0]+" "+str(self.patch_document_description)
+
 
 class DeviceDocument(db.Model):
     device_document_id = db.Column(db.Integer, primary_key=True)

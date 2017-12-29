@@ -153,17 +153,50 @@
             </div>
             <div id="collapse{{patch.patch_id|string}}" class="panel-collapse collapse" role="tabpanel" 
                  aria-labelledby="heading{{patch.patch_id|string}}">
+                
                 <div class="panel-body">
                     {{patch.md_description()|safe}}
                 </div>
+                <div class="panel-body"><!--Buttons for editing-->
+                    <div class="col-xs-12 col-md-12 col-ld-12">
+                        <button type="button" class="btn btn-primary btn-sm pull-right" data-toggle="modal" 
+                        data-target="#editPatchModal{{patch.patch_id|string}}">
+                            Edit <span class="glyphicon glyphicon-edit"></span>
+                        </button>
+                    </div>
+                </div>
                 <div class="panel-body">
                     <div class="row" id="patch_files">
-                        <div class="col-xs-4 col-md-2 col-ld-1">
-                            <button class="btn btn-default"><span class="glyphicon glyphicon-plus" style="font-size: 3rem"></span></button>
+                        <div class="col-xs-2 col-md-1 col-ld-1">
+                            <form action="{{url_for('patch_add_file', patch_id=patch.patch_id)}}"
+                                enctype="multipart/form-data" method="POST" id="{{patch.patch_id|string}}FileForm">
+                            <input class="hidden" name="file" id="{{patch.patch_id|string}}FileInput" type="file"
+                                   onchange="document.getElementById('{{patch.patch_id|string}}btn').click()">
+                            <button class="hidden" type="submit" id="{{patch.patch_id|string}}btn"></button>
+                            <button class="btn btn-default" style="height: 10rem" type="button"
+                                    onclick="document.getElementById('{{patch.patch_id|string}}FileInput').click()">
+                                <span class="glyphicon glyphicon-plus"
+                                style="font-size: 3rem"></span>
+                            </button>
+                            </form>
                         </div>
                         {% for file in patch.files %}
                             <div class="col-xs-4 col-md-2 col-ld-1">
-
+                                <div class="thumbnail">
+{% if '.jpg' in file.name()|lower or '.jpeg' in file.name()|lower or '.bmp' in file.name()|lower or '.png' in file.name()|lower %}
+    {% set file_pic = "/static/Pictures/"+file.name() %}
+{% else %}
+    {% set file_pic = "/static/staticPictures/file.png" %}    
+{% endif %}
+                                    <a href="/static/Pictures/{{file.name()}}" target="_blank">
+                                        <img src="{{file_pic}}"
+                                             alt="doc_id:{{file.patch_document_id|string}}"
+                                             style="width: 100%">
+                                        <div class="caption">
+                                            <p style="word-break: break-all">{{file.name()}}</p>
+                                        </div>
+                                    </a>
+                                </div>
                             </div>
 
                         {% endfor %}
@@ -235,6 +268,37 @@
         </div>
     </div>
 
+    {# edit Patch Area #}
+
+{% for patch in project.project_patches %}
+<div class="modal fade" id="editPatchModal{{patch.patch_id}}" tabindex="-1" 
+role="dialog" aria-labelledby="editPatchModalLabel{{patch.patch_id}}" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editPatchModalLabel{{patch.patch_id}}">Edit Patch Text</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="{{url_for('edit_patch')}}" method="POST">
+            <div class="form-group">
+                <input class="hidden" name="patch_id" value="{{patch.patch_id}}">
+                <textarea class="form-control" name="patch_description" rows="10"
+                placeholder="Markdown is supported!">{{patch.description}}</textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Save changes</button>
+                <button type="button" class="btn btn-secondary pull-right"
+                 data-dismiss="modal">Close</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
     {# Print Area #}
 
     <div class="container container-fluid print_website print_website_parent">

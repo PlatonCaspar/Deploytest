@@ -124,7 +124,7 @@
                                     {% set pics=row.data_objects %}
 
                                     {% for pic in pics %}
-                                        {% if '.jpg' in pic.file_path|lower or '.jpeg' in pic.file_path|lower or '.bmp' in pic.file_path|lower %}
+                                        {% if '.jpg' in pic.file_path|lower or '.jpeg' in pic.file_path|lower or '.bmp' in pic.file_path|lower or '.png' in pic.file_path|lower %}
                                             <div class=" col-xs-2 col-md-2">
 
                                                 <div class="thumbnail">

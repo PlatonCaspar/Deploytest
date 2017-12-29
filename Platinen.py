@@ -886,6 +886,48 @@ def add_new_patch():
     return redirect(url_for('show_project', 
                             project_name=project.project_name))
 
+@app.route('/project/patch/edit/do/', methods=['POST'])
+def edit_patch():
+    patch = request.form.get('patch_id')
+    patch_description = request.form.get('patch_description')
+    try:
+        patch = data_Structure.Patch.query.get(int(patch))
+    except:
+        flash('An error occured //edit_patch()//', 'danger')
+        return redirect(url_for('start'))
+
+    patch.description = patch_description
+    data_Structure.db.session.commit()
+    flash("Description was changed!", 'success')
+    
+    return redirect(url_for('show_project', project_name=patch.project_id))
+
+@app.route('/project/patch/file/upload/', methods=['POST'])
+def patch_add_file():
+    
+    try:
+        patch = request.args.get('patch_id')
+        patch = data_Structure.Patch.query.get(int(patch))
+    except:
+        flash('An error occured //patch_add_file()//', 'danger')
+        return redirect(url_for('start'))
+    file = request.files['file']
+    if file:
+        file_id = id(file.filename)
+        filename = secure_filename('patchdoc_'+str(file_id) + file.filename)
+        
+
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(file_path)
+        file_to_add = data_Structure.PatchDocument(os.path.join(RELATIVE_PICTURE_PATH, filename))
+        data_Structure.db.session.add(file_to_add)
+        patch.addFile(file_to_add)
+        data_Structure.db.session.commit()
+        flash('file was uploaded successful.', 'success')
+    else:
+        flash('some error occured //patch_add_file()// (no file was sent)', 'warning')
+
+    return redirect(url_for('show_project', project_name=patch.project_id))
 
 @app.route('/label/print/new/', methods=['GET'])
 def show_new_label():
