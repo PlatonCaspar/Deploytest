@@ -71,8 +71,7 @@ class Board(db.Model):
         arguments = ""
         for arg in self.args():
             arguments = arguments+arg+":"+self.args()[arg]+";"
-        return str(self.code)+";"+str(self.project_name)+";owner:"+
-        ";patch:"+str(self.patch_numbers())+";state:"+str(self.stat)+arguments
+        return str(self.code)+";"+str(self.project_name)+";owner:"+";patch:"+str(self.patch_numbers())+";state:"+str(self.stat)+arguments
 
     def args(self, to_add=None, delete=False):
         if delete:
@@ -101,9 +100,9 @@ class Board(db.Model):
     def patch_numbers(self):
         out = ""
         for patch in self.patches:
-            out.append("""{}""".format(patch.patch_number))
+            out += ("""{}""".format(patch.patch_number)+",")
 
-        return out
+        return out.strip(",")
 
 
 class User(db.Model):
