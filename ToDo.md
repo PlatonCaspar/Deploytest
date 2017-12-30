@@ -27,6 +27,8 @@ need to define components properties
 + notifications are also available at components
 + somehow orders need to be passed to ordering people
 
+
+<!--
 # Comments
 
 need to be redesigned
@@ -34,3 +36,4 @@ need to be redesigned
 avatar of the creator on the left
 and smaller borders and margins so less place is needed.
 Files should be hidden under a collapse because of space
+-> Done-->

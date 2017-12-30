@@ -71,23 +71,24 @@ class Board(db.Model):
         arguments = ""
         for arg in self.args():
             arguments = arguments+arg+":"+self.args()[arg]+";"
-        return str(self.code)+";"+str(self.project_name)+";owner:"+";patch:"+str(self.patch)+";state:"+str(self.stat)+arguments
+        return str(self.code)+";"+str(self.project_name)+";owner:"+
+        ";patch:"+str(self.patch_numbers())+";state:"+str(self.stat)+arguments
 
     def args(self, to_add=None, delete=False):
         if delete:
             arguments = json.loads(self.arguments)
             deleted = arguments.pop(to_add, None)
-            self.arguments=json.dumps(arguments)
+            self.arguments = json.dumps(arguments)
             return deleted
-            
+
         if to_add:
             if not self.arguments:
-                self.arguments = json.dumps({to_add[0]:to_add[1]})
+                self.arguments = json.dumps({to_add[0]: to_add[1]})
             else:
                 val = json.loads(self.arguments)
-                val[to_add[0]]=to_add[1]
-                
-                self.arguments=json.dumps(val)
+                val[to_add[0]] = to_add[1]
+
+                self.arguments = json.dumps(val)
 
         elif self.arguments:
             return json.loads(self.arguments)
@@ -96,6 +97,13 @@ class Board(db.Model):
 
     def link(self):
         return url_for('show_board_history', g_code=self.code)
+
+    def patch_numbers(self):
+        out = ""
+        for patch in self.patches:
+            out.append("""{}""".format(patch.patch_number))
+
+        return out
 
 
 class User(db.Model):
