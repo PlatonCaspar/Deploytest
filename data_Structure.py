@@ -1,6 +1,7 @@
 import flask_sqlalchemy
 from flask import Flask
-from os import urandom
+from werkzeug.utils import secure_filename
+from os import urandom, path
 from flask import url_for, flash
 from passlib.hash import pbkdf2_sha256
 from flask_login import current_user, AnonymousUserMixin
@@ -11,11 +12,14 @@ import time
 import markdown
 
 
+RELATIVE_PICTURE_PATH = 'static/Pictures'
+UPLOAD_FOLDER = path.join(path.dirname(path.abspath(__file__)),
+                             RELATIVE_PICTURE_PATH)
 
-# import flask
+
 app = Flask(__name__)
 naming_convention = {
-    "fk": "fk_%(table_name)s_(column_0_name)s" ,
+    "fk": "fk_%(table_name)s_(column_0_name)s",
     "uq": "uq_%(table_name)s_%(column_0_name)s" 
 }
 metadata = MetaData(naming_convention=naming_convention)
@@ -103,6 +107,7 @@ class User(db.Model):
     boards_Added = db.relationship('Board', lazy='dynamic')
     is_active = db.Column(db.Boolean)
     is_authenticated = db.Column(db.Boolean)
+    avatar_path = db.Column(db.Text)
 
     def __init__(self, username='Guest', password=None, email=None):
         self.username = username
@@ -157,21 +162,40 @@ class User(db.Model):
     def get(uid):
         return User.query.filter_by(uid=uid).first()
 
+    def avatar(self, file=None):
+        if file:
+            # save file Here
+            datatype = secure_filename(file.filename).split(".")[1]
+            print(datatype)
+            new_name = """avatar_{0}.{1}""".format(self.username, datatype)
+            file.save(path.join(UPLOAD_FOLDER, new_name))
+            self.avatar_path = path.join(RELATIVE_PICTURE_PATH, new_name)
+        else:
+
+            if self.avatar_path:
+
+                return self.avatar_path
+
+            else:
+
+                return "/static/staticPictures/general_user.png"
+
 
 class History(db.Model):
     board_code = db.Column(db.String(500), db.ForeignKey('board.code'))
     id = db.Column(db.Integer, primary_key=True)
     history = db.Column(db.Text)
     edited_by_id = db.Column(db.Text, db.ForeignKey('user.uid'))
-    added_by = db.relationship('User', backref=db.backref('added_by_backref', lazy='dynamic'))
+    added_by = db.relationship('User', backref=db.backref('added_by_backref', 
+                                                          lazy='dynamic'))
 
-    edited_by = db.relationship('User', backref=db.backref('edited_by_backref', lazy='dynamic'))
+    edited_by = db.relationship('User', backref=db.backref('edited_by_backref',
+                                                           lazy='dynamic'))
     time_and_date = db.Column(db.String(10))
     last_edited = db.Column(db.String(10))
     data_objects = db.relationship('Files',
-                                   backref=db.backref('belongs_to_history_backref', lazy='dynamic', uselist=True))
-
-
+                                   backref=db.backref('belongs_to_history_backref', 
+                                                      lazy='dynamic', uselist=True))
 
     def __init__(self, history: str, board_code: str):
         self.board_code = board_code
@@ -182,12 +206,12 @@ class History(db.Model):
         elif current_user is None:
             self.added_by = db.session.query(User).get('Guest')
 
-        self.time_and_date = time.strftime("%d.%m.%Y %H:%M:%S")
+        self.time_and_date = datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
-        
 
     def time_date_datetime(self):
-        return time.strptime(self.time_and_date, "%d.%m.%Y %H:%M:%S")
+        return datetime.datetime.strptime(self.time_and_date, 
+                                          "%d.%m.%Y %H:%M:%S")
 
     def link(self):
         return url_for('show_board_history', g_code=self.board_code)+'#comment_id'+str(self.id)

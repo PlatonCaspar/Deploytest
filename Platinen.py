@@ -36,6 +36,9 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 # def set_logged_user(state):
 #    logged_user = state
 
+def test_queries():
+    with app.app_context():
+        migrate_database()
 
 # data_Structure.db.create_all()
 def is_logged_in():
@@ -506,7 +509,7 @@ def edit_project_image(project_name):
     if file:
         file_id = id(file.filename)
         filename = secure_filename(str(file_id) + file.filename)
-        if ".jpg" in filename.lower() or ".jpeg" in filename.lower() or ".bmp" in filename.lower():
+        if ".jpg" in filename.lower() or ".jpeg" in filename.lower() or ".bmp" in filename.lower() or ".png" in filename.lower():
             file.save(os.path.join(UPLOAD_FOLDER, filename))
 
             if project.project_default_image_path is not None:
@@ -516,7 +519,7 @@ def edit_project_image(project_name):
             flash('Picture was changed successfully!', 'success')
         else:
             flash(
-                'Your uploaded File was propably not a Picture. Pleas use only JPEG(jpeg) or JPG(jpg) or BMP(bmp) Pictures!',
+                'Your uploaded File was propably not a Picture. Pleas use only PNG(png) JPEG(jpeg) or JPG(jpg) or BMP(bmp) Pictures!',
                 'danger')
     return redirect(url_for('show_project', project_name=project_name))
 
@@ -969,9 +972,7 @@ def delete_document_func(document):
     data_Structure.db.session.commit()
     return True
 
-def test_queries():
-    with app.app_context():
-        migrate_database()
+
 
 
 
@@ -979,7 +980,7 @@ def test_queries():
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'
-
+    test_queries()
     Bootstrap(app)
     SQLAlchemy(app)
     # nav.nav_logged_in.init_app(app)
@@ -990,7 +991,7 @@ if __name__ == '__main__':
     nav.login_manager.init_app(app)
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
-    test_queries()
+    
     app.run(debug=False, port=80, host='0.0.0.0')
     
 

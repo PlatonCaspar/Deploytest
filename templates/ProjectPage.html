@@ -6,36 +6,40 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container container-fluid">
-        <div class="panel-default panel-collapse">
+<div class="container container-fluid">
+        <div class="panel panel-default">
             <div class="panel-heading">
-                <h3>{{project.project_name}}</h3>
-                <form class=""
-                      action="{{ url_for('delete_project', project_name=project.project_name) }}"
-                      method="post">
-                        {% if current_user.is_authenticated %}
-                            <button class="btn btn-group btn-warning btn-sm pull-right" type="button"
-                                    data-toggle="collapse" data-target="#delete_project"
-                                    aria-expanded="false"
-                                    aria-controls="delete_project"><span
-                                    class="glyphicon glyphicon-remove"></span></button>
-                            {% endif %}
-                        </small>
-                    </h1>
+                <table class="row">
+                    <tr>
+                    <td class="col-xs-9 col-md-9 col-lg-9 col-ld-9">
+                        <h3>{{project.project_name}}</h3>
+                    </td>
+                    <!--td class="col-xs-3 col-md-3 col-lg-3 col-ld-3">
+                        <form class=""
+                            action="{{ url_for('delete_project', project_name=project.project_name) }}"
+                            method="post">
+                                {% if current_user.is_authenticated %}
+                                    <button class="btn btn-group btn-warning btn-sm" type="button"
+                                            data-toggle="collapse" data-target="#delete_project"
+                                            aria-expanded="false"
+                                            aria-controls="delete_project"><span
+                                            class="glyphicon glyphicon-remove"></span></button>
+                                {% endif %}
+                            <div class="collapse" id="delete_project">
+                                <div class="">
+                                    <br>
+                                    <button class="btn btn-danger btn-sm btn-block"
+                                            type="submit"><span
+                                            class="glyphicon glyphicon-ok pull-left"></span>
+                                        <strong>Delete?</strong>
+                                    </button>
+                                </div>
+                            </div>
 
-
-                    <div class="collapse" id="delete_project">
-                        <div class="">
-                            <br><br>
-                            <button class="btn btn-danger btn-sm btn-block"
-                                    type="submit"><span
-                                    class="glyphicon glyphicon-ok pull-left"></span>
-                                <strong>Delete?</strong>
-                            </button>
-                        </div>
-                    </div>
-
-                </form>
+                        </form>
+                    </td-->
+                    </tr>
+                </table>
             </div>
             <div class="panel-body" style="border-bottom: solid #e7e7e7 1px">
                 <div class="row">
@@ -99,15 +103,15 @@
                 </div>
             </div>
             <div class="panel-body">
-                <h4>Description:</h4>
-                <hr>
-                {{ project.project_description|safe }}
+                <dl class="dl-horizontal" style="font-size: 2rem">
+                    <dt class="">Description<dt>
+                    <dd>{{ project.project_description|safe }}</dd>
+                </dl>
+                
             </div>
-            <div class="panel-footer">
-
-            </div>
+        </div>
         {# Patches #}
-<div class="panel-body">
+<!--div class="panel-body"-->
 <div class="panel panel-default">
     <div class="panel-heading"><h3 class="panel-title">Patches</h3></div>
     <div class="panel-body">
@@ -175,7 +179,7 @@
                             <button class="hidden" type="submit" id="{{patch.patch_id|string}}btn"></button>
                             <button class="btn btn-default" style="height: 10rem" type="button"
                                     onclick="document.getElementById('{{patch.patch_id|string}}FileInput').click()">
-                                <span class="glyphicon glyphicon-plus"
+                                <span class="glyphicon glyphicon-file"
                                 style="font-size: 3rem"></span>
                             </button>
                             </form>
@@ -208,17 +212,17 @@
     {% endfor %}
     </div>
 </div>
-</div>
+
 
 
 {# End of patches #}
 
-            <div class="panel-body">
-                <div class="panel-default panel-collapse">
+            <div class="">
+                <div class="panel panel-default">
                     <div class="panel-heading">
                         <h3>Boards:</h3>
                     </div>
-
+                <div class="panel-body">
                     <table class="table table-striped table-hover table-responsive table-condensed ">
                         <thead class="">
                         <tr class="">
@@ -262,6 +266,7 @@
                         {% endfor %}
                         </tbody>
                     </table>
+                </div>
                 </div>
             </div>
 
