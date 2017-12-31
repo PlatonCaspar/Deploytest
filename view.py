@@ -38,22 +38,21 @@ def write_code_for_search_bar():
 
 
 def notification_center():
-    inner = ""
+    inner = tags.div()
     if not current_user.get_messages():
         return """<div class="media"><a class="media">No new Messages</a></div>"""
-    for msg in current_user.get_messages():
-            inner.append(tags.div(
+
+    with inner.add(tags.a(Class="media")):
+        for msg in current_user.get_messages():
                 tags.a(
                     msg.message,
                     Class="media-body",
-                    href=msg.link()
+                    href=msg.link
                 ),
-                Class='media'
-            ))
 
     not_center = tags.div(
-                    inner,
-                    Class="well", style="background-color: white"  # Well
+                        inner,
+                        Class="well", style="background-color: white"  # Well
                         )
     return not_center
 
@@ -108,17 +107,20 @@ def nav_bar():
             right_items=(
                 Text(tags.a('gitlab', href='http://git.sdi.site/sdi/platos',
                             target="_blank")),
-                RawTag(tags.a(
-                    """
-                        <a class="glyphicon glyphicon-envelope"
-                            data-toggle="popover
-                            title="Messages" data-html="true"
-                            data-trigger="click"
-                            data-content="{0}">
-                            <span class="badge">{1}</span>
-                        </a>
-                    """.format(notification_center(), current_user.get_messages_count()))
-                    ),
+                RawTag(
+                            tags.li(
+                            tags.a(
+                            tags.span(current_user.get_messages_count() , Class="badge"),
+                            Class="glyphicon glyphicon-envelope",
+                            data_toggle="popover",
+                            title="Messages", data_html="true",
+                            data_trigger="click",
+                            data_content="{0}".format(notification_center()),
+                            data_placement="bottom",
+                            role="button"
+                            )
+                            ),
+                            ),
                 Text(tags.span(Class="glyphicon glyphicon-user",
                                style="margin-right: -20px; color:#009999")),
                 Subgroup('Hello ' + current_user.username+'!',

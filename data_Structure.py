@@ -197,13 +197,17 @@ class User(db.Model):
         return names
 
     def message(self, message, link):
-        msg = Message(self, message, link, current_user)
-        db.session.add()
+        try:
+            msg = Message(self, message, link, current_user)
+        except:
+            print("could not create the message")
+        db.session.add(msg)
         self.messages.append(msg)
-        db.commit()
+        db.session.commit()
 
     def get_messages(self, all=False):
-        return list(filter(lambda msg: msg.read, self.messages)) or None
+        print(list(filter(lambda msg: msg.read is False, self.messages)))
+        return list(filter(lambda msg: msg.read is False, self.messages))
     
     def get_messages_count(self):
             msg = self.get_messages()
@@ -279,13 +283,10 @@ class History(db.Model):
         flash(str(mentions), 'danger')
         users = []
         for name in mentions:
-            try:
-                user = User.query.filter_by(username=name).first()
-                user.message("""you were mentioned by {}""".format(current_user.username),
-                             self.link())
-            except:
-                flash('some error occured //check_mentions()//', 'danger')
-
+            user = User.query.filter_by(username=name).first()
+            user.message("""you were mentioned by {}""".format(current_user.username),
+                         self.link())
+                    
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
