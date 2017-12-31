@@ -3,32 +3,71 @@
 
 {% block title %}
     {% set person = current_user %}
-    {{ person.username+" Profile" }}
+    {{ person.username+"'s Profile" }}
 
 {% endblock %}
 
 {% block content %}
+<!-- main part -->
     {% set person = current_user %}
+<div class="container">
     <div class="panel panel-default">
         <p class="panel-heading text-justify text-info"><strong>{{ person.username }}</strong><br>
             <small>{{ 'UID: '+person.uid|string }}</small>
-            <span><button class="btn btn-default  pull-right" type="button" data-toggle="modal"
-                          data-target="#edit_Username"><span
-                    class="glyphicon glyphicon-pencil"></span>
+            <span><button class="btn btn-default" type="button" data-toggle="modal"
+                          data-target="#edit_Username">
+                          <i class="glyphicon glyphicon-pencil"></i>
             </button></span><br><br>
         </p>
 
         <div class="panel-body">
-            <address>
+            <div class="row">
+                <div class="col-xs-12 col-md-6 col-lg-6 col-ld-6">
+                    <img src="{{current_user.avatar()}}" class="thumbnail img-responsive" alt="Avatar">
+                    <form action="{{url_for('upload_avatar')}}" enctype="multipart/form-data" method="post">
+                        <input class="form-control-file" type="file" name="file" onchange="$('#submit_button').click()">
+                        <button class="hidden" id="submit_button" type="submit">
+                    </form>
+                    
+                </div>
+            <div class="col-xs-12 col-md-6 col-lg-6 col-ld-6">
+                
+                        <div class="form-inline">
+                            <div class="form-group">
+                                <label>E-Mail
+                                <input class="form-control" disabled value="{{ person.email }}"></label>
+                                <button class="btn btn-default" type="button" data-toggle="modal"
+                                        data-target="#edit_email">
+                                        <span class="glyphicon glyphicon-pencil"></span>
+                                </button>
+                            </div>
+                        </div>
+                    
+                    <br>
+
+                        <div class="form-inline">
+                            <div class="form-group">
+                            <label>Password
+                            <input class="form-control" type="password" value="1234567890" disabled>
+                                <button class="btn btn-default" type="button" data-toggle="modal"
+                                        data-target="#edit_password"><span
+                                        class="glyphicon glyphicon-pencil"></span>
+                                </button></label>
+                            </div>
+                        </div>
+                
+            </div>
+        </div>
+            <!--address>
                 <p>
-                    <span class="text-justify text-info">Email: </span>
+                    <span class="text-justify text-info"><strong>Email:</strong> </span>
                     <span class="text-justify">{{ person.email }}</span>
                     <button class="btn btn-default pull-right" type="button" data-toggle="modal"
                             data-target="#edit_email"><span
                             class="glyphicon glyphicon-pencil"></span>
                     </button>
-                    </span><br><br>
-                    <span class="text-justify text-info">Password:</span>
+                    </span>
+                    <span class="text-justify text-info"><strong>Password:</strong></span>
                     <span class="text-justify"> ********** (Of course no plain text - it is not possible)</span>
                     <button class="btn btn-default pull-right" type="button" data-toggle="modal"
                             data-target="#edit_password"><span
@@ -36,14 +75,17 @@
                     </button>
                     </span>
                 </p>
-            </address>
+            </address-->
         </div>
         <br>
-        <br>
+        
         <button class="btn btn-danger" type="button" data-toggle="modal" data-target="#remove_user">
             <span class="glyphicon glyphicon-erase"></span> Delete My Profile
         </button>
     </div>
+</div>
+<!-- end main part-->
+
     {# Modal for changing the Username #}
     <div id="edit_Username" class="modal fade" role="dialog">
         <div class="modal-dialog">

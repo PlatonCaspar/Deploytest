@@ -10,6 +10,7 @@ import json
 import datetime
 import time
 import markdown
+import re
 
 
 RELATIVE_PICTURE_PATH = 'static/Pictures'
@@ -71,7 +72,7 @@ class Board(db.Model):
         arguments = ""
         for arg in self.args():
             arguments = arguments+arg+":"+self.args()[arg]+";"
-        return str(self.code)+";"+str(self.project_name)+";owner:"+";patch:"+str(self.patch_numbers())+";state:"+str(self.stat)+arguments
+        return str(self.code)+";"+str(self.project_name)+";version:"+str(self.version)+";patch:"+str(self.patch_numbers())+";state:"+str(self.stat)+arguments
 
     def args(self, to_add=None, delete=False):
         if delete:
@@ -115,6 +116,7 @@ class User(db.Model):
     is_active = db.Column(db.Boolean)
     is_authenticated = db.Column(db.Boolean)
     avatar_path = db.Column(db.Text)
+    messages = db.relationship("Message", uselist=True)
 
     def __init__(self, username='Guest', password=None, email=None):
         self.username = username
@@ -177,15 +179,39 @@ class User(db.Model):
             new_name = """avatar_{0}.{1}""".format(self.username, datatype)
             file.save(path.join(UPLOAD_FOLDER, new_name))
             self.avatar_path = path.join(RELATIVE_PICTURE_PATH, new_name)
+            db.session.commit()
         else:
 
             if self.avatar_path:
 
-                return self.avatar_path
+                return "/"+self.avatar_path
 
             else:
 
                 return "/static/staticPictures/general_user.png"
+
+    def registered_users(self):
+        names = list()
+        for uname in db.session.query(User.username).all():
+            names.append(uname[0])
+        return names
+
+    def message(self, message, link):
+        msg = Message(self, message, link, current_user)
+        db.session.add()
+        self.messages.append(msg)
+        db.commit()
+
+    def get_messages(self, all=False):
+        return list(filter(lambda msg: msg.read, self.messages)) or None
+    
+    def get_messages_count(self):
+            msg = self.get_messages()
+            if msg:
+                return len(self.get_messages())
+            else:
+                return 0
+                
 
 
 class History(db.Model):
@@ -212,9 +238,10 @@ class History(db.Model):
                 current_user.uid)
         elif current_user is None:
             self.added_by = db.session.query(User).get('Guest')
-
+        
         self.time_and_date = datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
+        self.check_mentions()
 
     def time_date_datetime(self):
         return datetime.datetime.strptime(self.time_and_date, 
@@ -246,9 +273,40 @@ class History(db.Model):
 
     def md_history(self):
         return markdown.markdown(self.history.replace('<br>', '\n'))
-        
+
+    def check_mentions(self):
+        mentions = re.findall("(?<=@)\w+", self.history)
+        flash(str(mentions), 'danger')
+        users = []
+        for name in mentions:
+            try:
+                user = User.query.filter_by(username=name).first()
+                user.message("""you were mentioned by {}""".format(current_user.username),
+                             self.link())
+            except:
+                flash('some error occured //check_mentions()//', 'danger')
 
 
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user = db.relationship('User', uselist=False)
+    user_name = db.Column(db.String(), db.ForeignKey('user.username'))
+    read = db.Column(db.Boolean)
+    message = db.Column(db.Text)
+    link = db.Column(db.Text)
+    created_by = db.Column(db.Text)
+
+    def __init__(self, user, message, link, created_by):
+        self.user = user
+        self.message = message
+        self.read = False
+        self.link = link
+
+    def set_read(self, val=True):
+        self.read = val
+
+    def c_user(self):
+        return User.query.filter_by(username=self.created_by) or self.created_by
 
 class Files(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -15,27 +15,47 @@ def get_logged_user():
 
 def write_code_for_search_bar():
     bar = tags.div(tags.form(tags.div(
-        tags.select(tags.option('All', value='All', Class="container-fluid panel-body"),
-
+                tags.select(
+                    tags.option('All', value='All', Class="container-fluid panel-body"),
                     tags.option("Boards", value='Boards', Class="container-fluid panel-body"),
                     tags.option("Projects", value='Projects', Class="container-fluid panel-body"),
                     tags.option("Devices", value='Devices', Class="container-fluid panel-body"),
                     Class="form-control selectpicker",
                     style="margin: auto data-width: auto", name="Selector"),
 
-        tags.input(Type="text", Class="form-control ", placeholder="Search", name="search_field"),
+                tags.input(Type="text", Class="form-control ", placeholder="Search", name="search_field"),
 
-        # tags.div(
-        tags.button(tags.i(Class="glyphicon glyphicon-search", style="color:#009999"),
+       
+                tags.button(tags.i(Class="glyphicon glyphicon-search", style="color:#009999"),
                     Class="btn btn-default",
                     Type="submit"),
-        # Class="input-group-btn"),
-        Class="form-inline", style="width: 150%;"),
-        Class="form-inline", style="padding-top: 3%;", action='/',
-        method="post", name="nav_search_form"), Class="container-fluid")  # tags.html(),
+       
+                Class="form-inline", style="width: 150%;"),
+                Class="form-inline", style="padding-top: 3%;", action='/',
+                method="post", name="nav_search_form"), Class="container-fluid")  # tags.html(),
 
     return bar
 
+
+def notification_center():
+    inner = ""
+    if not current_user.get_messages():
+        return """<div class="media"><a class="media">No new Messages</a></div>"""
+    for msg in current_user.get_messages():
+            inner.append(tags.div(
+                tags.a(
+                    msg.message,
+                    Class="media-body",
+                    href=msg.link()
+                ),
+                Class='media'
+            ))
+
+    not_center = tags.div(
+                    inner,
+                    Class="well", style="background-color: white"  # Well
+                        )
+    return not_center
 
 search_bar = RawTag(tags.li(write_code_for_search_bar()))
 
@@ -68,28 +88,48 @@ def nav_bar():
         )
     else:
         return ownNavRenderer.ExtendedNavbar(
-            title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left"), 'start'),
-            items=(View('Start', 'start'),
+            title=View(tags.a(tags.img(src='/static/staticPictures/logo.png',
+                                       width=200), 
+                              Class="navbar-left"), 'start'),
+            items=(
+                    View('Start', 'start'),
                     Subgroup('Label',
-                            View('Print Label', 'show_new_label')),
+                             View('Print Label', 'show_new_label')),
                     Subgroup('Board',
-                            View('New Board', 'add__board')),
+                             View('New Board', 'add__board')),
                     Subgroup('Project',
-                            View('All Projects', 'show_project_all'),
-                            View('New Project', 'add_project')),
-                    Subgroup('Device', 
-                            View('New Device', 'add_device')),
+                             View('All Projects', 'show_project_all'),
+                             View('New Project', 'add_project')),
+                    Subgroup('Device',
+                             View('New Device', 'add_device')),
                     search_bar
 
                    ),
             right_items=(
-                Text(tags.a('gitlab', href='http://git.sdi.site/sdi/platos',  target="_blank")),
-                Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
+                Text(tags.a('gitlab', href='http://git.sdi.site/sdi/platos',
+                            target="_blank")),
+                RawTag(tags.a(
+                    """
+                        <a class="glyphicon glyphicon-envelope"
+                            data-toggle="popover
+                            title="Messages" data-html="true"
+                            data-trigger="click"
+                            data-content="{0}">
+                            <span class="badge">{1}</span>
+                        </a>
+                    """.format(notification_center(), current_user.get_messages_count()))
+                    ),
+                Text(tags.span(Class="glyphicon glyphicon-user",
+                               style="margin-right: -20px; color:#009999")),
                 Subgroup('Hello ' + current_user.username+'!',
-                         View(tags.div(tags.span(Class="glyphicon glyphicon-trash", style="margin-right: 5%"),
-                                       "Delete User"), 'delete_user'),
+                         View(tags.div(
+                              tags.span(
+                                        Class="glyphicon glyphicon-trash", 
+                                        style="margin-right: 5%"),
+                              "Delete User"), 'delete_user'),
                          Separator,
-                         View(tags.div(tags.span(Class="glyphicon glyphicon-user", style="margin-right: 5%; color:#009999"),
+                         View(tags.div(tags.span(Class="glyphicon glyphicon-user",
+                                                 style="margin-right: 5%; color:#009999"),
                                        current_user.username+"`s Profile"), 'my_profile'),
                          View(tags.div(tags.span(Class="glyphicon glyphicon-log-out text-danger", style="margin-right: 5%"),
                                        "Logout"), 'logout'))

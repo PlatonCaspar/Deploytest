@@ -3,9 +3,12 @@ from flask_nav.elements import NavigationItem, RawTag
 from flask_bootstrap.nav import BootstrapRenderer, sha1
 
 
-class BetterRawTag(RawTag):
+class BetterRawTag(RawTag, NavigationItem):
 
+    @property
     def visit_BetterRawTag(self): return False
+
+    def visit(self): return False
 
     @property
     def active(self):
@@ -15,7 +18,7 @@ class BetterRawTag(RawTag):
         print('I want to get the attr')
         return self.visit_BetterRawTag()
 
-#setattr(BetterRawTag, 'visit_' + BetterRawTag.__name__, 'return False')
+# setattr(BetterRawTag, 'visit_BetterRawTag', 'return False')
 
 
 class ExtendedNavbar(NavigationItem):
@@ -76,6 +79,9 @@ class own_nav_renderer(BootstrapRenderer):
         if node.right_items:
             right_bar_list = bar.add(tags.ul(_class='nav navbar-nav navbar-right'))
             for item in node.right_items:
-                right_bar_list.add(self.visit(item))
+                if item.__class__.__name__ is not 'RawTag':
+                    right_bar_list.add(self.visit(item))
+                elif item.__class__.__name__ is 'RawTag':
+                    right_bar_list.add(item.content)
 
         return root

@@ -1,8 +1,50 @@
+@import url("https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css");
+
 .jumbotron {
     margin-top: 1em;
-/ / add a little space
+/*add a little space*/
 
 }
+
+.autocomplete-suggestions{
+    padding: 10px 10px;
+    margin: auto;
+    border: 1px solid darkgrey;
+    border-top: none;
+    border-radius: 5px;
+    background-color: white;
+    overflow: hidden;
+    
+}
+
+.autocomplete-suggestion{
+    tabindex: 0;
+    margin: 5px;
+    padding: 5px 5px;
+    border-radius: 5px;  
+
+}
+
+.autocomplete-selected:focus
+.autocomplete-selected{
+    color: rgba(0, 153, 153, 1);
+    background-color: rgba(169, 169, 169, 0.2)
+}
+
+.autocomplete-suggestions strong{
+        color: rgba(0, 153, 153, 1);
+}
+
+.autocomplete-group{
+    background-color: black
+}
+
+.autocomplete-group strong{
+    background-color: darkgray;
+    opacity: 0.5;
+    
+}
+
 
 /*
 .navbar-brand {

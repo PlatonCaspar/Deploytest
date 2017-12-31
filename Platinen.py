@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from passlib.hash import pbkdf2_sha256
 from werkzeug.utils import secure_filename
 from upgrade import migrate_database
+from json import dumps
 
 import addPlatineForm
 import data_Structure
@@ -50,6 +51,24 @@ def is_logged_in():
 
 def delete_project():
     pass
+
+# This function is called by the autocomplete jquery and returns the user available
+@app.route("/mentions/registered/users/score.json/", methods=['GET'])
+@login_required
+def get_registered_users():
+    """
+    "query": "Unit",
+    "suggestions": [
+        { "value": "United Arab Emirates", "data": "AE" },
+        { "value": "United Kingdom",       "data": "UK" },
+        { "value": "United States",        "data": "US" }
+    ]
+    """
+    response_values = []
+    for name in current_user.registered_users():
+        response_values.append({"value": '@'+name, "data": name})
+
+    return dumps({"query": "Users", "suggestions": response_values})    
 
 
 @nav.login_manager.user_loader
@@ -184,6 +203,9 @@ def start():
     results_component = None
     results_comments = None
     results_devices = None
+    users = data_Structure.db.session.query(data_Structure.User.username).all()
+    for user in users:
+        print(user[0])
     if request.method == 'POST':
         if request.form.get('submit_main') is None:
             search_word = request.form.get('search_field')
@@ -522,6 +544,22 @@ def edit_project_image(project_name):
                 'Your uploaded File was propably not a Picture. Pleas use only PNG(png) JPEG(jpeg) or JPG(jpg) or BMP(bmp) Pictures!',
                 'danger')
     return redirect(url_for('show_project', project_name=project_name))
+
+
+@app.route('/user/profile/avatar/upload/', methods=['POST'])
+@login_required
+def upload_avatar():
+    file = request.files.get('file')
+    print(str(request.files))
+    filename = secure_filename(file.filename)
+    if ".jpg" in filename.lower() or ".jpeg" in filename.lower() or ".bmp" in filename.lower() or ".png" in filename.lower():
+        current_user.avatar(file)
+    else:
+        flash(
+              'Your uploaded File was propably not a Picture. Pleas use only PNG(png) JPEG(jpeg) or JPG(jpg) or BMP(bmp) Pictures!',
+              'danger'
+              ) 
+    return redirect(url_for('my_profile'))
 
 
 @app.route('/board/delete/image/<img_id>/<board_id>/', methods=['POST'])
