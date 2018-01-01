@@ -302,8 +302,11 @@ class History(db.Model):
         mentions = set(mentions)
         for name in mentions:
             user = User.query.filter_by(username=name).first()
-            user.message("""{} mentioned you""".format(current_user.username),
-                         self.link())
+            if user:
+                user.message("""{} mentioned you""".format(current_user.username),
+                             self.link())
+            else:
+                flash("You mentioned a User that does not exist! ({})".format(name))
 
 
 class Message(db.Model):
