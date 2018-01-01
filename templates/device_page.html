@@ -3,9 +3,10 @@
     {{device.device_name}}
 {% endblock %}
 {% block content %}
+<div class="container">
 <div class="row">
-    <div class="col-xs-3 col-md-3 col-ld-3"></div>
-    <div class="col-xs-6 col-md-6 col-ld-6">
+    <div class="col-xs-1 col-md-1 col-ld-1"></div>
+    <div class="col-xs-10 col-md-10 col-ld-10">
         <div class="">
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -43,16 +44,16 @@
             </div>
             <div class="panel-body">
                     <!-- args -->
-                <p class="container container-fluid">
+                <p class="">
                     <div class="col-xs-12 col-md-12 col-ld-12">
                         {% if device.args() is not none %}
                         {% for arg in device.args() %}
-                        <p class="border_args inline-block col-xs-6 col-md-6 col-ld-6">
+                        <p class="border_args inline-block col-xs-6 col-md-6 col-ld-6" style="word-break: break-all">
                         {{arg|string+": "+device.args()[arg]|string}}
                         
                         {% if current_user.username != 'Guest' %}
                         <button class="btn btn-default btn-sm pull-right" type="button" data-toggle="modal"
-                                data-target="#args_modal" onclick="set_args_name_modal('{{arg}}')"><span class="glyphicon glyphicon-pencil"></span>
+                                data-target="#args_modal" onclick="$('#change_name').val('{{arg}}')"><span class="glyphicon glyphicon-pencil"></span>
                         </button>
                         </p>
                         {% endif %}
@@ -60,17 +61,16 @@
                         {% if current_user.username != 'Guest' %}
                         <p class="inline-block col-xs-6 col-md-6 col-ld-6">
                         <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
-                                data-target="#args_modal" onclick="set_args_name_modal('')"><span class="glyphicon glyphicon-plus"></span>
+                                data-target="#args_modal" onclick="$('#change_name').val('')"><span class="glyphicon glyphicon-plus"></span>
                         </button>
                         </p>
                         {% endif %}
                         {% endif %}
-                    
+                    <hr>
                     </div>
                         
                 </p>
-                <div class="col-xs-12 col-md-12 col-ld-12">
-                <div class="row container ">
+                <div class="row"><div class="col-xs-3 col-md-3 col-ld-3"></div>
                         {% if device.device_documents %}
                     <div class="col-xs-6 col-md-6 col-ld-6">
                         <div id="myCarousel" class="carousel slide" data-ride="carousel">
@@ -124,9 +124,10 @@
                         </div>
                     </div>
                     {% endif %}
+                    <hr>
                     <div class="row">
-                    <div class="col-xs-2 col-md-2 col-ld-2"></div>  
-                    <div class="col-xs-8 col-md-8 col-ld-8">
+                    <div class="col-xs-3 col-md-3 col-ld-3"></div>  
+                    <div class="col-xs-6 col-md-6 col-ld-6">
                         {% if current_user.username != 'Guest' %}
                     <form action="{{url_for('upload_device_document', device_id=device.device_id)}}" id="docUp"
                     method="post" enctype="multipart/form-data">
@@ -140,13 +141,13 @@
                     </div>
                     </div>
                 </div>
-                </div>
                 </div><!-- panel body -->
             </div><!-- panel -->
         </div><!-- container -->
     </div><!-- col -->
-    <div class="col-xs-3 col-md-3 col-ld-3"></div>
+    <div class="col-xs-1 col-md-1 col-ld-1"></div>
 </div><!-- row -->
+</div><!--container-->
 
 {% if current_user.username != 'Guest' %}
 {# Args Change Modal #}
@@ -160,9 +161,9 @@
                     <div class="modal-body">
                         <form action="{{ url_for('device_args', device_id=device.device_id) }}" method="post">
                             <div class="form-group">
-                                <input class="form-control" type="text" id="name" name="name" required="required"
+                                <input class="form-control" type="text" id="change_name" name="name" required="required"
                                        placeholder="Please enter the name of the argument">
-                                       <input class="form-control" type="text" id="value" name="value"
+                                       <input class="form-control" type="text" id="change_value" name="value"
                                        placeholder="Please enter the value of the argument">
                             </div>
                             <div class="form-group">
