@@ -2,36 +2,38 @@
 {%- import 'own_wtf.html' as wtf %}
 
 {% block content %}
-    <div class="jumbotron container container-fluid col-md-4"
-         style="margin-left: 30%; padding-bottom: 5%; border: 1px solid #e7e7e7; background-color: transparent; border-radius: 5px 5px 5px 5px;">
-        <div class="page-header" style="margin: auto">
-            <h2>Login:</h2>
-        </div>
-        <div class="container-fluid" style="margin: auto">
-            <form action="#" method="post">
-                {{ wtf.form_field(form.username, placeholder="Please enter your username...") }}
-                {{ wtf.form_field(form.password, placeholder="Please enter your password...") }}
-                <div class="checkbox">
-                    <label><input type="checkbox" class="checkbox" id="rememberMe" name="rememberMe">Keep logged
-                        in?</label>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block">Login</button>
+    
+<div class="container">
+    <div class="row">
+        <div class="col-xs-1 col-md-3 col-ld-3"></div>
+        <div class="col-xs-10 col-md-6 col-ld-6 well back_white box_shadow">
+            <h3>Login</h3>
+            <hr>
+            <div class="form-group">
+                <form action="#" method="post">
+                    {{ wtf.form_field(form.username, placeholder="Please enter your username...") }}
+                    {{ wtf.form_field(form.password, placeholder="Please enter your password...") }}
+                    <div class="checkbox">
+                        <label><input type="checkbox" class="checkbox" id="rememberMe" name="rememberMe">Keep logged
+                            in?</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
 
-                {{ form.hidden_tag }}
+                    {{ form.hidden_tag }}
 
-            </form>
-            <form action="#" method="POST">
-                <button type="submit" class="btn btn-default btn-block" name="register_button" id="register_button" style="margin-top: 5%">Register</button>
-            </form>
-            <br>
-            <form action="{{ url_for('user_forgot_password') }}" method="get">
-                <button type="submit" value="True" class="btn btn-danger btn-block" style="margin-top: 5%">Forgot Password?</button>
-            </form>
-            <br>
-
-            <h1>{{redir|string}}</h1>
-
+                </form>
+            </div>
+            <div class="form-group">
+                <form action="#" method="POST">
+                    <button type="submit" class="btn btn-default btn-block" name="register_button" id="register_button">Register</button>
+                </form>
+                <form action="{{ url_for('user_forgot_password') }}" method="get">
+                    <button type="submit" value="True" class="btn btn-danger btn-block" style="margin-top: 5%">Forgot Password?</button>
+                </form>
+            </div>
         </div>
     </div>
+</div>
+
 
 {% endblock %}

@@ -57,6 +57,18 @@
     background-color: #d9534f;
 }
 
+.back_white{
+    background-color: white;
+}
+
+.back_white:focus{
+    box-shadow: 0 6px 20px 0 #009999
+}
+
+.box_shadow{
+    box-shadow: 0 6px 20px 0 #009999
+}
+
 /*
 .navbar-brand {
     width: 250px;
