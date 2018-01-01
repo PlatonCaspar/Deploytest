@@ -365,5 +365,14 @@ role="dialog" aria-labelledby="editPatchModalLabel{{patch.patch_id}}" aria-hidde
 
 
     </div>
+    <script>
 
+        var hash = window.location.hash;
+                        if(hash){
+                            var hashed_obj = $(hash)
+                            $(hash).addClass('in')
+                            window.scrollTo(0, hashed_obj.offset().top-300);
+                            //hashed_obj.css('box-shadow','0 6px 5px 0 #009999').fadeIn(500);
+                        }
+    </script>
 {% endblock %}

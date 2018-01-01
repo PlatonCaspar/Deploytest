@@ -175,7 +175,7 @@ class User(db.Model):
         if file:
             # save file Here
             datatype = secure_filename(file.filename).split(".")[1]
-            print(datatype)
+            # TODO check if image
             new_name = """avatar_{0}.{1}""".format(self.username, datatype)
             file.save(path.join(UPLOAD_FOLDER, new_name))
             self.avatar_path = path.join(RELATIVE_PICTURE_PATH, new_name)
@@ -206,7 +206,7 @@ class User(db.Model):
         db.session.commit()
 
     def get_messages(self, all=False):
-        print(list(filter(lambda msg: msg.read is False, self.messages)))
+        #print(list(filter(lambda msg: msg.read is False, self.messages)))
         return list(filter(lambda msg: msg.read is False, self.messages))
     
     def get_messages_count(self):
@@ -215,7 +215,6 @@ class User(db.Model):
                 return len(self.get_messages())
             else:
                 return 0
-                
 
 
 class History(db.Model):
@@ -233,32 +232,51 @@ class History(db.Model):
     data_objects = db.relationship('Files',
                                    backref=db.backref('belongs_to_history_backref', 
                                                       lazy='dynamic', uselist=True))
+    parent_id = db.Column(db.Integer, db.ForeignKey('history.id'))
+    answers = db.relationship('History', uselist=True)
 
-    def __init__(self, history: str, board_code: str):
+    def __init__(self, history: str, board_code=None, parent_id=None):
         self.board_code = board_code
-        self.history = history.replace('\n', "<br>")
+        self.history = history
+        if parent_id:
+            self.parent_id = parent_id
         if current_user is not None:
-            self.added_by = db.session.query(User).get(
-                current_user.uid)
+            self.added_by = current_user
         elif current_user is None:
-            self.added_by = db.session.query(User).get('Guest')
-        
+            flash("Please log in to make a comment", 'info')
+            return redirect(url_for('login', next=request.referrer))
         self.time_and_date = datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
         self.check_mentions()
+
+    def add_answer(self, text: str):
+        answer = History(text, parent_id=self.id)
+        db.session.add(answer)
+        self.answers.append(answer)
+        db.session.commit()
+
 
     def time_date_datetime(self):
         return datetime.datetime.strptime(self.time_and_date, 
                                           "%d.%m.%Y %H:%M:%S")
 
     def link(self):
-        return url_for('show_board_history', g_code=self.board_code)+'#comment_id'+str(self.id)
+        if self.board_code:
+            return url_for('show_board_history', g_code=self.board_code)+'#comment_id'+str(self.id)
+        else:
+            return url_for('show_board_history', g_code=self.parent().board_code)+'#comment_id'+str(self.id)
 
     def reduce(self):
         return self.history.replace(" ", ";")+";"+str(self.added_by.username)+";"+self.edited_by.username
 
-    def short_result(self, search_word, max_length = 30):
-        #print(self.history+ " "+search_word)
+    def parent(self):
+        if self.parent_id:
+            return History.query.get(self.parent_id)
+        else:
+            return None
+
+    def short_result(self, search_word, max_length=30):
+        # print(self.history+ " "+search_word)
         start_ind = 0
         try:
             start_ind = self.history.lower().index(search_word.lower())
@@ -270,23 +288,23 @@ class History(db.Model):
 
         if len(self.history)-start_ind < max_length:
             end_ind = len(self.history)
-            return self.history[start_ind:end_ind].replace("<br>"," ")
+            return self.history[start_ind:end_ind].replace("<br>", " ")
         else:
             end_ind = start_ind+max_length-1
-            return self.history[start_ind:end_ind].replace("<br>"," ")+"..."
+            return self.history[start_ind:end_ind].replace("<br>", " ")+"..."
 
     def md_history(self):
         return markdown.markdown(self.history.replace('<br>', '\n'))
 
     def check_mentions(self):
         mentions = re.findall("(?<=@)\w+", self.history)
-        flash(str(mentions), 'danger')
         users = []
+        mentions = set(mentions)
         for name in mentions:
             user = User.query.filter_by(username=name).first()
-            user.message("""you were mentioned by {}""".format(current_user.username),
+            user.message("""{} mentioned you""".format(current_user.username),
                          self.link())
-                    
+
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)

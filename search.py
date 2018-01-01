@@ -9,10 +9,8 @@ def value_search(search_word: str, value: str):  # returns a score for each give
                 continue
             res = value_search(s_word.strip("&"), value)
             if res is 0:
-                print("res is zerrrrro")
                 return 0
             else:
-                print("res is not zerrrrrrro: "+str(res))
                 score += res
 
     search_words = search_word.split(' ')
@@ -39,7 +37,6 @@ def value_search(search_word: str, value: str):  # returns a score for each give
     start_count = 0
 
     split_value = value.split(';')
-    print(str(search_word in value)+" "+search_word+" in "+value)
     for v in split_value:
         # print(str(search_word in v)+" "+search_word+" in "+v)
         for w in search_words:

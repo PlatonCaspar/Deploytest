@@ -18,9 +18,6 @@ will disappear! #}
           href="/static/sample-app.css">
           <link rel="stylesheet" type="text/css"
           href="/static/layout_base.css">
-
-          <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
-          crossorigin="anonymous">
 {% endblock %}
 
 
@@ -29,22 +26,27 @@ will disappear! #}
 
 
     {{ nav.frontend_top.render('own_nav_renderer') }}
+    <script>
+        if(!($('#msg_badge').html()=="0")){
+            $('#msg_badge').addClass('back_danger')
+        }
+        </script>
 
 
 
     {% with messages = get_flashed_messages(with_categories='true') %}
         {% if messages %}
-
+        <div class="container-fluid">
                 {% for category, message in messages %}
                     {% if category!='message' %}
-                    <li class="alert alert-{{ category }}">{{ message|safe }}</li>
+                    <div class="alert alert-{{ category }}">{{ message|safe }}</div>
                     {% elif category=='message' %}
-                    <li class="alert alert-info">{{ message|safe }}</li>
+                    <div class="alert alert-info">{{ message|safe }}</div>
                     {% endif %}
-
+        
 
                 {% endfor %}
-
+        </div>
         {% endif %}
     {% endwith %}
 

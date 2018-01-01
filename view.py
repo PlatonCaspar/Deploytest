@@ -40,20 +40,24 @@ def write_code_for_search_bar():
 def notification_center():
     inner = tags.div()
     if not current_user.get_messages():
-        return """<div class="media"><a class="media">No new Messages</a></div>"""
+        return """<div class="media">
+                   <a class="media">No new Messages</a></div>"""
 
-    with inner.add(tags.a(Class="media")):
+    with inner.add(tags.div(Class="media")):
         for msg in current_user.get_messages():
-                tags.a(
-                    msg.message,
-                    Class="media-body",
-                    href=msg.link
-                ),
+                tags.a(msg.message,
+                       Class="btn btn-default notification",
+                       href=msg.link, role="button",
+                       onclick="""$.ajax({{type: 'POST',
+                                    url: '/notifications/clicked/',
+                                    data: {{
+                                        'msg_id': '{1}'
+                                        }}
+                                        }}
+                                        );""".format(msg.link, msg.id)
+                       ), tags.br(),
 
-    not_center = tags.div(
-                        inner,
-                        Class="well", style="background-color: white"  # Well
-                        )
+    not_center = inner
     return not_center
 
 search_bar = RawTag(tags.li(write_code_for_search_bar()))
@@ -105,16 +109,18 @@ def nav_bar():
 
                    ),
             right_items=(
-                Text(tags.a('gitlab', href='http://git.sdi.site/sdi/platos',
-                            target="_blank")),
+                RawTag(tags.li(tags.a('gitlab', href='http://git.sdi.site/sdi/platos',
+                                      target="_blank"))),
                 RawTag(
-                            tags.li(
-                            tags.a(
-                            tags.span(current_user.get_messages_count() , Class="badge"),
-                            Class="glyphicon glyphicon-envelope",
+                    tags.li(
+                        tags.a(
+                            tags.span(Class="glyphicon glyphicon-envelope"),
+                            tags.span(current_user.get_messages_count(),
+                                      Class="badge", id="msg_badge",
+                                      style="""margin-top: -5%;"""),
                             data_toggle="popover",
                             title="Messages", data_html="true",
-                            data_trigger="click",
+                            data_trigger="click hover",
                             data_content="{0}".format(notification_center()),
                             data_placement="bottom",
                             role="button"

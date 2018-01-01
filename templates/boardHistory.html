@@ -18,11 +18,10 @@
 
 
 
-
-
+<div class="container-fluid">
     <div class="well">
         <div class="media">
-            <div class="media-left media-middle">
+            <div class="media-left">
                 {% if g_board.project.project_default_image_path is none %}
                 <img
                     src="/static/staticPictures/logo.png"
@@ -35,7 +34,7 @@
                     style="width: 160px">
                 {% endif %}
             </div>
-            <div class="media-body text-center">
+            <div class="media-body text-left">
                 <div class="media-heading">
                     <h3>{{ g_board.project.project_name }}
 
@@ -49,26 +48,26 @@
     {% if g_board %}
 
         <div class="panel">
-            <div class="page-header">
+            <div class="panel-body">
                 <div class="row">
                     <div class="col-xs-12 col-md-6 col-ld-6">
                 <h2 class=" center-block">{{ g_board.code|string }}
                     <small class="">
                         Version: {{ g_board.version|string }}
                         {% if current_user.username != 'Guest' %}
-                            <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                            <button class="btn btn-default btn-xs" type="button" data-toggle="modal"
                                     data-target="#version_modal"><span class="glyphicon glyphicon-pencil"></span>
                             </button>
                         {% endif %}
                         State: {{ g_board.stat|string }}
                         {% if current_user.username != 'Guest' %}
-                            <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                            <button class="btn btn-default btn-xs" type="button" data-toggle="modal"
                                     data-target="#state_modal"><span class="glyphicon glyphicon-pencil"></span>
                             </button>
                         {% endif %}
                         Patch: {{ g_board.patch|string }}
                         {% if current_user.username != 'Guest' %}
-                            <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                            <button class="btn btn-default btn-xs" type="button" data-toggle="modal"
                                     data-target="#patch_modal"><span class="glyphicon glyphicon-pencil"></span>
                             </button>
                         {% endif %}
@@ -103,16 +102,19 @@
                             <form action="{{url_for('check_patch', patch_id=patch.patch_id, board_code=g_board.code)}}"
                             method="POST" id=form_id{{patch.patch_id|string}}>
                             <div class="form-group">
-                                <div class="checkbox">
+                                <div class="checkbox borders">
                                     <label
                                     data-toggle="popover" data-placement="bottom" 
                                     data-html="true" data-trigger="hover"
                                     container='body'
                                     data-content="{{patch.md_description()}}">
-                                    <input type="checkbox" value=""
+                                    <input class="" type="checkbox" value=""
                                     {% if patch in g_board.patches %}
                                     checked="checked"
                                     {% else %}
+                                    {% endif %}
+                                    {% if current_user.username == 'Guest'%}
+                                    disabled
                                     {% endif %}
                                     onchange="document.getElementById('form_id{{patch.patch_id|string}}').submit()"
                                     name="check">
@@ -122,7 +124,7 @@
                                     data-html="true" data-trigger="hover"
                                     container='body'
                                     data-content="{{patch.md_description()}}"
-                                    onclick="window.document.location='{{url_for('show_project', project_name=patch.project_id)}}#collapseid{{patch.patch_id|string}}'">
+                                    onclick="window.document.location='{{url_for('show_project', project_name=patch.project_id)}}#collapse{{patch.patch_id|string}}'">
                                     <span class="glyphicon glyphicon-info-sign"></span></button>
                                 </div>
                             </div>
@@ -149,13 +151,15 @@
 
                 <br><br>
             {% endif %}
+        </div>
+        </div>
             {% if history %}
 
 
             <div class="container">
                 {% for row in history %}
                     {% set modal_id= row.id %}
-                <div class="row well" id="comment_row" style="background-color: white; padding-bottom: 0">
+                <div class="row well" id="comment_id{{row.id}}" style="background-color: white; padding-bottom: 0">
                     <div class="media" style="padding-bottom: 0">
                         <!--div class="col-md-1 col-lg-1 col-ld-1"></div-->
                         <div class="col-2 col-xs-2 col-md-1 col-lg-1 col-ld-1">
@@ -169,21 +173,30 @@
                             </div>
                         </div>
                         <div class="col-9 col-xs-9 col-md-10 col-lg-10 col-ld-10">
-                            <div class="media-body" id="comment_id{{row.id}}">
+                            <div class="media-body" id="comment{{row.id}}">
                                 {{row.md_history()|safe}}
                             </div>                            
                         </div>
                         <div class="media-right">
                             <div class="form-group">
-                                <button type="button" class="btn btn-danger btn-block"
+                                <button class="btn btn-success btn-block"
                                     data-toggle="modal"
                                     {% if current_user.username == 'Guest' %}
+                                        disabled
+                                    {% endif %}
+                                    data-target="#answer{{row.id}}">
+                                    Answer
+                                </button>
+                                <button type="button" class="btn btn-danger btn-block"
+                                    data-toggle="modal"
+                                    {% if (current_user.username == 'Guest') or (current_user != row.added_by) %}
                                     disabled
                                     {% endif %}
                                     data-target="#edit{{ modal_id }}">Edit!
                             </button>
+                            
                             </div>
-                            <!-- Edit comment modal -->
+                            {% if current_user == row.added_by %}
                             <div id="edit{{ modal_id }}" class="modal fade" role="dialog">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
@@ -211,7 +224,7 @@
                             <script>
                             $('#edit{{modal_id}}').keydown(registerAtSign)
                             </script>
-
+                            {% endif %}
                             <!-- End edit comment modal -->
                         </div>
                     </div>
@@ -222,12 +235,12 @@
                         <div class="panel-heading" role="button" id="mediaPanelheading{{row.id}}" data-toggle="collapse"
                                 href="#mediaPanel{{row.id}}" aria-controls="mediaPanel{{row.id}}" aria-expanded="false" toggle="false">
                                 <h4 class="panel-title">
-                                    Files
+                                    Files <span class="badge">{{row.data_objects|length}}</span>
                                     <span class="glyphicon glyphicon-menu-down pull-right"></span>
                                 </h4>
                         </div>
                         <div id="mediaPanel{{row.id}}" class="panel-collapse collapse" role="tabpanel" 
-                        aria-labelledby="headingNewPanel">
+                        aria-labelledby="mediaPanelheading{{row.id}}">
                             <div class="panel-body">
                                 <!-- file part with form and stuff here!-->
                                     {% if row.data_objects %}
@@ -339,29 +352,268 @@
                         </div>
                     </div>
                     <!--End Media-->
+                    <!-- answers -->
+                    <div class="panel panel-default" style="padding: 0; margin: 5px 0px 5px 0px">
+                        <div class="panel-heading" role="button" id="answersPanelheading{{row.id}}" data-toggle="collapse"
+                                href="#answersPanel{{row.id}}" aria-controls="mediaPanel{{row.id}}" aria-expanded="false" toggle="false">
+                                <h4 class="panel-title">
+                                    Answers <span class="badge">{{ row.answers|length }}</span>
+                                    <span class="glyphicon glyphicon-menu-down pull-right"></span>
+                                </h4>
+                        </div>
+                        <div id="answersPanel{{row.id}}" class="panel-collapse collapse" role="tabpanel" 
+                        aria-labelledby="answersPanelheading{{row.id}}">
+                            <div class="panel-body">
+                                <!-- answers_content -->
+                                    {% for answer in row.answers %}
+                                        {% set modal_id= answer.id %}
+                                            <div class="row well" id="comment_id{{answer.id}}" style="background-color: white; padding-bottom: 0">
+                                                <div class="media" style="padding-bottom: 0">
+                                                    <div class="col-2 col-xs-2 col-md-1 col-lg-1 col-ld-1">
+                                                        <div class="media-left media-bottom">
+                                                            <img src="{{answer.added_by.avatar()}}" class="media-object pull-right" style="width:100%">
+                                                            <p class="text-center">
+                                                            {{answer.added_by.username|string}}<br>
+                                                            <a href="mailto:{{answer.added_by.email}}">E-Mail</a>
+                                                            {{answer.time_and_date}}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-9 col-xs-9 col-md-10 col-lg-10 col-ld-10">
+                                                    <div class="media-body" id="comment{{answer.id}}">
+                                                        {{answer.md_history()|safe}}
+                                                    </div>                            
+                                                </div>
+                                            <div class="media-right">
+                                                <div class="form-group">
+                                                    <button type="button" class="btn btn-danger btn-block"
+                                                        data-toggle="modal"
+                                                    {% if current_user.username == 'Guest' or current_user != answer.added_by  %}
+                                                        disabled
+                                                    {% endif %}
+                                                    data-target="#edit{{ modal_id }}">Edit!
+                                                    </button>
+                                                </div>
+                            <!-- Edit comment modal -->
+                            <div id="edit{{ modal_id }}" class="modal fade" role="dialog">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">{{ 'Edit Comment:' }}</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            {% set f=edit_form.history.process_data(answer.history.replace('<br>', '\n')) %}
+                                            {% set g=edit_form.history_id.process_data(answer.id) %}
+                                            <form action="" method="post">
+                                                {{ wtf.form_field(edit_form.history, rows='15', id="textarea"+answer.id|string) }}
+                                                {% if current_user.username != 'Guest' %}
+                                                    {{ wtf.form_field(edit_form.send_edit) }}
+                                                    {{ wtf.form_field(edit_form.delete) }}
+                                                {% endif %}
+                                                {{ edit_form.history_id(value=answer.id|string) }}
+                                                {{ edit_form.hidden_tag }}
+                                            </form>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <script>
+                            $('#edit{{modal_id}}').keydown(registerAtSign)
+                            </script>
+
+                            <!-- End edit comment modal -->
+                        </div>
+                    </div>
+                    
+                    <!--hr style="padding: 0; margin: 5px 0px 5px 0px"-->
+                    <!--Media part -->
+                    <div class="panel panel-default" style="padding: 0; margin: 5px 0px 5px 0px">
+                        <div class="panel-heading" role="button" id="mediaPanelheading{{answer.id}}" data-toggle="collapse"
+                                href="#mediaPanel{{answer.id}}" aria-controls="mediaPanel{{answer.id}}" aria-expanded="false" toggle="false">
+                                <h4 class="panel-title">
+                                    Files <span class="badge">{{answer.data_objects|length}}</span>
+                                    <span class="glyphicon glyphicon-menu-down pull-right"></span>
+                                </h4>
+                        </div>
+                        <div id="mediaPanel{{answer.id}}" class="panel-collapse collapse" role="tabpanel" 
+                        aria-labelledby="mediaPanelheading{{answer.id}}">
+                            <div class="panel-body">
+                                <!-- file part with form and stuff here!-->
+                                    {% if answer.data_objects %}
+                                    {% set pics=answer.data_objects %}
+
+                                    {% for pic in pics %}
+                                            <div class="col-xs-6 col-md-2 col-ld-2 col-lg-2">
+                                                <div class="thumbnail">
+{% if '.jpg' in pic.file_path|lower or '.jpeg' in pic.file_path|lower or '.bmp' in pic.file_path|lower or '.png' in pic.file_path|lower %}
+                                                    <a class="" href="/static/Pictures/{{ pic.file_path }}" target="_blank">
+                                                        <img class=""
+                                                             src="/static/Pictures/{{ pic.file_path }}"
+                                                             style="width: 100%">
+                                                    </a>
+                                                    {% else %}
+                                                        <img src="/static/staticPictures/file.png"
+                                                             style="width: 50%">
+                                                    {% endif %}
+                                                    {% set filename=pic.file_path.split('/') %}
+                                                    <div class="caption">
+                                                        <p class="text-justify" style="white-space: normal; word-break: break-all">
+                                                            {{ filename[filename|length-1] }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                            
+                                                            <div class="row">
+                                                                {% if current_user.is_authenticated %}
+                                                                <div class="col-xs-3 col-md-3 col-lg-3 col-ld-3">
+                                                                <button class="btn btn-warning" type="button"
+                                                                    data-toggle="collapse" data-target="#{{ pic.id }}"
+                                                                    aria-expanded="false"
+                                                                    aria-controls="{{ pic.id }}"><span
+                                                                    class="glyphicon glyphicon-remove"></span></button>
+                                                                </div>
+                                                                <div class="col-xs-9 col-md-9 col-lg-9 col-ld-9">
+                                                                <a href="/static/Pictures/{{ pic.file_path }}"
+                                                                    class="btn btn-default btn-block"
+                                                                    id="file_id{{ pic.id }}"
+                                                                    type="button"
+                                                                    download>
+                                                                    <span class="glyphicon glyphicon-download">
+                                                                    Download
+                                                                    </span>
+                                                                </a>
+                                                                </div>
+                                                                {% else %}
+                                                                <div class="col-xs-12 col-md-12 col-lg-12 col-ld-12">
+                                                                <a href="/static/Pictures/{{ pic.file_path }}"
+                                                                    class="btn btn-default btn-block"
+                                                                    id="file_id{{ pic.id }}"
+                                                                    type="button"
+                                                                    style="white-space: normal; word-break: break-all"
+                                                                    download>
+                                                                    <span class="glyphicon glyphicon-download">
+                                                                    Download
+                                                                    </span>
+                                                                </a>
+                                                                </div>
+                                                                    {% endif %}
+                                                                
+                                                            </div>
+                                                            
+                                                    
+
+                                                    
+                                                    {% if current_user.is_authenticated %}
+                                                        <form class=""
+                                                              action="{{ url_for('delete_history_image', img_id=pic.id, board_id=g_board.code) }}"
+                                                              method="post">
+                                                            
+                                                            <div class="collapse" id="{{ pic.id }}">
+                                                                <div class=""><br>
+                                                                    <button class="btn btn-danger btn-sm btn-block"
+                                                                            type="submit"><span
+                                                                            class="glyphicon glyphicon-ok pull-left"></span>
+                                                                        <strong>Delete?</strong>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                        </form>
+                                                    {% endif %}
+                                                    
+                                                
+                                                
+                                            </div>
+                                    {% endfor %}
+
+                                {% endif %}
+                            {% if current_user.username!='Guest' %}
+                                <form action="{{ url_for('board_history_add_file', history_id=answer.id, board_id=g_board.code) }}"
+                                      method="post" class="" enctype="multipart/form-data"
+                                      id="{{answer.id|string+'new_upfile_form'}}">
+
+                                    <input class="hidden" name="{{answer.id|string+'new_upfile'}}" id="{{answer.id|string+'new_upfile'}}"
+                                           type="file" value="upload"
+                                           onchange="document.getElementById('{{answer.id|string+'new_upfile_button'}}').click()">
+                                    <button class="hidden" type="submit" id="{{answer.id|string+'new_upfile_button'}}"></button>
+                                    <button class="btn btn-default btn-sm" type="button"
+                                            onclick="document.getElementById('{{answer.id|string+'new_upfile'}}').click()"><span
+                                            class="glyphicon glyphicon-paperclip"></span></button>
+                                </form>
+
+                            {% endif %}
+                        
+                                <!-- end file part stuff -->
+                            </div>
+                        </div>
+                    </div>
+                    <!--End Media-->
                 </div>
+
+                    
+                {% endfor %}
+                            
+                        
+                                <!-- end answers_content -->
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end answers -->
+                </div>
+
+                <!-- answer_modal -->
+                    {% if current_user.username != 'Guest' %}
+                            
+                            <div id="answer{{ modal_id }}" class="modal fade" role="dialog">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">Answer {{ row.username }}</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form action="{{url_for('answer_board_comment', parent_id=row.id)}}" method="POST">
+                                                <div class="form-group">
+                                                    <textarea name="text" id="answer_textarea{{modal_id}}"
+                                                        class="form-control" rows="15" placeholder="Markdown is supported..."></textarea>
+                                                </div>
+                                                <div class="form-group">
+                                                    <button class="btn btn-success" type="submit">Submit</button>
+                                                    <button class="btn btn-default pull-right" type="button" data-dismiss="modal">
+                                                        Cancel</button>
+                                                </div>
+                                            </form>
+                                            
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <script>
+                            $('#answer_textarea{{modal_id}}').keydown(registerAtSign)
+                            </script>
+                                
+                            {% endif %}
+                <!-- end answer_modal -->
 
                     
                 {% endfor %}
             </div>
 
-                <script> {# this script is for changing the color of the targeted div when open e.g. th elink from a mail #}
-                function change_color_when_div_is_called() {
-                    var hash = window.location.hash.substr(1);
-                    if (hash == ""){
-                        return
-                    }
-                    var myDiv = document.getElementById(hash);
-                    myDiv.className = "panel panel-collapse panel-primary" //myDiv.className.replace(/(?:^|\s)panel-default(?!\S)/g , 'panel-primary');
-                    myDiv.style.backgroundColor = 'rgba(46, 111, 194, 0.3)'
-
-
-                }
-
-
-                window.onload = change_color_when_div_is_called();
-
-
+                <script> //this script is for changing the color of the targeted div when open e.g. th elink from a mail
+                        var hash = window.location.hash;
+                        if(hash){
+                            var hashed_obj = $(hash);
+                            if (!hashed_obj.hasClass('collapse')){
+                                $(hash).closest('div.panel-collapse').collapse('show');
+                            }
+                            window.scrollTo(0, hashed_obj.offset().top-300);
+                            hashed_obj.css('box-shadow','0 6px 20px 0 #009999').fadeIn(500);
+                        }
+                        //$(window.location.hash).css('box-shadow','0 6px 20px 0 #009999').fadeOut(3000)
+                        
                 </script>
 
             {% endif %}
@@ -384,11 +636,6 @@
 
                     <script>
                     $('#history').keydown(registerAtSign)
-
-                    function handle_key(){
-                        alert("Key Down");
-                    };
-
                     </script>
                     <div class="modal-footer">
                     </div>
@@ -594,6 +841,7 @@
         </table>
 
     </div>
+
 
 {%- endblock %}
 

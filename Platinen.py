@@ -68,7 +68,20 @@ def get_registered_users():
     for name in current_user.registered_users():
         response_values.append({"value": '@'+name, "data": name})
 
-    return dumps({"query": "Users", "suggestions": response_values})    
+    return dumps({"query": "Users", "suggestions": response_values})
+
+
+@app.route('/notifications/clicked/', methods=['POST'])
+@login_required
+def msg_read():
+    msg_id = request.values.get('msg_id')
+    try:
+        msg = data_Structure.Message.query.get(int(msg_id))
+        msg.read = True
+        data_Structure.db.session.commit()
+    except:
+        flash('An error occured in //msg_read()//', 'danger')
+    return "200"
 
 
 @nav.login_manager.user_loader
@@ -204,8 +217,6 @@ def start():
     results_comments = None
     results_devices = None
     users = data_Structure.db.session.query(data_Structure.User.username).all()
-    for user in users:
-        print(user[0])
     if request.method == 'POST':
         if request.form.get('submit_main') is None:
             search_word = request.form.get('search_field')
@@ -384,6 +395,7 @@ def delete_history_all(history):
         os.remove(os.path.join(UPLOAD_FOLDER, image_to_delete.file_path))
         data_Structure.db.session.delete(image_to_delete)
         data_Structure.db.session.commit()
+
     data_Structure.db.session.delete(history)
     data_Structure.db.session.commit()
 
@@ -429,6 +441,7 @@ def edit_board_history(board, history_id, history):
     history_to_edit.edited_by = data_Structure.db.session.query(data_Structure.User).get(
         data_Structure.User.get_id(current_user))
     data_Structure.db.session.commit()
+    history_to_edit.check_mentions()
 
     return redirect(url_for('show_board_history', g_code=board.code))
 
@@ -467,11 +480,15 @@ def show_board_history(g_code):
         file = request.files.get('file')
 
         add_board_history(board=tg_board, history=add_form.history.data, file=file)
+        return redirect(url_for('show_board_history', g_code=g_code))
     elif request.method == 'POST' and edit_form.send_edit.data:
         edit_board_history(board=tg_board, history=edit_form.history.data, history_id=edit_form.history_id.data)
+        return redirect(url_for('show_board_history', g_code=g_code))
+        
     elif request.method == 'POST' and edit_form.delete.data:
         history = data_Structure.History.query.get(int(edit_form.history_id.data))
         delete_history_all(history)
+        return redirect(url_for('show_board_history', g_code=g_code))        
 
     if edit_form is not None:
         return render_template('boardHistory.html', g_board=tg_board,
@@ -485,6 +502,19 @@ def show_board_history(g_code):
                                history=sorted(data_Structure.History.query.filter_by(board_code=g_code).all(),
                                    key=getSortKeyHistory, reverse=True),
                                add_form=add_form, edit_form=edit_form)
+
+@app.route('/board/comment/answer/do/', methods=['POST'])
+@login_required
+def answer_board_comment():
+    parent_id = request.args.get('parent_id')
+    text = request.form.get('text')
+    try:
+        parent = data_Structure.History.query.get(int(parent_id))
+        parent.add_answer(text)
+    except:
+        flash('some error occured in //answer_board_comment()//', 'danger')
+    finally:
+        return redirect(request.referrer or start)
 
 
 @app.route('/project/show/<project_name>/', methods=['POST', 'GET'])
@@ -918,7 +948,6 @@ def print_label():
 def add_new_patch():
     project = request.args.get('project_id')
     project = data_Structure.Project.query.get(project)
-    print(project)
     description = request.form.get('patch_description')
     new_patch = data_Structure.Patch(project)
     new_patch.description = description

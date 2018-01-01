@@ -45,6 +45,24 @@
     
 }
 
+.borders{
+    border: 1.5px solid #eee;
+    border-radius: 5px;
+    padding-left: 2rem;
+    
+}
+
+.notification{
+    margin: 5px;
+
+}
+.notification:hover{
+    box-shadow: 0 0 5px #009999;
+}
+
+.back_danger{
+    background-color: #d9534f;
+}
 
 /*
 .navbar-brand {
@@ -98,13 +116,13 @@
     padding-left: 1%;
 }
 
-.alert-danger {
+/*.alert-danger {
     border-left: 5px solid red;
 }
 
 .alert-success {
     border-left: 5px solid rgba(118, 173, 42, 1);
-}
+}*/
 
 td a {
     display: block;
