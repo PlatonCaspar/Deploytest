@@ -41,7 +41,7 @@ def notification_center():
     inner = tags.div()
     if not current_user.get_messages():
         return """<div class="media">
-                   <a class="media">No new Messages</a></div>"""
+                   <span class="media">No new Messages</span></div>"""
 
     with inner.add(tags.div(Class="media")):
         for msg in current_user.get_messages():
