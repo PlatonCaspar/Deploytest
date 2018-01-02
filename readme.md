@@ -3,6 +3,25 @@
 ## **Platos is a Flask based web application to register, and Comment Boards of Projects.**
 (in the Future it will also take care of the components and whatever has to do with organizing them),
 
+## whats new:
+
+### Answers:
+Now it is possible to answer a comment in a board history
+
+### Project Patches:
+For every Project, a Patch can be created. For every board this patch can be selected if applied.
+
+### Mentions:
+Now you can tag another user in a Comment (or answer) with using the "@" operator. 
+e.g.:
+writing
+```
+@Stefan
+```
+within a comment will trigger a notification at Stefans Notification center and he will be redirected to that comment whrn clicking on that Notification
+
+### Markdown support:
+Every Comment, and also every Patch description can now be formattet using the [Markdown Syntax](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
 
 ## Search Syntax:
 For easy use there were a few commands implemented that can be used to make your search more concrete:
