@@ -3,19 +3,17 @@
 
 
 
+
 function registerAtSign(event){
     var target_id = event.target.id
     if (event.key == "@"){
-        //console.log("registerAtSign was called");
         $('#'+target_id).autocomplete({
-        type: 'GET',
         delimiter: " ",
         showNoSuggestionNotice: true,
+        type: "POST",
         serviceUrl: "/mentions/registered/users/score/",
         onSelect: function (suggestion) {
-            console.log(suggestion)
-        $(this.id).autocomplete('dispose')
-        
+        $(this.id).autocomplete('dispose') 
     }
 });
     }
@@ -24,6 +22,10 @@ function registerAtSign(event){
 
     }
 
+}
+
+function dummy(){
+    console.log("I am a dummy function")
 }
 
 function getRegisteredUsers(){
@@ -35,7 +37,7 @@ function getRegisteredUsers(){
             async: true,
             contentType: "application/json; charset=utf-8",
             data: {
-                'query': '@Ste'
+                'query': '@'
             },
             success: function(msg){
                 console.log(msg)
