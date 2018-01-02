@@ -196,11 +196,14 @@ def delete_user():
     user_form = deleteUserForm.DeleteUser(request.form)
     if request.method == 'POST':
         if data_Structure.User.query.get(
-                user_form.uid.data) is None:  # check if board already exists
+                int(user_form.uid.data)) is None:  # check if board already exists
             flash('User does not exist!', 'danger')
             return redirect(url_for('delete_user'))
-        dele_user = data_Structure.User.query.get(user_form.uid.data)
-        if pbkdf2_sha256.verify(user_form.password.data, dele_user.password_hashed_and_salted):
+        dele_user = data_Structure.User.query.get(int(user_form.uid.data))
+        if dele_user.username is 'Guest':
+            data_Structure.db.session.object_session(dele_user).delete(dele_user)
+            data_Structure.db.session.commit()
+        elif pbkdf2_sha256.verify(user_form.password.data, dele_user.password_hashed_and_salted):
             data_Structure.db.session.object_session(dele_user).delete(dele_user)
             data_Structure.db.session.commit()
         else:
@@ -211,7 +214,7 @@ def delete_user():
         #       code=board_form.code.data).scalar() is not None:  # check if board already exists
         #    return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm(),
         #                          messages=messages.Messages(True, 'Board was not deleted!'))
-        if data_Structure.User.query.get(user_form.uid.data) is None:  # check if User exists
+        if data_Structure.User.query.get(int(user_form.uid.data)) is None:  # check if User exists
             flash('User was deleted successfully!', 'success')
             return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
     return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())

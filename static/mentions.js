@@ -6,11 +6,12 @@
 function registerAtSign(event){
     var target_id = event.target.id
     if (event.key == "@"){
-        console.log("registerAtSign was called");
+        //console.log("registerAtSign was called");
         $('#'+target_id).autocomplete({
+        type: 'GET',
         delimiter: " ",
         showNoSuggestionNotice: true,
-        serviceUrl: "/mentions/registered/users/score/",
+        serviceUrl: "http://localhost/mentions/registered/users/score/",
         onSelect: function (suggestion) {
         $(this.id).autocomplete('dispose')
         
@@ -27,11 +28,14 @@ function registerAtSign(event){
 function getRegisteredUsers(){
     $.ajax(
         {
-            type: "POST",
+            type: "GET",
             dataType: 'jsonp', //mispelled
-            url: "/mentions/registered/users/score.json/",
+            url: "/mentions/registered/users/score/",
             async: true,
             contentType: "application/json; charset=utf-8",
+            data: {
+                'query': '@Ste'
+            },
             success: function(msg){
                 console.log(msg)
                 return msg;}
