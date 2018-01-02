@@ -54,7 +54,7 @@ def delete_project():
     pass
 
 # This function is called by the autocomplete jquery and returns the user available
-@app.route("/mentions/registered/users/score.json/", methods=['POST'])
+@app.route("/mentions/registered/users/score.json/", methods=['GET'])
 @login_required
 def get_registered_users():
     """

@@ -9,7 +9,7 @@ function registerAtSign(event){
         $('#'+target_id).autocomplete({
         delimiter: " ",
         showNoSuggestionNotice: true,
-        type: "POST",
+        type: "GET",
         serviceUrl: "/mentions/registered/users/score.json",
         onSelect: function (suggestion) {
         $(this.id).autocomplete('dispose')
