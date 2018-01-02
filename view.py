@@ -48,7 +48,9 @@ def notification_center():
                 tags.a(msg.message,
                        Class="btn btn-default notification",
                        href=msg.link, role="button",
-                       onclick="""$.ajax({{type: 'POST',
+                       onclick="""$.ajax(
+                                        {{
+                                    type: 'POST',
                                     url: '/notifications/clicked/',
                                     data: {{
                                         'msg_id': '{1}'
@@ -85,7 +87,10 @@ def nav_bar():
                          View(
                              tags.div(tags.span(Class="glyphicon glyphicon-log-in", style="margin-right: 5%"), "Login"),
                              'login',
-                             next=request.path))
+                             next=request.path)),
+                RawTag(tags.li(
+                       tags.a(Class="glyphicon glyphicon-question-sign", alt="Help",
+                              href=url_for('help'))))
             )
 
         )
@@ -140,7 +145,10 @@ def nav_bar():
                                                  style="margin-right: 5%; color:#009999"),
                                        current_user.username+"`s Profile"), 'my_profile'),
                          View(tags.div(tags.span(Class="glyphicon glyphicon-log-out text-danger", style="margin-right: 5%"),
-                                       "Logout"), 'logout'))
+                                       "Logout"), 'logout')),
+                RawTag(tags.li(
+                       tags.a(Class="glyphicon glyphicon-question-sign", alt="Help",
+                              href=url_for('help'))))
             )
 
         )

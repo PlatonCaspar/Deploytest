@@ -415,6 +415,10 @@ class PatchDocument(db.Model):
         else:
             return only_name[0]+" "+str(self.patch_document_description)
 
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
 
 class DeviceDocument(db.Model):
     device_document_id = db.Column(db.Integer, primary_key=True)

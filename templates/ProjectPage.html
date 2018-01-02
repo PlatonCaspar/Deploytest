@@ -132,10 +132,18 @@
                     <form action="{{url_for('add_new_patch', project_id=project.project_name)}}" method="post">
                         <div class="form-group">
                             <textarea class="form-control" name="patch_description" rows="10"
-                            placeholder="Markdown is supported!"></textarea>
+                            placeholder="Markdown is supported!"
+                            {% if not current_user.is_authenticated %}
+                            disabled
+                            {% endif %}
+                        ></textarea>
                         </div>
                         <div class="form-group">
-                            <button class="btn btn-success btn-block" type="submit">Create</button>
+                            <button class="btn btn-success btn-block" type="submit"
+                            {% if not current_user.is_authenticated %}
+                            disabled
+                            {% endif %}>
+                            Create</button>
                         </div>
                     </form>
                 </div>
@@ -164,7 +172,10 @@
                 <div class="panel-body"><!--Buttons for editing-->
                     <div class="col-xs-12 col-md-12 col-ld-12">
                         <button type="button" class="btn btn-primary btn-sm pull-right" data-toggle="modal" 
-                        data-target="#editPatchModal{{patch.patch_id|string}}">
+                        data-target="#editPatchModal{{patch.patch_id|string}}"
+                        {% if not current_user.is_authenticated %}
+                        disabled
+                        {% endif %}>
                             Edit <span class="glyphicon glyphicon-edit"></span>
                         </button>
                     </div>
@@ -178,7 +189,10 @@
                                    onchange="document.getElementById('{{patch.patch_id|string}}btn').click()">
                             <button class="hidden" type="submit" id="{{patch.patch_id|string}}btn"></button>
                             <button class="btn btn-default" style="height: 10rem" type="button"
-                                    onclick="document.getElementById('{{patch.patch_id|string}}FileInput').click()">
+                                    onclick="document.getElementById('{{patch.patch_id|string}}FileInput').click()"
+                                    {% if not current_user.is_authenticated %}
+                                        disabled
+                                    {% endif %}>
                                 <span class="glyphicon glyphicon-file"
                                 style="font-size: 3rem"></span>
                             </button>
@@ -200,6 +214,23 @@
                                             <p style="word-break: break-all">{{file.name()}}</p>
                                         </div>
                                     </a>
+                                        <button class="btn btn-danger btn-sm" type="button"
+                                        {% if current_user.username =='Guest' %}
+                                        disabled
+                                        {% endif %}
+                                        style="position: absolute; top: 0; right: 1.5rem; z-index: 1;
+                                                box-shadow: 0 6px 6px 0 rgba(0,0,0,0.5)"
+                                        onclick="if(confirm('delete file?')){$.ajax({
+                                                    type: 'POST',
+                                                    url: '/project/patch/file/delete/do/',
+                                                    data: {
+                                                        'file_id': '{{file.patch_document_id|string}}'
+                                                    },
+                                                    success: window.location.reload(true)
+                                                });}">
+                                            <span class="glyphicon glyphicon-remove"></span>
+                                        </button>
+                                    
                                 </div>
                             </div>
 
@@ -274,6 +305,7 @@
     </div>
 
     {# edit Patch Area #}
+{% if current_user.is_authenticated %}
 
 {% for patch in project.project_patches %}
 <div class="modal fade" id="editPatchModal{{patch.patch_id}}" tabindex="-1" 
@@ -304,6 +336,7 @@ role="dialog" aria-labelledby="editPatchModalLabel{{patch.patch_id}}" aria-hidde
   </div>
 </div>
 {% endfor %}
+{% endif %}
 
 <script>
 

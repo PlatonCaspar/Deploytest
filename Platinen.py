@@ -1,5 +1,6 @@
 import os
 import time
+import markdown
 
 from flask import render_template, request, redirect, url_for, session, flash
 from flask_bootstrap import Bootstrap
@@ -87,6 +88,19 @@ def msg_read():
 @nav.login_manager.user_loader
 def load_user(user_id):
     return data_Structure.User.get(user_id)
+
+
+@app.route('/help/', methods=['GET'])
+def help():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    # glyphicon glyphicon-question-sign
+
+    input_file = open("readme.md", mode="r", encoding="utf-8")
+    text = input_file.read()
+    html = "<div class=container>"
+    html += markdown.markdown(text)
+    html += "</div>"
+    return render_template('help.html', content=html)
 
 
 @app.route('/registeruser/', methods=['GET', 'POST'])
@@ -648,6 +662,7 @@ def delete_project(project_name):
 
 
 @app.route('/myprofile/')
+@login_required
 def my_profile():
     view.logged_user = view.get_logged_user()
     if current_user.username is 'Guest':
@@ -661,8 +676,13 @@ def my_profile():
 @login_required
 def change_username(uid):
     user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
-
     new_username = request.form.get('new_username')
+    if data_Structure.User.query.filter_by(username=new_username).all():
+        flash("""Username is already taken, 
+             nothing was changed (your username: {})!""".format(user_to_change.username),
+             'warning')
+        return redirect(request.referrer or url_for('start'))
+
     user_to_change.username = new_username
     data_Structure.db.session.commit()
     return redirect(url_for('my_profile'))
@@ -998,6 +1018,19 @@ def patch_add_file():
         flash('some error occured //patch_add_file()// (no file was sent)', 'warning')
 
     return redirect(url_for('show_project', project_name=patch.project_id))
+
+@app.route('/project/patch/file/delete/do/', methods=['POST'])
+@login_required
+def delete_patch_file():
+    file_id = request.values.get('file_id')
+    try:
+        file_ = data_Structure.PatchDocument.query.get(int(file_id))
+        file_.delete()
+        return "200"
+    except:
+        flash('some error occured in //delete_patch_file()//', 'danger')
+        return "400"
+
 
 @app.route('/board/patch/check/', methods=['POST'])
 def check_patch():
