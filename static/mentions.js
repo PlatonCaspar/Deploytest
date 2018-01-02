@@ -11,8 +11,9 @@ function registerAtSign(event){
         type: 'GET',
         delimiter: " ",
         showNoSuggestionNotice: true,
-        serviceUrl: "http://localhost/mentions/registered/users/score/",
+        serviceUrl: "/mentions/registered/users/score/",
         onSelect: function (suggestion) {
+            console.log(suggestion)
         $(this.id).autocomplete('dispose')
         
     }
