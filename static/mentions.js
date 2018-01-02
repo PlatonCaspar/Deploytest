@@ -6,11 +6,11 @@
 function registerAtSign(event){
     var target_id = event.target.id
     if (event.key == "@"){
+        console.log("registerAtSign was called");
         $('#'+target_id).autocomplete({
         delimiter: " ",
         showNoSuggestionNotice: true,
-        type: "GET",
-        serviceUrl: "/mentions/registered/users/score.json",
+        serviceUrl: "/mentions/registered/users/score/",
         onSelect: function (suggestion) {
         $(this.id).autocomplete('dispose')
         

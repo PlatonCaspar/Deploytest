@@ -1,7 +1,7 @@
 import flask_sqlalchemy
 from flask import Flask
 from werkzeug.utils import secure_filename
-from os import urandom, path
+from os import urandom, path, remove
 from flask import url_for, flash
 from passlib.hash import pbkdf2_sha256
 from flask_login import current_user, AnonymousUserMixin
@@ -417,6 +417,8 @@ class PatchDocument(db.Model):
 
     def delete(self):
         db.session.delete(self)
+        print(path.join(UPLOAD_FOLDER, self.name()))
+        remove(path.join(UPLOAD_FOLDER, self.name()))
         db.session.commit()
 
 

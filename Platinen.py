@@ -53,8 +53,9 @@ def is_logged_in():
 def delete_project():
     pass
 
+
 # This function is called by the autocomplete jquery and returns the user available
-@app.route("/mentions/registered/users/score.json/", methods=['GET'])
+@app.route("/mentions/registered/users/score/", methods=['GET'])
 @login_required
 def get_registered_users():
     """
@@ -65,9 +66,13 @@ def get_registered_users():
         { "value": "United States",        "data": "US" }
     ]
     """
+    req_str = request.values.get('query').strip('@')
     response_values = []
     for name in current_user.registered_users():
-        response_values.append({"value": '@'+name, "data": name})
+        if name is 'Guest':
+            continue
+        if req_str in name:
+            response_values.append({"value": '@'+name+" ", "data": name})
 
     return dumps({"query": "Users", "suggestions": response_values})
 
