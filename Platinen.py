@@ -200,7 +200,9 @@ def delete_user():
             flash('User does not exist!', 'danger')
             return redirect(url_for('delete_user'))
         dele_user = data_Structure.User.query.get(int(user_form.uid.data))
-        if dele_user.username is 'Guest':
+        if dele_user.username == 'Guest':
+            # $.ajax({type:'post', url:'/deleteuser/', data:{'uid':'//enter uid here//', 'password':"abc"}})
+            print('Guest')
             data_Structure.db.session.object_session(dele_user).delete(dele_user)
             data_Structure.db.session.commit()
         elif pbkdf2_sha256.verify(user_form.password.data, dele_user.password_hashed_and_salted):
