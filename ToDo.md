@@ -2,6 +2,7 @@
 
 Add option for uploading an Avatar.
 
+<!-- Done
 # Mentions
  if a user is mentioned in a Comment, the user should get a notification with a link to the comment
 
@@ -17,6 +18,8 @@ a Notification class is needed
 + the target to be notificated to
 + if it is read or new
 + person who created notification
+
+Done-->
 
 
 # Components

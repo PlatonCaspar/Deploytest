@@ -21,7 +21,7 @@ writing
 within a comment will trigger a notification at Stefans Notification center and he will be redirected to that comment whrn clicking on that Notification
 
 ### Markdown support:
-Every Comment, and also every Patch description can now be formattet using the [Markdown Syntax](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
+Every Comment, and also every Patch description can now be formatted using the [Markdown Syntax](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
 
 ## Search Syntax:
 For easy use there were a few commands implemented that can be used to make your search more concrete:
