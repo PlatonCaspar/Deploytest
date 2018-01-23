@@ -12,3 +12,4 @@ datetime
 flask_migrate
 sqlalchemy
 markdown
+flask-testing

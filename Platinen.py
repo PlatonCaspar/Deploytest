@@ -1094,6 +1094,7 @@ if __name__ == '__main__':
     Bootstrap(app)
     SQLAlchemy(app)
     # nav.nav_logged_in.init_app(app)
+    data_Structure.create_database()
     nav.nav.init_app(app)
 
     register_renderer(app, 'own_nav_renderer', ownNavRenderer.own_nav_renderer)
