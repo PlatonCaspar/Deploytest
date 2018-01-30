@@ -42,14 +42,6 @@ def test_queries():
     with app.app_context():
         migrate_database()
 
-# data_Structure.db.create_all()
-def is_logged_in():
-    if session.get('logged_in'):
-        return True
-    else:
-        return False
-
-
 def delete_project():
     pass
 
@@ -1103,7 +1095,7 @@ if __name__ == '__main__':
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
     
-    app.run(debug=True, port=80, host='0.0.0.0')
+    app.run(debug=False, port=80, host='0.0.0.0')
     
 
     
