@@ -5,6 +5,10 @@ import ownNavRenderer
 from flask import request, url_for
 from flask_login import current_user
 
+def get_logged_user():
+    return current_user
+
+
 
 def write_code_for_search_bar():
     bar = tags.div(tags.form(tags.div(

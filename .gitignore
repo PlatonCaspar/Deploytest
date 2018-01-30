@@ -9,3 +9,4 @@ DHW_Database_Converter.py
 migrations/
 *.docx
 static/label.txt
+.temp
