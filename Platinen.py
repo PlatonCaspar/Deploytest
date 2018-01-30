@@ -114,7 +114,7 @@ def register_user():
             if data_Structure.User.query.filter_by(username=new_user.username).all() != []:
                 # check if user already exists
                 flash('User does already exist!', 'danger')
-                return redirect(url_for('register_user', redir=redir))
+                return redirect(url_for('register_user', redir=next))
             if data_Structure.User.query.filter_by(email=new_user.email).all() != []:
                 flash('There is already somone registered with the same Email adress!', 'danger')
                 return redirect(url_for('register_user', next=next))
