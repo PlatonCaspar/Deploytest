@@ -16,21 +16,23 @@ def get_logged_user():
 def write_code_for_search_bar():
     bar = tags.div(tags.form(tags.div(
                 tags.select(
-                    tags.option('All', value='All', Class="container-fluid panel-body"),
-                    tags.option("Boards", value='Boards', Class="container-fluid panel-body"),
-                    tags.option("Projects", value='Projects', Class="container-fluid panel-body"),
-                    tags.option("Devices", value='Devices', Class="container-fluid panel-body"),
+                    tags.option('All', value='All', Class=""),
+                    tags.option("Boards", value='Boards', Class=""),
+                    tags.option("Projects", value='Projects', Class=""),
+                    tags.option("Devices", value='Devices', Class=""),
                     Class="form-control selectpicker",
                     style="margin: auto data-width: auto", name="Selector"),
 
-                tags.input(Type="text", Class="form-control ", placeholder="Search", name="search_field"),
+                tags.input(Type="text", Class="form-control ", placeholder="Search",
+                           name="search_field"),
 
        
-                tags.button(tags.i(Class="glyphicon glyphicon-search", style="color:#009999"),
-                    Class="btn btn-default",
-                    Type="submit"),
+                tags.button(tags.i(Class="glyphicon glyphicon-search",
+                                   style="color:#009999"),
+                                   Class="btn btn-default",
+                                   Type="submit"),
        
-                Class="form-inline", style="width: 150%;"),
+                Class="form-inline"),
                 Class="form-inline", style="padding-top: 3%;", action='/',
                 method="post", name="nav_search_form"), Class="container-fluid")  # tags.html(),
 
