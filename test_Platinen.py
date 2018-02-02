@@ -164,7 +164,20 @@ class test_platos(TestCase):
                     }
         response = self.client.post("/addboard/scripted/test/",
                                     data=scr_data)
-        print(response.data)
+        assert "Success" in str(response.data)
+        assert "no" not in str(response.data)
+        response = self.client.post("/addboard/scripted/test/",
+                                    data=scr_data)
+        assert "exists" in str(response.data).lower()
+        scr_data['comment'] = "Test_Comment"
+        response = self.client.post("/addboard/scripted/test/",
+                                    data=scr_data)
+        assert "comment was added" in str(response.data).lower()
+        scr_data['board_id'] = "TEST_2"
+        response = self.client.post("/addboard/scripted/test/",
+                                    data=scr_data)
+        print(str(response.data))
+        assert "Success and Comment" in str(response.data)
         
 
 

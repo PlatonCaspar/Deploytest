@@ -292,6 +292,9 @@ def start():
 
 @app.route('/addboard/scripted/test/', methods=['POST'])
 def add_board_scripted():
+    if not request.args:
+        request.args = request.form
+
     board_id = request.args.get('board_id')
     project_name = request.args.get('project')
     ver = request.args.get('version')
@@ -299,7 +302,6 @@ def add_board_scripted():
     arg = request.args.get('result')
     arg_name = request.args.get("arg_name")
     comment = request.args.get('comment')
-    print(board_id)
     if not board_id and not project_name and not ver and not stat and not arg:
         return "No Success"
     board = data_Structure.Board.query.get(board_id)
