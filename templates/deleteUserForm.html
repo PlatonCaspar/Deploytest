@@ -1,16 +1,22 @@
-{%- extends 'base.html' %}
-{%- import 'own_wtf.html' as wtf %}
+{%- extends 'base.html' %} {% block content %}
 
-{% block content %}
-    <div class = "page-header">
-    <h1>Delete User:</h1>
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-md-6">
+            <div class="page-header">
+                <h1>Delete User:</h1>
+            </div>
+            <form action="{{url_for('delete_user')}}" method="post">
+                <div class="form-group">
+                    <input class="form-control" type="text" name=uid required placeholder="Please enter the User ID...">
+                </div>
+                <div class="form-group">
+                    <input class="form-control" name="password" type="password" required placeholder="Please enter YOUR password...">
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-danger">Delete User!</button></div>
+            </form>
+        </div>
     </div>
-    <div class=col-md-4 class = col-xs-1 >
-    {{ wtf.quick_form(form) }}
-    {{ form.hidden_tag }}
-
-
-
-    </div>
-
+</div> 
 {% endblock %}

@@ -57,7 +57,7 @@ class test_platos(TestCase):
         response = self.client.get('/registeruser/')
         assert "200" in response.status
         register_data = dict(password="123", password_again="123",
-                             username='test_user', email="test@test.com")
+                             username='test_user', email_adress="test@test.com")
         response = self.client.post('/registeruser/', data=register_data,
                                     follow_redirects=True)
         assert 'User was successfully added!' in str(response.data)
@@ -65,13 +65,13 @@ class test_platos(TestCase):
                                     follow_redirects=True)
         assert 'User does already exist!' in str(response.data)
         register_data = dict(password="123", password_again="123",
-                             username='test_user2', email="test@test.com")
+                             username='test_user2', email_adress="test@test.com")
         response = self.client.post('/registeruser/', data=register_data,
                                     follow_redirects=True)
         assert 'There is already somone registered with the same Email adress!' in str(response.data)
         register_data = dict(password="123", password_again="1234",
                              username='passwords_no_match',
-                             email="test@test.com")
+                             email_adress="test@test.com")
         response = self.client.post('/registeruser/', data=register_data,
                                     follow_redirects=True)
         #print(data_Structure.User.query.all())
@@ -79,7 +79,6 @@ class test_platos(TestCase):
         assert 'The Passwords do not match!' in str(response.data)
 
     def test_login(self):
-        print(data_Structure.User.query.all())
         response = self.client.post('/login/')
         assert "200" in response.status
         l_dict = dict(password="123", username='test_user_static')
@@ -96,9 +95,78 @@ class test_platos(TestCase):
                                     follow_redirects=True)
         assert "Password was not correct" in str(response.data)
 
+    def test_logout(self):
+        response = self.client.get('/logout/')
+        assert "/login/" in str(response.data)
+        l_dict = dict(password="123", username='test_user_static')
+        response = self.client.post('/login/', data=l_dict,
+                                    follow_redirects=True)
 
+        response = self.client.get('/logout/', follow_redirects=True)
+        assert "you were logged out successfully!" in str(response.data)
 
+        response = self.client.post('/logout/')
+        assert str(405) in response.status
     
+    def test_delete_user(self):
+        register_data = dict(password="123", password_again="123",
+                             username='test_user',
+                             email_adress="test@test.com")
+        response = self.client.post('/registeruser/', data=register_data,
+                                    follow_redirects=True)
+        assert "User was successfully added!" in str(response.data)
+        register_data = dict(password="123", password_again="123",
+                             username='Guest',
+                             email_adress="test_guest@test.com")
+        response = self.client.post('/registeruser/', data=register_data,
+                                    follow_redirects=True)
+        assert 'User was successfully added!' in str(response.data)
+        l_dict = dict(password="123", username='test_user_static')
+        response = self.client.post('/login/', data=l_dict,
+                                    follow_redirects=True)
+        assert "Your Login was succesfull" in str(response.data)
+        user = data_Structure.User.query.filter_by(username="test_user").first()
+        guest = data_Structure.User.query.filter_by(username="Guest").first()
+        response = self.client.get('/deleteuser/')
+        assert "200" in response.status
+        del_dict = dict(uid=guest.uid)
+        response = self.client.post('/deleteuser/', data=del_dict,
+                                    follow_redirects=True)
+        assert data_Structure.User.query.get(guest.uid) is None
+        assert "User was deleted successfully!" in str(response.data)
+        response = self.client.post('/deleteuser/', data=dict(uid=user.uid,
+                                                              password="123"),
+                                    follow_redirects=True)
+        assert "User was deleted successfully!" in str(response.data)
+
+    def test_show_registered_users(self):
+        l_dict = dict(password="123", username='test_user_static')
+        response = self.client.post('/login/', data=l_dict,
+                                    follow_redirects=True)
+        assert "Your Login was succesfull" in str(response.data)
+        response = self.client.get('/registeredusers/')
+        assert "200" in response.status
+
+    def test_start(self):
+        response = self.client.get('/')
+        assert "200" in response.status
+        search_dict = dict(search_field="", Selector="All")
+        response = self.client.post('/', data=search_dict)
+        assert "200" in response.status
+
+    def test_add_board_scripted(self):
+        scr_data = {"board_id": "TEST_1",
+                    "project": "Test_Project",
+                    "version": "2",
+                    "status": "working",
+                    "result": "Passed",
+                    "arg_name": "Test"
+                    }
+        response = self.client.post("/addboard/scripted/test/",
+                                    data=scr_data)
+        print(response.data)
+        
+
 
 
 if __name__ == "__main__":

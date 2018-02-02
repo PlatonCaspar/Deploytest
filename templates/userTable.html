@@ -1,11 +1,8 @@
-{%- extends 'base.html' %}
+{%- extends 'base.html' %} {% block content %}
+<div class=container>
+    <table class="table table-striped table-hover table-responsive">
 
-
-{% block content %}
-    <div class=container>
-        <table class="table table-striped table-hover table-responsive">
-
-            <thead>
+        <thead>
             <tr>
                 <th>Username</th>
                 <th>User ID</th>
@@ -13,26 +10,28 @@
 
 
             </tr>
-            </thead>
-            <tbody>
+        </thead>
+        <tbody>
             {% for row in args %}
 
-                <tr>
+            <tr>
 
-                    <td>{{ row.username }}</td>
-                    <td>{{ row.uid }}</td>
-                    <td>{{ row.email }}</td>
+                <td>{{ row.username }}</td>
+                <td>{{ row.uid }}</td>
+                <td>{{ row.email }}</td>
 
 
-                </tr>
+            </tr>
 
-                <ul class="pager">
-                    <li><a href={{ url_for('user_forgot_password') }}>Back</a></li>
-                </ul>
+
 
             {% endfor %}
-            </tbody>
-        </table>
-    </div>
+
+        </tbody>
+    </table>
+    <ul class="pager">
+        <li><a href="" onclick="window.document.location=window.document.referrer">Back</a></li>
+    </ul>
+</div>
 
 {% endblock %}

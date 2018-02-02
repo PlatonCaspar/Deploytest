@@ -197,7 +197,7 @@ def delete_user():
             print('Guest')
             data_Structure.db.session.object_session(dele_user).delete(dele_user)
             data_Structure.db.session.commit()
-        elif pbkdf2_sha256.verify(user_form.password.data, dele_user.password_hashed_and_salted):
+        elif pbkdf2_sha256.verify(user_form.password.data, current_user.password_hashed_and_salted):
             data_Structure.db.session.object_session(dele_user).delete(dele_user)
             data_Structure.db.session.commit()
         else:
@@ -294,30 +294,32 @@ def start():
 def add_board_scripted():
     board_id = request.args.get('board_id')
     project_name = request.args.get('project')
-    ver=request.args.get('version')
+    ver = request.args.get('version')
     stat = request.args.get('status')
     arg = request.args.get('result')
+    arg_name = request.args.get("arg_name")
     comment = request.args.get('comment')
     print(board_id)
-    if not board_id and not project and not ver and not stat and not arg : 
-        print('no Succes')
+    if not board_id and not project_name and not ver and not stat and not arg:
         return "No Success"
     board = data_Structure.Board.query.get(board_id)
     if board:
-        print('Board exists')
-        return "Success"#redirect(url_for('show_board_history', g_code=board_id))
+        if comment:
+            new_comment = data_Structure.History(comment, board_id)
+            data_Structure.db.session.add(new_comment)
+            data_Structure.db.session.commit()
+            return "Comment was added!"
+        return "Board Exists"
     else:
-        new_board=data_Structure.Board(board_id,project_name,ver)
-        new_board.args(['Test',arg])
-        print(new_board)
+        new_board = data_Structure.Board(board_id, project_name, ver)
+        new_board.args([arg_name, arg])
         data_Structure.db.session.add(new_board)
         data_Structure.db.session.commit()
         if comment:
             new_comment = data_Structure.History(comment, board_id)
             data_Structure.db.session.add(new_comment)
             data_Structure.db.session.commit()
-
-        
+            return "Success and Comment"
         return "Success"
 
 
