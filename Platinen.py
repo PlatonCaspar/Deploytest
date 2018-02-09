@@ -97,6 +97,7 @@ def help():
     html = "<div class=container>"
     html += markdown.markdown(text)
     html += "</div>"
+    input_file.close()
     return render_template('help.html', content=html)
 
 

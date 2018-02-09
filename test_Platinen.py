@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, url_for
 from flask_testing import TestCase
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
@@ -178,9 +178,13 @@ class test_platos(TestCase):
                                     data=scr_data)
         print(str(response.data))
         assert "Success and Comment" in str(response.data)
-        
 
-
+    def test_add__board(self):
+        response = self.client.post(url_for('add__board'))
+        self.assert400(response)
+        response = self.client.get(url_for('add__board'))
+        self.assert200(response)
+        # TODO Continue test_add__board 
 
 if __name__ == "__main__":
     unittest.main()
