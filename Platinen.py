@@ -195,7 +195,6 @@ def delete_user():
         dele_user = data_Structure.User.query.get(int(user_form.uid.data))
         if dele_user.username == 'Guest':
             # $.ajax({type:'post', url:'/deleteuser/', data:{'uid':'//enter uid here//', 'password':"abc"}})
-            print('Guest')
             data_Structure.db.session.object_session(dele_user).delete(dele_user)
             data_Structure.db.session.commit()
         elif pbkdf2_sha256.verify(user_form.password.data, current_user.password_hashed_and_salted):
@@ -334,11 +333,17 @@ def add__board():
     board_form.name.choices = addPlatineForm.load_choices()
     add_project_form = project_forms.AddProjectForm(request.form)
     if request.method == 'POST':
+        if board_form.code.data is None:
+            flash("Some strange error occured\nform.code.data was empty //add__board")
+            return redirect(url_for("add__board"))
         if data_Structure.Board.query.filter_by(
                 code=board_form.code.data).scalar() is not None:  # check if board already exists
             flash('Board does already exist in the database!', 'danger')
-            return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
-                                   search_form=searchForm.SearchForm())
+            return redirect(url_for("add__board"))
+        if not data_Structure.Project.query.get(board_form.name.data):
+            flash("The selected Project does not exist. Inform Admin","danger")
+            return redirect(url_for("add__board"))   
+            
         new_board = data_Structure.Board(code=board_form.code.data, project_name=board_form.name.data,
                                          ver=board_form.ver.data)
         data_Structure.db.session.add(new_board)
@@ -355,7 +360,7 @@ def add__board():
             return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
                                    search_form=searchForm.SearchForm())
 
-        return redirect(url_for("spitOut"))
+        return redirect(url_for("start"))
 
     return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
                            search_form=searchForm.SearchForm())
@@ -375,6 +380,12 @@ def add_project():
     nav.nav.register_element("frontend_top", view.nav_bar())
     add_project_form = project_forms.AddProjectForm(request.form)
     if request.method == 'POST':
+        print("\n*****\n\n", add_project_form.project_name.data , "Project Form\n\n*****\n")
+
+        # check if form contains data
+        if add_project_form.project_name.data == "":
+            flash("No Project data sent. Inform Stefan", "danger")
+            return redirect(url_for("add_project"))
         # check if Project already exists
         if data_Structure.Project.query.get(add_project_form.project_name.data) is not None:
             flash('Project ' + add_project_form.project_name.data + ' already exists!', 'danger')
@@ -384,9 +395,9 @@ def add_project():
             filename = None
             if 'upfile' not in request.files:  # //TODO I still need to  check if files are safe
                 image_path = None
-            print(request.files, 'upfile' not in request.files)
+            
             file = request.files.get('upfile')
-            print(file, file.filename, file.filename == '')
+            
             if file.filename is '':
                 image_path = None
             elif file and image_path is 'NE':
@@ -603,7 +614,7 @@ def edit_project_image(project_name):
 @login_required
 def upload_avatar():
     file = request.files.get('file')
-    print(str(request.files))
+
     filename = secure_filename(file.filename)
     if ".jpg" in filename.lower() or ".jpeg" in filename.lower() or ".bmp" in filename.lower() or ".png" in filename.lower():
         current_user.avatar(file)
@@ -927,7 +938,7 @@ def upload_device_document():
         data_Structure.db.session.commit()
         flash('file was uploaded successful.', 'success')
     else:
-        print('no file attached')
+        flash("There was no File attached!", "warning")
     return redirect(url_for('show_device', device_id=device.device_id))
 
 @app.route('/device/delete/do/', methods=['POST'])

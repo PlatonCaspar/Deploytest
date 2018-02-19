@@ -11,9 +11,18 @@ import data_Structure
 import nav
 import ownNavRenderer
 
+# Use this as output to see whats happening
+# print("\n*****\n\n", board_form.code.data, "Board_Form\n\n*****\n")
 
+def assertmsg(msg, response):
+    assert msg.lower() in str(response.data).lower()
+
+def assert302(response):
+    assert "302" in response.status
 
 class test_platos(TestCase):
+
+    
 
     def create_app(self):
 
@@ -176,15 +185,51 @@ class test_platos(TestCase):
         scr_data['board_id'] = "TEST_2"
         response = self.client.post("/addboard/scripted/test/",
                                     data=scr_data)
-        print(str(response.data))
         assert "Success and Comment" in str(response.data)
 
     def test_add__board(self):
         response = self.client.post(url_for('add__board'))
-        self.assert400(response)
+        assert "302" in response.status
         response = self.client.get(url_for('add__board'))
         self.assert200(response)
-        # TODO Continue test_add__board 
+
+        scr_data = {"code": "TEST_2",
+                    "name": "Test_Project",
+                    "ver" : "1.test"
+                    }
+        project = data_Structure.Project("Test_Project", "Test_Project_Description", None)
+        data_Structure.db.session.add(project)
+        data_Structure.db.session.commit()
+        response = self.client.post(url_for("add__board"), data=scr_data)
+        self.assert200(response)
+        assert data_Structure.Board.query.get(scr_data["code"]) is not None
+        scr_data = {"code": "TEST_3",
+                    "name": "INVALID_PROJECT",
+                    "ver": "1"}
+        response = self.client.post(url_for("add__board"), data=scr_data, follow_redirects=True)
+        self.assert200(response)
+        assertmsg("The selected Project does not exist. Inform Admin", response)
+        
+    def test_show_boards_of_project(self):
+        project = data_Structure.Project("Test_Project", "Test_Project_Description", None)
+        data_Structure.db.session.add(project)
+        data_Structure.db.session.commit()
+        response = self.client.get(url_for('show_boards_of_project', project_name="Test_Project"))
+        self.assert200(response)
+        response = self.client.post(url_for("show_boards_of_project", project_name="INVALID_PROJECT"))
+        self.assert200(response)
+
+    def test_add_project(self):
+        response = self.client.get(url_for("add_project"))
+        assert302(response)
+        self.test_login()
+        response = self.client.get(url_for("add_project"))
+        self.assert200(response)
+        response = self.client.post(url_for("add_project"))
+        self.assert400(response)
+        # assert "400" in response.status
+
+        
 
 if __name__ == "__main__":
     unittest.main()
