@@ -369,7 +369,7 @@ class Project(db.Model):
     project_patches = db.relationship("Patch", lazy='dynamic', uselist=True)
 
     def __init__(self, project_name: str,
-                 project_description: str, project_default_image_path: str):
+                 project_description: str, project_default_image_path):
         self.project_name = project_name
         self.project_description = project_description
         self.project_default_image_path = project_default_image_path

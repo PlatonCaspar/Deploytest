@@ -384,7 +384,9 @@ def add_project():
             filename = None
             if 'upfile' not in request.files:  # //TODO I still need to  check if files are safe
                 image_path = None
+            print(request.files, 'upfile' not in request.files)
             file = request.files.get('upfile')
+            print(file, file.filename, file.filename == '')
             if file.filename is '':
                 image_path = None
             elif file and image_path is 'NE':
