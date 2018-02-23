@@ -70,6 +70,7 @@ def nav_bar():
     if current_user.username is 'Guest':
         return ownNavRenderer.ExtendedNavbar(
             title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left", href=url_for('start')), 'start'),
+            root_class='navbar navbar-default navbar-fixed-top',
             items=(View('Start', 'start'),
                     Subgroup('Label',
                             View('Print Label', 'show_new_label')),
@@ -99,6 +100,7 @@ def nav_bar():
             title=View(tags.a(tags.img(src='/static/staticPictures/logo.png',
                                        width=200), 
                               Class="navbar-left"), 'start'),
+            root_class='navbar navbar-default navbar-fixed-top',
             items=(
                     View('Start', 'start'),
                     Subgroup('Label',

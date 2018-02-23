@@ -65,12 +65,7 @@
                                     data-target="#state_modal"><span class="glyphicon glyphicon-pencil"></span>
                             </button>
                         {% endif %}
-                        Patch: {{ g_board.patch|string }}
-                        {% if current_user.username != 'Guest' %}
-                            <button class="btn btn-default btn-xs" type="button" data-toggle="modal"
-                                    data-target="#patch_modal"><span class="glyphicon glyphicon-pencil"></span>
-                            </button>
-                        {% endif %}
+                        <span style="opacity: 0.5">Patch: {{ g_board.patch|string }}</span>
                     </small>
                 </h2>
                 <h3>

@@ -37,7 +37,7 @@ class own_nav_renderer(BootstrapRenderer):
 
         root = tags.nav() if self.html5 else tags.div(role='navigation')
         root['class'] = node.root_class
-        root['style'] = 'border-bottom-color: #009999'
+        root['style'] = 'border-bottom-color: #009999; opacity: 0.8;'
         cont = root.add(tags.div(_class='container-fluid'))
 
         # collapse button
