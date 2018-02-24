@@ -201,12 +201,11 @@ action="" is what we want, from http://www.ietf.org/rfc/rfc2396.txt:
   {{ form_errors(form, hiddens='only') }}
 
   {%- for field in form %}
-    {% if not bootstrap_is_hidden_field(field) -%}
+    
       {{ form_field(field,
                     form_type=form_type,
                     horizontal_columns=horizontal_columns,
                     button_map=button_map) }}
-    {%- endif %}
   {%- endfor %}
 
 </form>

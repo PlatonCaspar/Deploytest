@@ -380,10 +380,8 @@ def add_project():
     nav.nav.register_element("frontend_top", view.nav_bar())
     add_project_form = project_forms.AddProjectForm(request.form)
     if request.method == 'POST':
-        print("\n*****\n\n", add_project_form.project_name.data , "Project Form\n\n*****\n")
-
         # check if form contains data
-        if add_project_form.project_name.data == "":
+        if add_project_form.project_name.data == "" or add_project_form.project_name.data is None:
             flash("No Project data sent. Inform Stefan", "danger")
             return redirect(url_for("add_project"))
         # check if Project already exists
@@ -396,16 +394,17 @@ def add_project():
             if 'upfile' not in request.files:  # //TODO I still need to  check if files are safe
                 image_path = None
             
-            file = request.files.get('upfile')
+            else:
+                file = request.files.get('upfile')
             
-            if file.filename is '':
-                image_path = None
-            elif file and image_path is 'NE':
-                file_id = id(file.filename)
-                filename = secure_filename(str(file_id) + file.filename)
+                if file.filename is '':
+                    image_path = None
+                elif file and image_path is 'NE':
+                    file_id = id(file.filename)
+                    filename = secure_filename(str(file_id) + file.filename)
 
-                image_path = os.path.join(UPLOAD_FOLDER, filename)
-                file.save(image_path)
+                    image_path = os.path.join(UPLOAD_FOLDER, filename)
+                    file.save(image_path)
 
             project_to_add = data_Structure.Project(project_name=add_project_form.project_name.data,
                                                     project_description=add_project_form.project_description.data,
@@ -460,7 +459,7 @@ def del_board(board_delete=None):
             flash('Somehow the board could not be deleted', 'danger')
             return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
         if data_Structure.Board.query.filter_by(
-                code=board_form.code.data).scalar() is None and board_delete is None:  # check if board already exists
+                code=board_form.code.data).scalar() is None and board_delete is None:  # check if board no longer exists
             flash('Board was successfully deleted!', 'success')
             return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
     return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())

@@ -17,8 +17,10 @@ import ownNavRenderer
 def assertmsg(msg, response):
     assert msg.lower() in str(response.data).lower()
 
-def assert302(response):
+def assert302(response, target=None):
     assert "302" in response.status
+    if target:
+        assertmsg(target, response)
 
 class test_platos(TestCase):
 
@@ -225,11 +227,40 @@ class test_platos(TestCase):
         self.test_login()
         response = self.client.get(url_for("add_project"))
         self.assert200(response)
-        response = self.client.post(url_for("add_project"))
-        self.assert400(response)
-        # assert "400" in response.status
+        response = self.client.post(url_for("add_project"), follow_redirects=True)
+        self.assert200(response)
+        assertmsg("no project data", response)
+        project_data = dict(project_name="TEST_METHODE", project_description="TEST_DESC")
+        response = self.client.post(url_for("add_project"), data=project_data, follow_redirects=True)
+        self.assert200(response)
+        assertmsg(project_data["project_name"], response)
+        response = self.client.post(url_for("add_project"), data=project_data, follow_redirects=True)
+        self.assert200(response)
+        assertmsg("already exists", response)
 
+    # TODO implement test for uploading image
+
+    # TODO implement sth for testing "delete_history_all(history)"
+
+    def test_del_board(self):
+        url = url_for("del_board")
+        response = self.client.get(url)
+        assert302(response, url_for('login'))
+        response = self.client.post(url)
+        assert302(response, url_for("login"))
+        self.test_login()
+        response = self.client.get(url)
+        self.assert200(response)
+        response = self.client.post(url)
+        self.assert200(response)
+        assertmsg("not exist", response)
+        self.test_add__board()
+        assert data_Structure.Board.query.get("TEST_2") is not None
+        response = self.client.post(url_for("del_board"),
+                                    data=dict(code="TEST_2"))
+        self.assert200(response)
+        assertmsg("success", response)
+        assert data_Structure.Board.query.get("TEST_2") is None
         
-
 if __name__ == "__main__":
     unittest.main()
