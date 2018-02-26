@@ -428,6 +428,9 @@ def delete_history_all(history):
         os.remove(os.path.join(UPLOAD_FOLDER, image_to_delete.file_path))
         data_Structure.db.session.delete(image_to_delete)
         data_Structure.db.session.commit()
+    
+    for answer in history.answers:
+        delete_history_all(answer)
 
     data_Structure.db.session.delete(history)
     data_Structure.db.session.commit()

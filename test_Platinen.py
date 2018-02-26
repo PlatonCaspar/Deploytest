@@ -279,7 +279,6 @@ class test_platos(TestCase):
         form_data = dict(send="True", history="TEST_HISTORY")
         self.test_login()
         response = self.client.post(url_for(fname, g_code="TEST_2"), data=form_data, follow_redirects=True)
-        print("\n*****\n\n", response.data, "add forrm\n\n*****\n")        
         assertmsg("TEST_HISTORY", response)
         self.assert200(response)
 
@@ -295,6 +294,30 @@ class test_platos(TestCase):
         response = self.client.post(url_for(fname, g_code="TEST_2"), data=form_data, follow_redirects=True)
         self.assert200(response)
         assertmsg("The comment was deleted", response)
+        ###
+        # There is a Test for deleting all answers in test_answer_board_comment()
+        ####
+
+    def test_answer_board_comment(self):
+        fname = "answer_board_comment"
+        response = self.client.get(url_for(fname))
+        assert "405" in str(response.status)
+        self.test_add__board()
+        form_data = dict(send="True", history="TEST_HISTORY")
+        self.test_login()
+        response = self.client.post(url_for("show_board_history", g_code="TEST_2"), data=form_data)
+        test_history = data_Structure.History.query.filter_by(history="TEST_HISTORY").first()
+        # up now was creating a comment
+        form_data = dict(text="TEST_ANSWER")
+        response = self.client.post(url_for(fname), data=form_data, follow_redirects=True)
+        print("\n*****\n\n", response.data, "test_answer\n\n*****\n")
+        assertmsg("TEST_ANSWER", response)
+        self.assert200(response)
+        
+        
+               
+
+
         
         
         
