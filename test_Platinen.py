@@ -261,6 +261,43 @@ class test_platos(TestCase):
         self.assert200(response)
         assertmsg("success", response)
         assert data_Structure.Board.query.get("TEST_2") is None
+        response = self.client.post(url, data=dict(code="TEST_2"))
+        self.assert200(response)
+        assertmsg("not exist", response)
+
+    def test_show_board_history(self):
+        fname = "show_board_history"
+        response = self.client.get(url_for(fname, g_code="HALLO", follow_redirects=True))
+        # assertmsg("not exist", response)
+        assert302(response)
+        self.test_add__board()
+        response = self.client.get(url_for(fname, g_code="TEST_2"))
+        self.assert200(response)
+        response = self.client.post(url_for(fname, g_code="TEST_2"))
+        self.assert200(response)
+        # Add History Form
+        form_data = dict(send="True", history="TEST_HISTORY")
+        self.test_login()
+        response = self.client.post(url_for(fname, g_code="TEST_2"), data=form_data, follow_redirects=True)
+        print("\n*****\n\n", response.data, "add forrm\n\n*****\n")        
+        assertmsg("TEST_HISTORY", response)
+        self.assert200(response)
+
+        # Edit History Form
+        test_history = data_Structure.History.query.filter_by(history="TEST_HISTORY").first()
+        form_data = dict(send_edit="True", history_id=str(test_history.id), history="TEST_EDIT_HISTORY")
+        response = self.client.post(url_for(fname, g_code="TEST_2"), data=form_data, follow_redirects=True)
+        assertmsg("TEST_EDIT_HISTORY", response)
+        self.assert200(response)
+        
+        # Delete History Form
+        form_data = dict(delete="True", history_id=str(test_history.id))
+        response = self.client.post(url_for(fname, g_code="TEST_2"), data=form_data, follow_redirects=True)
+        self.assert200(response)
+        assertmsg("The comment was deleted", response)
+        
+        
+        
         
 if __name__ == "__main__":
     unittest.main()

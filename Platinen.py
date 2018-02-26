@@ -500,11 +500,14 @@ def getSortKeyHistory(h):
     return h.time_date_datetime()
 
 
-@app.route('/board/show/<g_code>/', methods=['POST', 'GET', ])  # shows board History
+@app.route('/board/show/<g_code>/', methods=['POST', 'GET'])  # shows board History
 def show_board_history(g_code):
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     tg_board = data_Structure.Board.query.get(g_code)
+    if not tg_board:
+        flash("Board \"{}\" does not exist.".format(g_code), "warning")
+        return redirect(url_for('start'))
     add_form = HistoryForm(request.form)
     edit_form = EditHistoryForm(request.form)
 
@@ -521,6 +524,7 @@ def show_board_history(g_code):
     elif request.method == 'POST' and edit_form.delete.data:
         history = data_Structure.History.query.get(int(edit_form.history_id.data))
         delete_history_all(history)
+        flash("The comment was deleted")
         return redirect(url_for('show_board_history', g_code=g_code))        
 
     if edit_form is not None:
