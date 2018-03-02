@@ -309,10 +309,13 @@ class test_platos(TestCase):
         test_history = data_Structure.History.query.filter_by(history="TEST_HISTORY").first()
         # up now was creating a comment
         form_data = dict(text="TEST ANSWER")
-        print("\n*****\n\n", url_for(fname, parent_id=test_history.id), "test_answer\n\n*****\n")
-        response = self.client.post(url_for(fname, parent_id=test_history.id), data=form_data, follow_redirects=True)
+        print("\n*****\n\n", url_for(fname, parent_id=test_history.id),
+              "test_answer\n\n*****\n")
+        response = self.client.post(url_for(fname, parent_id=test_history.id),
+                                    data=form_data,
+                                    follow_redirects=True,
+                                    )
         print("\n*****\n\n", response.data, "test_answer\n\n*****\n")
-        # TODO Problem with redirection, function wants to redirect to referrer but there is none....
         assertmsg("TEST ANSWER", response)
         self.assert200(response)
         
