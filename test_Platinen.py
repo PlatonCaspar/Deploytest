@@ -58,8 +58,6 @@ class test_platos(TestCase):
         data_Structure.db.session.remove()
         data_Structure.db.drop_all()
 
-    # render_templates = False
-
     def test_help(self):
         response = self.client.get("/help/")
         assert "200" in response.status
@@ -85,7 +83,6 @@ class test_platos(TestCase):
                              email_adress="test@test.com")
         response = self.client.post('/registeruser/', data=register_data,
                                     follow_redirects=True)
-        #print(data_Structure.User.query.all())
 
         assert 'The Passwords do not match!' in str(response.data)
 
@@ -95,7 +92,6 @@ class test_platos(TestCase):
         l_dict = dict(password="123", username='test_user_static')
         response = self.client.post('/login/', data=l_dict,
                                     follow_redirects=True)
-        # print(response.data)
         assert "Your Login was succesfull" in str(response.data)
         l_dict = dict(password="123", username='not_exists')
         response = self.client.post('/login/', data=l_dict,
@@ -240,8 +236,6 @@ class test_platos(TestCase):
 
     # TODO implement test for uploading image
 
-    # TODO implement sth for testing "delete_history_all(history)"
-
     def test_del_board(self):
         url = url_for("del_board")
         response = self.client.get(url)
@@ -332,15 +326,25 @@ class test_platos(TestCase):
         self.test_add_project()
         response = self.client.get(url_for(fname, project_name="TEST_METHODE"))
         self.assert200(response)
-        assertmsg("TEST_METHODE", response)
-        
-        
-               
+        assertmsg("TEST_METHODE", response)  
+        self.test_add__board()
+        response = self.client.get(url_for(fname, project_name="Test_Project"))
+        self.assert200(response)
+        assertmsg("TEST_2", response)
 
-
+    # TODO: delete_project_image
+    # TODO: edit_project_image
+    # TODO: upload_avatar
+    # TODO: delete_history_image
+    # TODO: board_history_add_file
+    # TODO: delete_project                
         
-        
-        
+    def test_my_profile(self):
+        response = self.client.get(url_for("my_profile"))
+        assert302(response)
+        self.test_login()
+        response = self.client.get(url_for("my_profile"))
+        self.assert200(response)
         
 if __name__ == "__main__":
     unittest.main()

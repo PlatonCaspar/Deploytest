@@ -90,7 +90,7 @@ search_bar = RawTag(tags.li(tags.a(tags.span(Class="glyphicon glyphicon-search",
 
 @nav.nav.navigation()
 def nav_bar():
-    print(tags.li(write_code_for_search_bar(), Class='dropdown'))
+    # print(tags.li(write_code_for_search_bar(), Class='dropdown'))
     if current_user.username is 'Guest':
         return ownNavRenderer.ExtendedNavbar(
             title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left", href=url_for('start')), 'start'),

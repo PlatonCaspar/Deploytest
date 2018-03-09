@@ -235,12 +235,9 @@ def start():
     results_devices = None
     users = data_Structure.db.session.query(data_Structure.User.username).all()
     if request.method == 'POST':
-        print(request.form)
         if request.form.get('submit_main') is None:
             search_word = request.form.get('search_field')
-            search_area = request.form.get('selector')
-            print(search_word, "search word", search_word is "")
-            
+            search_area = request.form.get('selector')          
 
         else:
             search_word = request.form.get('search_field_main')
@@ -601,7 +598,7 @@ def delete_project_image(project_name):
     return redirect(url_for('show_project', project_name=project_name))
 
 
-@app.route('/project/edit/image/<project_name>', methods=['POST'])
+@app.route('/project/edit/image/<project_name>/', methods=['POST'])
 @login_required
 def edit_project_image(project_name):
     view.logged_user = view.get_logged_user()
