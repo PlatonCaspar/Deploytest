@@ -235,15 +235,17 @@ def start():
     results_devices = None
     users = data_Structure.db.session.query(data_Structure.User.username).all()
     if request.method == 'POST':
+        print(request.form)
         if request.form.get('submit_main') is None:
             search_word = request.form.get('search_field')
-            search_area = request.form.get('Selector')
+            search_area = request.form.get('selector')
+            print(search_word, "search word", search_word is "")
             
 
         else:
             search_word = request.form.get('search_field_main')
-
             search_area = 'All'
+        
         if "EXB" in search_word and "Q" in search_word:
             search_word = clean_exb_scan(search_word)
             exb_number = data_Structure.Exb.query.get(search_word)
@@ -260,6 +262,7 @@ def start():
             return redirect(url_for('show_board_history',
                                     g_code=data_Structure.db.session.query(data_Structure.Board).get(search_word).code))
         if search_area == 'Boards' or search_area == 'All':
+            print("*******\n\nBoads or All\n\n********")
             if search_word is "":
                 results_board = data_Structure.Board.query.all()
             else:
@@ -285,6 +288,7 @@ def start():
             flash('No results were found', 'warning')
             return render_template('base.html')
 
+        print(results_board)
         return render_template('table.html', args=results_board, projects=results_project,
                                search_form=searchForm.SearchForm(), search_word=search_word, components=results_component,
                                results_comments=results_comments, results_devices=results_devices)
