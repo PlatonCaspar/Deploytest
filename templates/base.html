@@ -40,15 +40,17 @@ style="padding-top: 70px"
 
     {% with messages = get_flashed_messages(with_categories='true') %}
         {% if messages %}
-        <div class="container-fluid">
+        <div class="container col-xs-12 col-md-4 col-lg-3" style="position: fixed; right: 0; z-index: 1">
                 {% for category, message in messages %}
-                    {% if category!='message' %}
-                    <div class="alert alert-{{ category }}">{{ message|safe }}</div>
-                    {% elif category=='message' %}
-                    <div class="alert alert-info">{{ message|safe }}</div>
-                    {% endif %}
-        
-
+                    <!--<div class="row">-->
+                        <div class="alert alert-{{ category }}" 
+                        style="position: relative; border-radius: 0"
+                        onclick="$(this).fadeOut(2000)" 
+                        onmouseover="$(this).stop(true, false,false).css('opacity', '1')"
+                        onmouseout="$(this).fadeOut(10000)">
+                        {{ message|safe}}
+                        </div>
+                    <!--</div>                -->
                 {% endfor %}
         </div>
         {% endif %}

@@ -179,6 +179,7 @@ def login():
 
 
 nav.login_manager.login_view = '/login/'  # //TODO I have to define where to redirect when login_required is not okay
+nav.login_manager.login_message_category = "info"
 
 
 @app.route('/deleteuser/', methods=['GET', 'POST'])
