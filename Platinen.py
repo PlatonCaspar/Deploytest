@@ -548,13 +548,17 @@ def show_board_history(g_code):
 def answer_board_comment():
     parent_id = request.args.get('parent_id')
     text = request.form.get('text')
+    parent = None
     try:
         parent = data_Structure.History.query.get(int(parent_id))
         parent.add_answer(text)
     except:
         flash('some error occured in //answer_board_comment()//', 'danger')
     finally:
-        return redirect(request.referrer or url_for("show_board_history", g_code=parent.board_code) or url_for("start"))
+        if parent:
+            return redirect(request.referrer or url_for("show_board_history", g_code=parent.board_code))
+                
+        return redirect(request.referrer or url_for("start"))
 
 
 @app.route('/project/show/<project_name>/', methods=['POST', 'GET'])

@@ -34,7 +34,7 @@ db = flask_sqlalchemy.SQLAlchemy(app, metadata=metadata)
 # needed for many to many relationship bewteen patch and board
 patch_board = db.Table('patch_board',
                        db.Column('board_code', db.String(500), db.ForeignKey('board.code', primary_key=True)),
-                       db.Column('patch_id', db.Integer, db.ForeignKey('patch.patch_id', primary_key=True))
+                       db.Column('patch_id', db.Integer, db.ForeignKey('patch.patch_id'))
                        )
 
 
