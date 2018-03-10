@@ -297,7 +297,7 @@ class test_platos(TestCase):
         response = self.client.get(url_for(fname))
         assert "405" in str(response.status)
         self.test_add__board()
-        form_data = dict(send="True", history="TEST_HISTORY")
+        form_data = dict(send="True", add_history="TEST_HISTORY")
         self.test_login()
         response = self.client.post(url_for("show_board_history", g_code="TEST_2"), data=form_data)
         test_history = data_Structure.History.query.filter_by(history="TEST_HISTORY").first()
