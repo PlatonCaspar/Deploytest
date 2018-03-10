@@ -259,7 +259,6 @@ def start():
             return redirect(url_for('show_board_history',
                                     g_code=data_Structure.db.session.query(data_Structure.Board).get(search_word).code))
         if search_area == 'Boards' or search_area == 'All':
-            print("*******\n\nBoads or All\n\n********")
             if search_word is "":
                 results_board = data_Structure.Board.query.all()
             else:
@@ -285,7 +284,6 @@ def start():
             flash('No results were found', 'warning')
             return render_template('base.html')
 
-        print(results_board)
         return render_template('table.html', args=results_board, projects=results_project,
                                search_form=searchForm.SearchForm(), search_word=search_word, components=results_component,
                                results_comments=results_comments, results_devices=results_devices)
@@ -515,12 +513,10 @@ def show_board_history(g_code):
         return redirect(url_for('start'))
     add_form = HistoryForm(request.form)
     edit_form = EditHistoryForm(request.form)
-
-    if request.method == 'POST' and add_form.send.data:
+    if request.method == 'POST' and request.form.get("add_history"):
 
         file = request.files.get('file')
-
-        add_board_history(board=tg_board, history=add_form.history.data, file=file)
+        add_board_history(board=tg_board, history=request.form.get("add_history"), file=file)
         return redirect(url_for('show_board_history', g_code=g_code))
     elif request.method == 'POST' and edit_form.send_edit.data:
         edit_board_history(board=tg_board, history=edit_form.history.data, history_id=edit_form.history_id.data)

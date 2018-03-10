@@ -270,7 +270,7 @@ class test_platos(TestCase):
         response = self.client.post(url_for(fname, g_code="TEST_2"))
         self.assert200(response)
         # Add History Form
-        form_data = dict(send="True", history="TEST_HISTORY")
+        form_data = dict(add_history="TEST_HISTORY")
         self.test_login()
         response = self.client.post(url_for(fname, g_code="TEST_2"), data=form_data, follow_redirects=True)
         assertmsg("TEST_HISTORY", response)
