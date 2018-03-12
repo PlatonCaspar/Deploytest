@@ -342,9 +342,16 @@ class test_platos(TestCase):
     def test_my_profile(self):
         response = self.client.get(url_for("my_profile"))
         assert302(response)
+        assertmsg(url_for("start"), response)
         self.test_login()
         response = self.client.get(url_for("my_profile"))
         self.assert200(response)
+    
+    def test_change_username(self):
+        fname = "change_username"
+        response = self.client.get(url_for(fname))
+        assert302(response)
+        
         
 if __name__ == "__main__":
     unittest.main()
