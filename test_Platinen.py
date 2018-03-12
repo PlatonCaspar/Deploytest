@@ -349,9 +349,81 @@ class test_platos(TestCase):
     
     def test_change_username(self):
         fname = "change_username"
+        response = self.client.get(url_for(fname, uid="RANDOM"))
+        self.assert405(response)
+        self.test_login()
+        # we are logged in as l_dict = dict(password="123", username='test_user_static') 
+        uid = data_Structure.User.query.filter_by(username="test_user_static").first().uid
+        response = self.client.post(url_for(fname, uid=uid), data=dict(new_username="new_username"))
+        assert302(response, url_for("my_profile"))
+        assert data_Structure.User.query.get(int(uid)).username == "new_username"
+        response = self.client.post(url_for(fname, uid=uid), 
+                                    data=dict(new_username="new_username"),
+                                    follow_redirects=True)
+        assertmsg("nothing was changed (your username", response)
+
+    def test_change_email(self):
+        fname = "change_email"
+        response = self.client.get(url_for(fname, uid="RANDOM"))
+        self.assert405(response)
+        self.test_login()
+        # we are logged in as l_dict = dict(password="123", username='test_user_static') 
+        uid = data_Structure.User.query.filter_by(username="test_user_static").first().uid
+        response = self.client.post(url_for(fname, uid=uid), data=dict(new_email="test_static_new@test.com"))
+        assert302(response, url_for("my_profile"))
+        assert "test_static_new@test.com" in data_Structure.User.query.get(int(uid)).email
+
+    def test_change_password(self):
+        fname = "change_password"
+        response = self.client.get(url_for(fname, uid="RANDOM"))
+        self.assert405(response)
+        self.test_login()
+        # we are logged in as l_dict = dict(password="123", username='test_user_static') 
+        uid = data_Structure.User.query.filter_by(username="test_user_static").first().uid
+        data = dict(old_password="1234")
+        response = self.client.post(url_for(fname, uid=uid), data=data, follow_redirects=True)
+        assertmsg("was incorrect", response)
+        data["old_password"] = "123"
+        data["new_password_1"] = "1234"
+        data["new_password_2"] = "12345"        
+        response = self.client.post(url_for(fname, uid=uid), data=data, follow_redirects=True)
+        assertmsg("did not match", response)
+        data["new_password_2"] = "1234"        
+        response = self.client.post(url_for(fname, uid=uid), data=data, follow_redirects=True)
+        assertmsg("password was changed successful", response)
+    
+    def test_user_forgot_password(self):
+        fname = "user_forgot_password"
         response = self.client.get(url_for(fname))
         assert302(response)
-        
-        
+        self.test_login()
+        response = self.client.get(url_for(fname))
+        self.assert200(response)
+
+    def test_user_forgot_change_password(self):
+        fname = "user_forgot_change_password"
+        dumb = data_Structure.User("DUMB", "1234", "dumb@dumb.com")
+        data_Structure.db.session.add(dumb)
+        data_Structure.db.session.commit()
+        self.test_login()
+        uid = data_Structure.User.query.filter_by(username="test_user_static").first().uid
+        data = dict(username="NOT_EXIST")
+        response = self.client.post(url_for(fname), data=data, follow_redirects=True)
+        assertmsg("does not exist", response)
+        data["username"] = "DUMB"
+        data["current_user_password"] = "1234"
+        response = self.client.post(url_for(fname), data=data, follow_redirects=True)
+        assertmsg("was not correct", response)
+        data["current_user_password"] = "123"
+        data["new_password_1"] = "1234"
+        data["new_password_2"] = "12345"
+        response = self.client.post(url_for(fname), data=data, follow_redirects=True)
+        assertmsg("new passwords did not match", response)
+        data["new_password_2"] = "1234"
+        response = self.client.post(url_for(fname), data=data, follow_redirects=True)
+        assertmsg("was changed successfully", response)
+
+    # Line 800 from 1100 - we are getting closer :)
+
 if __name__ == "__main__":
     unittest.main()

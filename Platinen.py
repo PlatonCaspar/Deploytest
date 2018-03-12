@@ -720,7 +720,9 @@ def change_username(uid):
 @login_required
 def change_email(uid):
     user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
-
+    if not user_to_change:
+        flash("User does not exist!", "danger")
+        return redirect(url_for("start"))
     new_email = request.form.get('new_email')
     user_to_change.email = new_email
     data_Structure.db.session.commit()
@@ -767,12 +769,12 @@ def delete_myself():
 @login_required
 def user_forgot_password():
     nav.nav.register_element("frontend_top", view.nav_bar())
-    flash('Pleas enter the uid, you can find it if you look for the user at ' + '<a href="' + url_for(
+    flash('Please enter the uid, you can find it if you look for the user at ' + '<a href="' + url_for(
         'show_registered_users') + '">Registered Users</a>', 'info')
     return render_template('forgot_password.html')
 
 
-# Sorry for the dumb user, I could not find a better word for this variable... :D
+
 @app.route('/userforgotpassword/change_password/', methods=['POST'])
 @login_required
 def user_forgot_change_password():
@@ -782,8 +784,8 @@ def user_forgot_change_password():
     if dumb_user_username:
         dumb_user = data_Structure.User.query.filter_by(username=dumb_user_username).first()
     if not dumb_user:
-        flash('User does not exist! (Username: ' + str(dumb_user_id) + ')', 'danger')
-        return redirect(url_for(user_forgot_password))
+        flash('User does not exist! (Username: ' + str(dumb_user_username) + ')', 'danger')
+        return redirect(url_for("user_forgot_password"))
     if pbkdf2_sha256.verify(request.form.get('current_user_password'), logged_user.password_hashed_and_salted):
         new_password = pbkdf2_sha256.hash(request.form.get('new_password_1'))
         if pbkdf2_sha256.verify(request.form.get('new_password_2'), new_password):
@@ -794,10 +796,10 @@ def user_forgot_change_password():
             return redirect(url_for('start'))
         else:
             flash('The new passwords did not match!', 'danger')
-            return redirect(url_for(user_forgot_password))
+            return redirect(url_for("user_forgot_password"))
     else:
         flash(current_user.username + ' your password was not correct!', 'danger')
-        return redirect(url_for(user_forgot_password))
+        return redirect(url_for("user_forgot_password"))
 
 
 @app.route('/boardhistory/change/version/<board_id>/', methods=['POST'])
