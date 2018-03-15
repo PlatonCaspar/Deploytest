@@ -24,7 +24,6 @@ def assert302(response, target=None):
 
 class test_platos(TestCase):
 
-    
 
     def create_app(self):
 
@@ -424,6 +423,41 @@ class test_platos(TestCase):
         assertmsg("was changed successfully", response)
 
     # Line 800 from 1100 - we are getting closer :)
+    def test_change_board_version(self):
+        fname = "change_board_version"
+        response = self.client.get(url_for(fname, board_id="FRAUD"))
+        self.assert405(response)
+        self.test_login()
+        response = self.client.get(url_for(fname, board_id="FRAUD"))
+        self.assert405(response)
+        self.test_add__board()
+        # creates a TEST_2 Board
+        c = "test_version"
+        b = "TEST_2"
+        response = self.client.post(url_for(fname, board_id=b),
+                                    data=dict(version_form=c),
+                                    follow_redirects=True)
+        assertmsg(c, response)
+        assertmsg(url_for("show_board_history", g_code=b), response)
+
+    def test_change_board_state(self):
+        fname = "change_board_state"
+        response = self.client.get(url_for(fname, board_id="FRAUD"))
+        self.assert405(response)
+        self.test_login()
+        response = self.client.get(url_for(fname, board_id="FRAUD"))
+        self.assert405(response)
+        self.test_add__board()
+        # creates a TEST_2 Board
+        c = "test_state"
+        b = "TEST_2"
+        response = self.client.post(url_for(fname, board_id=b),
+                                    data=dict(state_form=c),
+                                    follow_redirects=True)
+        assertmsg(c, response)
+        assertmsg(url_for("show_board_history", g_code=b), response)
+
+    # change_board_patch will not be tested since it is deprecated anyway.
 
 if __name__ == "__main__":
     unittest.main()

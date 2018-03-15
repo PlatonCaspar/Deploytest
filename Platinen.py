@@ -827,7 +827,7 @@ def change_board_state(board_id):
     data_Structure.db.session.commit()
     return redirect(url_for('show_board_history', g_code=board_id))
 
-
+# deprecated
 @app.route('/boardhistory/change/patch/<board_id>/', methods=['POST'])
 @login_required
 def change_board_patch(board_id):
@@ -839,6 +839,7 @@ def change_board_patch(board_id):
     board.patch = new_patch
     data_Structure.db.session.commit()
     return redirect(url_for('show_board_history', g_code=board_id))
+##########################################################################
 
 @app.route('/upgrade/')
 @login_required
