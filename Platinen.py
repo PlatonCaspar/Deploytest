@@ -841,7 +841,7 @@ def change_board_patch(board_id):
     return redirect(url_for('show_board_history', g_code=board_id))
 ##########################################################################
 
-@app.route('/upgrade/')
+@app.route('/upgrade/') # TODO find a way to test flask migrate
 @login_required
 def upgrade_within_app():
     migrate_database()

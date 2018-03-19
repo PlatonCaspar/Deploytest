@@ -459,5 +459,21 @@ class test_platos(TestCase):
 
     # change_board_patch will not be tested since it is deprecated anyway.
 
+    def test_edit_args(self):
+        fname = "edit_args"
+        response = self.client.get(url_for(fname))
+        self.assert405(response)
+        self.test_add__board()
+        # creates a TEST_2 Board
+        data = dict(name="TEST_ARG", board_id="TEST_2", value="TEST_ARG_VAL")
+        board = data_Structure.Board.query.get("TEST_2")
+        response = self.client.post(url_for(fname), data=data)
+        assert data["name"] in board.args().keys()
+        assert data["value"] is board.args()[data["name"]]
+        data = dict(name="TEST_ARG", board_id="TEST_2", delete_btn="True")
+        response = self.client.post(url_for(fname), data=data)
+        assert data["name"] not in board.args().keys()
+
+
 if __name__ == "__main__":
     unittest.main()
