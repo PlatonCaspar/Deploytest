@@ -307,7 +307,7 @@ class History(db.Model):
                 user.message("""{} mentioned you""".format(current_user.username),
                              self.link())
             else:
-                flash("You mentioned a User that does not exist! ({})".format(name))
+                flash("You mentioned a User that does not exist! ({})".format(name), "info")
 
 
 class Message(db.Model):
