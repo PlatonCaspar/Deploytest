@@ -467,12 +467,108 @@ class test_platos(TestCase):
         # creates a TEST_2 Board
         data = dict(name="TEST_ARG", board_id="TEST_2", value="TEST_ARG_VAL")
         board = data_Structure.Board.query.get("TEST_2")
-        response = self.client.post(url_for(fname), data=data)
+        response = self.client.post(url_for(fname, board_id=data["board_id"]),
+                                    data=data)
         assert data["name"] in board.args().keys()
-        assert data["value"] is board.args()[data["name"]]
+        assert data["value"] == board.args()[data["name"]]
+        # edit_arg (really edit an existing arg)
+        data = dict(name="TEST_ARG", board_id="TEST_2", value="TEST_ARG_VAL_Edited")
+        board = data_Structure.Board.query.get("TEST_2")
+        response = self.client.post(url_for(fname, board_id=data["board_id"]),
+                                    data=data)
+        assert data["name"] in board.args().keys()
+        assert data["value"] == board.args()[data["name"]]
+        # delete arg
         data = dict(name="TEST_ARG", board_id="TEST_2", delete_btn="True")
-        response = self.client.post(url_for(fname), data=data)
+        response = self.client.post(url_for(fname, board_id=data["board_id"]),
+                                    data=data)
         assert data["name"] not in board.args().keys()
+
+    def test_add_device_do(self):
+        fname = "add_device_do"
+        data = dict(device_name="Test Device", device_brand="Test Brand")
+        # correct method
+        response = self.client.get(url_for(fname))
+        self.assert405(response)
+        # add device
+        response = self.client.post(url_for(fname), data=data,
+                                    follow_redirects=True)
+        assertmsg('device \"'+data["device_name"]+'\" was added.', response)
+
+    def test_add_device(self):
+        fname = "add_device"
+        response = self.client.get(url_for(fname))
+        self.assert200(response)
+
+    def test_device_args(self):
+        fname = "device_args"
+        response = self.client.get(url_for(fname))
+        self.assert405(response)
+        self.test_add_device_do()
+        data = dict(name="Test arg", change_btn="True", value="Test arg value")
+        device = data_Structure.Device.query.filter_by(device_name="Test Device").first()
+        response = self.client.post(url_for(fname, device_id=device.device_id),
+                                    data=data,
+                                    follow_redirects=True)
+        assertmsg(data["value"], response)
+        data = dict(name="Test arg", change_btn="True",
+                    value="Test arg value edited")
+        response = self.client.post(url_for(fname, device_id=device.device_id),
+                                    data=data,
+                                    follow_redirects=True)
+        assertmsg(data["value"], response)
+        data = dict(name="Test arg", delete_btn="True", value="Test arg value")
+        response = self.client.post(url_for(fname, device_id=device.device_id),
+                                    data=data,
+                                    follow_redirects=True)
+        assert data["name"] not in device.args().keys()
+
+    def test_show_device(self):
+        fname = "show_device"
+        self.test_add_device_do() # Creates a "Test Device" Device
+        device = data_Structure.Device.query.filter_by(device_name="Test Device").first()        
+        response = self.client.get(url_for(fname, device_id=device.device_id))
+        self.assert200(response)
+
+    # TODO test_upload_device_document
+
+    def test_delete_device(self):
+        fname = "delete_device"
+        response = self.client.get(url_for(fname))
+        self.assert405(response)
+        self.test_add_device_do() # Creates a "Test Device" Device
+        device = data_Structure.Device.query.filter_by(device_name="Test Device").first()        
+        response = self.client.post(url_for(fname, device_id=device.device_id))
+        devices = data_Structure.Device.query.filter_by(device_name="Test Device").all()
+        assert302(response)
+        assert len(devices) is 0
+
+    def test_add_new_patch(self):
+        fname = "add_new_patch"
+        response = self.client.get(url_for(fname))
+        self.assert405(response)
+        self.test_add_project()  # creates a "TEST_METHODE" Project
+        project = data_Structure.Project.query.get("TEST_METHODE")
+        data = dict(patch_description="TEST Patch")
+        response = self.client.post(url_for(fname,
+                                            project_id=project.project_name),
+                                    data=data,
+                                    follow_redirects=True)
+        assertmsg("TEST Patch", response)
+
+    def test_edit_patch(self):
+        fname = "edit_patch"
+        self.test_add_new_patch()  # creates a Patch with "TEST Patch" description
+        patch = data_Structure.Patch.query.filter_by(description="TEST Patch").first()
+        data = dict(patch_id=patch.patch_id, patch_description="EDITED")
+        response = self.client.post(url_for(fname), data=data,
+                                    follow_redirects=True)
+        assertmsg("Description was changed!", response)
+        assertmsg(data["patch_description"], response)
+
+
+
+
 
 
 if __name__ == "__main__":
