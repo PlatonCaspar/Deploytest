@@ -8,6 +8,7 @@ class BetterRawTag(RawTag, NavigationItem):
     @property
     def visit_BetterRawTag(self): return False
 
+    @property
     def visit(self): return False
 
     @property
@@ -22,11 +23,12 @@ class BetterRawTag(RawTag, NavigationItem):
 
 
 class ExtendedNavbar(NavigationItem):
-    def __init__(self, title, root_class='navbar navbar-default', items=[], right_items=[]):
+    def __init__(self, title, root_class='navbar navbar-default ', items=[], right_items=[], non_collapse=[]):
         self.title = title
         self.root_class = root_class
         self.items = items
         self.right_items = right_items
+        self.non_collapse = non_collapse
 
 
 class own_nav_renderer(BootstrapRenderer):
@@ -37,7 +39,7 @@ class own_nav_renderer(BootstrapRenderer):
 
         root = tags.nav() if self.html5 else tags.div(role='navigation')
         root['class'] = node.root_class
-        root['style'] = 'border-bottom-color: #009999'
+        root['style'] = 'border-bottom-color: #009999; opacity: 0.8;'
         cont = root.add(tags.div(_class='container-fluid'))
 
         # collapse button
@@ -63,11 +65,15 @@ class own_nav_renderer(BootstrapRenderer):
                                   href=node.title.get_url()))
             else:
                 header.add(tags.span(node.title, _class='navbar-brand'))
-
+        
         bar = cont.add(tags.div(
             _class='navbar-collapse collapse',
             id=node_id,
         ))
+        bar_non_collapse = bar.add(tags.div(Class="navbar-header pull-right").add(tags.ul(Class="nav pull-left")))
+        for item in node.non_collapse:
+            bar_non_collapse.add(item.content)
+
         bar_list = bar.add(tags.ul(_class='nav navbar-nav'))
         for item in node.items:
 

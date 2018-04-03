@@ -42,14 +42,6 @@ def test_queries():
     with app.app_context():
         migrate_database()
 
-# data_Structure.db.create_all()
-def is_logged_in():
-    if session.get('logged_in'):
-        return True
-    else:
-        return False
-
-
 def delete_project():
     pass
 
@@ -105,6 +97,7 @@ def help():
     html = "<div class=container>"
     html += markdown.markdown(text)
     html += "</div>"
+    input_file.close()
     return render_template('help.html', content=html)
 
 
@@ -122,7 +115,7 @@ def register_user():
             if data_Structure.User.query.filter_by(username=new_user.username).all() != []:
                 # check if user already exists
                 flash('User does already exist!', 'danger')
-                return redirect(url_for('register_user', redir=redir))
+                return redirect(url_for('register_user', redir=next))
             if data_Structure.User.query.filter_by(email=new_user.email).all() != []:
                 flash('There is already somone registered with the same Email adress!', 'danger')
                 return redirect(url_for('register_user', next=next))
@@ -186,6 +179,7 @@ def login():
 
 
 nav.login_manager.login_view = '/login/'  # //TODO I have to define where to redirect when login_required is not okay
+nav.login_manager.login_message_category = "info"
 
 
 @app.route('/deleteuser/', methods=['GET', 'POST'])
@@ -202,10 +196,9 @@ def delete_user():
         dele_user = data_Structure.User.query.get(int(user_form.uid.data))
         if dele_user.username == 'Guest':
             # $.ajax({type:'post', url:'/deleteuser/', data:{'uid':'//enter uid here//', 'password':"abc"}})
-            print('Guest')
             data_Structure.db.session.object_session(dele_user).delete(dele_user)
             data_Structure.db.session.commit()
-        elif pbkdf2_sha256.verify(user_form.password.data, dele_user.password_hashed_and_salted):
+        elif pbkdf2_sha256.verify(user_form.password.data, current_user.password_hashed_and_salted):
             data_Structure.db.session.object_session(dele_user).delete(dele_user)
             data_Structure.db.session.commit()
         else:
@@ -244,13 +237,12 @@ def start():
     if request.method == 'POST':
         if request.form.get('submit_main') is None:
             search_word = request.form.get('search_field')
-            search_area = request.form.get('Selector')
-            
+            search_area = request.form.get('selector')          
 
         else:
             search_word = request.form.get('search_field_main')
-
             search_area = 'All'
+        
         if "EXB" in search_word and "Q" in search_word:
             search_word = clean_exb_scan(search_word)
             exb_number = data_Structure.Exb.query.get(search_word)
@@ -300,32 +292,36 @@ def start():
 
 @app.route('/addboard/scripted/test/', methods=['POST'])
 def add_board_scripted():
+    if not request.args:
+        request.args = request.form
+
     board_id = request.args.get('board_id')
     project_name = request.args.get('project')
-    ver=request.args.get('version')
+    ver = request.args.get('version')
     stat = request.args.get('status')
     arg = request.args.get('result')
+    arg_name = request.args.get("arg_name")
     comment = request.args.get('comment')
-    print(board_id)
-    if not board_id and not project and not ver and not stat and not arg : 
-        print('no Succes')
+    if not board_id and not project_name and not ver and not stat and not arg:
         return "No Success"
     board = data_Structure.Board.query.get(board_id)
     if board:
-        print('Board exists')
-        return "Success"#redirect(url_for('show_board_history', g_code=board_id))
+        if comment:
+            new_comment = data_Structure.History(comment, board_id)
+            data_Structure.db.session.add(new_comment)
+            data_Structure.db.session.commit()
+            return "Comment was added!"
+        return "Board Exists"
     else:
-        new_board=data_Structure.Board(board_id,project_name,ver)
-        new_board.args(['Test',arg])
-        print(new_board)
+        new_board = data_Structure.Board(board_id, project_name, ver)
+        new_board.args([arg_name, arg])
         data_Structure.db.session.add(new_board)
         data_Structure.db.session.commit()
         if comment:
             new_comment = data_Structure.History(comment, board_id)
             data_Structure.db.session.add(new_comment)
             data_Structure.db.session.commit()
-
-        
+            return "Success and Comment"
         return "Success"
 
 
@@ -337,11 +333,17 @@ def add__board():
     board_form.name.choices = addPlatineForm.load_choices()
     add_project_form = project_forms.AddProjectForm(request.form)
     if request.method == 'POST':
+        if board_form.code.data is None:
+            flash("Some strange error occured\nform.code.data was empty //add__board")
+            return redirect(url_for("add__board"))
         if data_Structure.Board.query.filter_by(
                 code=board_form.code.data).scalar() is not None:  # check if board already exists
             flash('Board does already exist in the database!', 'danger')
-            return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
-                                   search_form=searchForm.SearchForm())
+            return redirect(url_for("add__board"))
+        if not data_Structure.Project.query.get(board_form.name.data):
+            flash("The selected Project does not exist. Inform Admin","danger")
+            return redirect(url_for("add__board"))   
+            
         new_board = data_Structure.Board(code=board_form.code.data, project_name=board_form.name.data,
                                          ver=board_form.ver.data)
         data_Structure.db.session.add(new_board)
@@ -358,7 +360,7 @@ def add__board():
             return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
                                    search_form=searchForm.SearchForm())
 
-        return redirect(url_for("spitOut"))
+        return redirect(url_for("start"))
 
     return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
                            search_form=searchForm.SearchForm())
@@ -378,6 +380,10 @@ def add_project():
     nav.nav.register_element("frontend_top", view.nav_bar())
     add_project_form = project_forms.AddProjectForm(request.form)
     if request.method == 'POST':
+        # check if form contains data
+        if add_project_form.project_name.data == "" or add_project_form.project_name.data is None:
+            flash("No Project data sent. Inform Stefan", "danger")
+            return redirect(url_for("add_project"))
         # check if Project already exists
         if data_Structure.Project.query.get(add_project_form.project_name.data) is not None:
             flash('Project ' + add_project_form.project_name.data + ' already exists!', 'danger')
@@ -387,15 +393,18 @@ def add_project():
             filename = None
             if 'upfile' not in request.files:  # //TODO I still need to  check if files are safe
                 image_path = None
-            file = request.files.get('upfile')
-            if file.filename is '':
-                image_path = None
-            elif file and image_path is 'NE':
-                file_id = id(file.filename)
-                filename = secure_filename(str(file_id) + file.filename)
+            
+            else:
+                file = request.files.get('upfile')
+            
+                if file.filename is '':
+                    image_path = None
+                elif file and image_path is 'NE':
+                    file_id = id(file.filename)
+                    filename = secure_filename(str(file_id) + file.filename)
 
-                image_path = os.path.join(UPLOAD_FOLDER, filename)
-                file.save(image_path)
+                    image_path = os.path.join(UPLOAD_FOLDER, filename)
+                    file.save(image_path)
 
             project_to_add = data_Structure.Project(project_name=add_project_form.project_name.data,
                                                     project_description=add_project_form.project_description.data,
@@ -419,6 +428,9 @@ def delete_history_all(history):
         os.remove(os.path.join(UPLOAD_FOLDER, image_to_delete.file_path))
         data_Structure.db.session.delete(image_to_delete)
         data_Structure.db.session.commit()
+    
+    for answer in history.answers:
+        delete_history_all(answer)
 
     data_Structure.db.session.delete(history)
     data_Structure.db.session.commit()
@@ -450,7 +462,7 @@ def del_board(board_delete=None):
             flash('Somehow the board could not be deleted', 'danger')
             return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
         if data_Structure.Board.query.filter_by(
-                code=board_form.code.data).scalar() is None and board_delete is None:  # check if board already exists
+                code=board_form.code.data).scalar() is None and board_delete is None:  # check if board no longer exists
             flash('Board was successfully deleted!', 'success')
             return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
     return render_template('delBoard.html', form=board_form, search_form=searchForm.SearchForm())
@@ -491,19 +503,20 @@ def getSortKeyHistory(h):
     return h.time_date_datetime()
 
 
-@app.route('/board/show/<g_code>/', methods=['POST', 'GET', ])  # shows board History
+@app.route('/board/show/<g_code>/', methods=['POST', 'GET'])  # shows board History
 def show_board_history(g_code):
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     tg_board = data_Structure.Board.query.get(g_code)
+    if not tg_board:
+        flash("Board \"{}\" does not exist.".format(g_code), "warning")
+        return redirect(url_for('start'))
     add_form = HistoryForm(request.form)
     edit_form = EditHistoryForm(request.form)
-
-    if request.method == 'POST' and add_form.send.data:
+    if request.method == 'POST' and request.form.get("add_history"):
 
         file = request.files.get('file')
-
-        add_board_history(board=tg_board, history=add_form.history.data, file=file)
+        add_board_history(board=tg_board, history=request.form.get("add_history"), file=file)
         return redirect(url_for('show_board_history', g_code=g_code))
     elif request.method == 'POST' and edit_form.send_edit.data:
         edit_board_history(board=tg_board, history=edit_form.history.data, history_id=edit_form.history_id.data)
@@ -512,6 +525,7 @@ def show_board_history(g_code):
     elif request.method == 'POST' and edit_form.delete.data:
         history = data_Structure.History.query.get(int(edit_form.history_id.data))
         delete_history_all(history)
+        flash("The comment was deleted")
         return redirect(url_for('show_board_history', g_code=g_code))        
 
     if edit_form is not None:
@@ -532,13 +546,17 @@ def show_board_history(g_code):
 def answer_board_comment():
     parent_id = request.args.get('parent_id')
     text = request.form.get('text')
+    parent = None
     try:
         parent = data_Structure.History.query.get(int(parent_id))
         parent.add_answer(text)
     except:
         flash('some error occured in //answer_board_comment()//', 'danger')
     finally:
-        return redirect(request.referrer or start)
+        if parent:
+            return redirect(request.referrer or url_for("show_board_history", g_code=parent.board_code))
+                
+        return redirect(request.referrer or url_for("start"))
 
 
 @app.route('/project/show/<project_name>/', methods=['POST', 'GET'])
@@ -576,7 +594,7 @@ def delete_project_image(project_name):
     return redirect(url_for('show_project', project_name=project_name))
 
 
-@app.route('/project/edit/image/<project_name>', methods=['POST'])
+@app.route('/project/edit/image/<project_name>/', methods=['POST'])
 @login_required
 def edit_project_image(project_name):
     view.logged_user = view.get_logged_user()
@@ -604,7 +622,7 @@ def edit_project_image(project_name):
 @login_required
 def upload_avatar():
     file = request.files.get('file')
-    print(str(request.files))
+
     filename = secure_filename(file.filename)
     if ".jpg" in filename.lower() or ".jpeg" in filename.lower() or ".bmp" in filename.lower() or ".png" in filename.lower():
         current_user.avatar(file)
@@ -702,7 +720,9 @@ def change_username(uid):
 @login_required
 def change_email(uid):
     user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
-
+    if not user_to_change:
+        flash("User does not exist!", "danger")
+        return redirect(url_for("start"))
     new_email = request.form.get('new_email')
     user_to_change.email = new_email
     data_Structure.db.session.commit()
@@ -749,12 +769,12 @@ def delete_myself():
 @login_required
 def user_forgot_password():
     nav.nav.register_element("frontend_top", view.nav_bar())
-    flash('Pleas enter the uid, you can find it if you look for the user at ' + '<a href="' + url_for(
+    flash('Please enter the uid, you can find it if you look for the user at ' + '<a href="' + url_for(
         'show_registered_users') + '">Registered Users</a>', 'info')
     return render_template('forgot_password.html')
 
 
-# Sorry for the dumb user, I could not find a better word for this variable... :D
+
 @app.route('/userforgotpassword/change_password/', methods=['POST'])
 @login_required
 def user_forgot_change_password():
@@ -764,8 +784,8 @@ def user_forgot_change_password():
     if dumb_user_username:
         dumb_user = data_Structure.User.query.filter_by(username=dumb_user_username).first()
     if not dumb_user:
-        flash('User does not exist! (Username: ' + str(dumb_user_id) + ')', 'danger')
-        return redirect(url_for(user_forgot_password))
+        flash('User does not exist! (Username: ' + str(dumb_user_username) + ')', 'danger')
+        return redirect(url_for("user_forgot_password"))
     if pbkdf2_sha256.verify(request.form.get('current_user_password'), logged_user.password_hashed_and_salted):
         new_password = pbkdf2_sha256.hash(request.form.get('new_password_1'))
         if pbkdf2_sha256.verify(request.form.get('new_password_2'), new_password):
@@ -776,10 +796,10 @@ def user_forgot_change_password():
             return redirect(url_for('start'))
         else:
             flash('The new passwords did not match!', 'danger')
-            return redirect(url_for(user_forgot_password))
+            return redirect(url_for("user_forgot_password"))
     else:
         flash(current_user.username + ' your password was not correct!', 'danger')
-        return redirect(url_for(user_forgot_password))
+        return redirect(url_for("user_forgot_password"))
 
 
 @app.route('/boardhistory/change/version/<board_id>/', methods=['POST'])
@@ -807,7 +827,7 @@ def change_board_state(board_id):
     data_Structure.db.session.commit()
     return redirect(url_for('show_board_history', g_code=board_id))
 
-
+# deprecated ############################################################
 @app.route('/boardhistory/change/patch/<board_id>/', methods=['POST'])
 @login_required
 def change_board_patch(board_id):
@@ -819,8 +839,9 @@ def change_board_patch(board_id):
     board.patch = new_patch
     data_Structure.db.session.commit()
     return redirect(url_for('show_board_history', g_code=board_id))
+##########################################################################
 
-@app.route('/upgrade/')
+@app.route('/upgrade/') # TODO find a way to test flask migrate
 @login_required
 def upgrade_within_app():
     migrate_database()
@@ -928,7 +949,7 @@ def upload_device_document():
         data_Structure.db.session.commit()
         flash('file was uploaded successful.', 'success')
     else:
-        print('no file attached')
+        flash("There was no File attached!", "warning")
     return redirect(url_for('show_device', device_id=device.device_id))
 
 @app.route('/device/delete/do/', methods=['POST'])
@@ -1094,6 +1115,7 @@ if __name__ == '__main__':
     Bootstrap(app)
     SQLAlchemy(app)
     # nav.nav_logged_in.init_app(app)
+    data_Structure.create_database()
     nav.nav.init_app(app)
 
     register_renderer(app, 'own_nav_renderer', ownNavRenderer.own_nav_renderer)
@@ -1102,7 +1124,7 @@ if __name__ == '__main__':
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
     
-    app.run(debug=True, port=80, host='0.0.0.0')
+    app.run(debug=False, port=80, host='0.0.0.0')
     
 
     

@@ -65,12 +65,7 @@
                                     data-target="#state_modal"><span class="glyphicon glyphicon-pencil"></span>
                             </button>
                         {% endif %}
-                        Patch: {{ g_board.patch|string }}
-                        {% if current_user.username != 'Guest' %}
-                            <button class="btn btn-default btn-xs" type="button" data-toggle="modal"
-                                    data-target="#patch_modal"><span class="glyphicon glyphicon-pencil"></span>
-                            </button>
-                        {% endif %}
+                        <span style="opacity: 0.5">Patch: {{ g_board.patch|string }}</span>
                     </small>
                 </h2>
                 <h3>
@@ -631,9 +626,16 @@
                     <h4 class="modal-title">{{ 'Add a new Comment to '+g_board.code }}</h4>
                 </div>
                 <div class="modal-body">
-                    {{ wtf.quick_form(add_form) }}
-                    {{ add_form.hidden_tag }}
-
+                    <form action="{{url_for('show_board_history', g_code=g_board.code)}}" method="POST">
+                        <div class="form-group">
+                            <textarea name="add_history" id="history"
+                            class="form-control" rows="15" placeholder="Markdown is supported..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-success" type="submit">Create</button>
+                            <button class="btn btn-default pull-right" type="button" data-dismiss="modal" name="add_send">Cancel</button>
+                        </div>
+                    </form>
                     <script>
                     $('#history').keydown(registerAtSign)
                     </script>

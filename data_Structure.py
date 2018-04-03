@@ -34,7 +34,7 @@ db = flask_sqlalchemy.SQLAlchemy(app, metadata=metadata)
 # needed for many to many relationship bewteen patch and board
 patch_board = db.Table('patch_board',
                        db.Column('board_code', db.String(500), db.ForeignKey('board.code', primary_key=True)),
-                       db.Column('patch_id', db.Integer, db.ForeignKey('patch.patch_id', primary_key=True))
+                       db.Column('patch_id', db.Integer, db.ForeignKey('patch.patch_id'))
                        )
 
 
@@ -369,7 +369,7 @@ class Project(db.Model):
     project_patches = db.relationship("Patch", lazy='dynamic', uselist=True)
 
     def __init__(self, project_name: str,
-                 project_description: str, project_default_image_path: str):
+                 project_description: str, project_default_image_path):
         self.project_name = project_name
         self.project_description = project_description
         self.project_default_image_path = project_default_image_path
@@ -472,17 +472,17 @@ class Device(db.Model):
         if delete:
             arguments = json.loads(self.device_arguments)
             deleted = arguments.pop(to_add, None)
-            self.device_arguments=json.dumps(arguments)
+            self.device_arguments = json.dumps(arguments)
             return deleted
-            
+
         if to_add:
             if not self.device_arguments:
-                self.device_arguments = json.dumps({to_add[0]:to_add[1]})
+                self.device_arguments = json.dumps({to_add[0]: to_add[1]})
             else:
                 val = json.loads(self.device_arguments)
-                val[to_add[0]]=to_add[1]
+                val[to_add[0]] = to_add[1]
                 
-                self.device_arguments=json.dumps(val)
+                self.device_arguments = json.dumps(val)
 
         elif self.device_arguments:
             return json.loads(self.device_arguments)
@@ -490,11 +490,16 @@ class Device(db.Model):
             return {}
 
 
+# EXB-List from now on
 
 
-##EXB-List from now on
+def create_database(test=False):
+    if not test:
+        eng = db.create_all()
+    else:
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///static/Database/test_data.sql'
+        app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+    
 
-eng = db.create_all()
 
-
-#session = db.sessionmaker(bind=eng)
+# session = db.sessionmaker(bind=eng)

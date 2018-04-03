@@ -4,13 +4,16 @@
     Add a Board
 {% endblock %}
 {% block content %}
-     <div class="col-md-4 fa-history"
-         style=" padding-bottom: 3%;position: absolute; left: 30%; border: solid 1px #e7e7e7; border-radius: 3px 3px 3px 3px">
+<div class="container">
+<div class="row">
+<div class="col-md-2 col-lg-3"></div>
+     <div class="col-xs-12 col-md-8 col-lg-6"
+         style=" padding-bottom: 3%; border: solid 1px #e7e7e7; border-radius: 3px 3px 3px 3px">
         <div class="page-header">
             <h1>New Board:</h1>
         </div>
 
-            <form action="" method="post">
+        <form action="" method="post">
                 {{ wtf.form_field(form.code) }}
                 {{ wtf.form_field(form.name, required='true') }}
                 <button class="btn btn-default btn-group" type="button" data-toggle="modal" data-target="#addProject"
@@ -23,8 +26,10 @@
                 {{ wtf.form_field(form.submit, Class='btn btn-primary btn-block') }}
                 {{ form.hidden_tag }}
 
-            </form>
-
+        </form>
+    </div>
+</div>  
+</div>
             <div class="modal fade" id="addProject" tabindex="-1" role="dialog">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -51,10 +56,6 @@
                     </div>
                 </div>
             </div>
-
-    </div>
-
-
 
 {% endblock %}
 

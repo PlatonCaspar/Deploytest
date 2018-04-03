@@ -45,6 +45,10 @@
     
 }
 
+.visible_on_hover: hover{
+    opacity: 1;
+}
+
 .notification{
     margin: 5px;
 
