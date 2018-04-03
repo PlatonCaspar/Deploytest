@@ -95,7 +95,7 @@ if __name__=='__main__':
         print('init needed.')
     if not config:
         with open('./config.ini', 'w') as file:
-            config = ['labelprinter01.sdi.site\n']
+            config = ['labelprinter01.internal.sdi.tools\n']
             config.append('root\n')
             config.append('0000\n')
             file.writelines(config)

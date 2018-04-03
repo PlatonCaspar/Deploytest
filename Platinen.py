@@ -356,7 +356,7 @@ def add__board():
             flash('Board was successfully added!', 'success')
             label_file_cont = board_labels.generate_label(code_number=new_board.code, code_url=url_for('show_board_history', g_code=new_board.code, _external=True))
             board_labels.write_doc(label_file_cont)
-            board_labels.print_label("labelprinter01.sdi.site", "root", "0000")
+            board_labels.print_label("labelprinter01.internal.sdi.tools", "root", "0000")
             return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
                                    search_form=searchForm.SearchForm())
 
@@ -885,7 +885,7 @@ def add_device_do():
                 pass
             label = board_labels.generate_label(device_name, code_url=code_url)
             board_labels.write_doc(label)
-            board_labels.print_label("labelprinter01.sdi.site")
+            board_labels.print_label("labelprinter01.internal.sdi.tools")
         except:
             flash('An error occured while adding the device to the database', 'danger')
             return redirect(url_for('add_device'))
@@ -992,7 +992,7 @@ def print_label():
     
     label = board_labels.generate_label(text, code_url=code_url)
     board_labels.write_doc(label)
-    board_labels.print_label(address="labelprinter01.sdi.site")
+    board_labels.print_label(address="labelprinter01.internal.sdi.tools")
     return redirect(url_for('show_new_label'))
 
 @app.route('/project/patch/new/do/', methods=['POST'])

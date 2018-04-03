@@ -71,7 +71,7 @@ will return all working boards in stefans possession (they are possessed :) )
 4. On every single board you can now write comments. To every comment you can attach pictures or any other files like an Excel spreadsheet with measurement values to be used in the future. 
 5. If you - after a long long time - now find a board, you can search either for its project and get a short description of what it is for or you can check if there were any errors with this board or it was destroyed during some stresstest or whatever.
 
-*If someone lost his or her password, they just have to find someone who did not so that person can change the password for them under [/userforgotpassword/](http://platos.sdi.site/userforgotpassword/ "Click here to change the pasword of someone")*
+*If someone lost his or her password, they just have to find someone who did not so that person can change the password for them under [/userforgotpassword/](http://platos.internal.sdi.tools/userforgotpassword/ "Click here to change the pasword of someone")*
 
 
 
