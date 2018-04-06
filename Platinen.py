@@ -24,6 +24,7 @@ import searchForm
 import view
 import board_labels
 import search
+import HTTPErrorTable
 from data_Structure import app
 from historyForm import HistoryForm, EditHistoryForm
 
@@ -48,7 +49,23 @@ def delete_project():
 @app.errorhandler(500)
 def server_error(e):
     nav.nav.register_element("frontend_top", view.nav_bar())
-    return render_template("500.html"), 500    
+    return render_template("error.html", error=e, message=HTTPErrorTable.lookup(e)), 500    
+
+@app.errorhandler(404)
+def not_found_error(e):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    print("**************\n\n{}\n\n*****************".format(e))
+    return render_template("error.html",error=e, message=HTTPErrorTable.lookup(e)), 404
+
+@app.errorhandler(405)
+def not_found_error(e):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template("error.html",error=e, message=HTTPErrorTable.lookup(e)), 405
+
+@app.errorhandler(500)
+def not_found_error(e):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template("error.html",error=e, message=HTTPErrorTable.lookup(e)), 500
 
 # This function is called by the autocomplete jquery and returns the user available
 @app.route("/mentions/registered/users/score/", methods=['POST'])
