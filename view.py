@@ -106,7 +106,7 @@ def nav_bar():
                    ),
 
             right_items=(
-                Text(tags.a('gitlab', href='http://git.sdi.site/sdi/platos',  target="_blank")),
+                Text(tags.a('gitlab', href='http://git.internal.sdi.tools/sdi/platos',  target="_blank")),
                 Text(tags.span(Class="glyphicon glyphicon-user", style="margin-right: -20px; color:#009999")),
                 Subgroup('Hello Guest!',
                          View(
@@ -140,7 +140,7 @@ def nav_bar():
 
                    ),
             right_items=(
-                RawTag(tags.li(tags.a('gitlab', href='http://git.sdi.site/sdi/platos',
+                RawTag(tags.li(tags.a('gitlab', href='http://git.internal.sdi.tools/sdi/platos',
                                       target="_blank"))),
                 RawTag(
                     tags.li(
