@@ -24,6 +24,7 @@ import searchForm
 import view
 import board_labels
 import search
+import HTTPErrorTable
 from data_Structure import app
 from historyForm import HistoryForm, EditHistoryForm
 
@@ -45,6 +46,26 @@ def test_queries():
 def delete_project():
     pass
 
+@app.errorhandler(500)
+def server_error(e):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template("error.html", error=e, message=HTTPErrorTable.lookup(e)), 500    
+
+@app.errorhandler(404)
+def not_found_error(e):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    print("**************\n\n{}\n\n*****************".format(e))
+    return render_template("error.html",error=e, message=HTTPErrorTable.lookup(e)), 404
+
+@app.errorhandler(405)
+def not_found_error(e):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template("error.html",error=e, message=HTTPErrorTable.lookup(e)), 405
+
+@app.errorhandler(500)
+def not_found_error(e):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template("error.html",error=e, message=HTTPErrorTable.lookup(e)), 500
 
 # This function is called by the autocomplete jquery and returns the user available
 @app.route("/mentions/registered/users/score/", methods=['POST'])
@@ -525,7 +546,7 @@ def show_board_history(g_code):
     elif request.method == 'POST' and edit_form.delete.data:
         history = data_Structure.History.query.get(int(edit_form.history_id.data))
         delete_history_all(history)
-        flash("The comment was deleted")
+        flash("The comment was deleted", "info")
         return redirect(url_for('show_board_history', g_code=g_code))        
 
     if edit_form is not None:
