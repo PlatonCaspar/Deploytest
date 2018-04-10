@@ -453,17 +453,18 @@ class Device(db.Model):
     device_id = db.Column(db.Integer, primary_key=True)
     device_description = db.Column(db.Text)
     device_arguments = db.Column(db.Text)
-    device_documents = db.relationship('DeviceDocument', backref='device_device_documents_backref', lazy=True, uselist=True)
-    #device_documents_id = db.Column(db.Integer, db.ForeignKey('deviceDocument.device_document_id'))
+    device_documents = db.relationship('DeviceDocument',
+                                       backref='device_device_documents_backref',
+                                       lazy=True, uselist=True)
 
     def __init__(self, device_name, device_brand, device_description=None):
         self.device_name = device_name
         self.device_brand = device_brand
         if device_description:
             self.device_description = device_description
-    
+
     def link(self):
-    
+
         return url_for('show_device', device_id=self.device_id)
 
     def reduce(self):
@@ -485,7 +486,6 @@ class Device(db.Model):
             else:
                 val = json.loads(self.device_arguments)
                 val[to_add[0]] = to_add[1]
-                
                 self.device_arguments = json.dumps(val)
 
         elif self.device_arguments:
@@ -524,6 +524,7 @@ class PartType(db.Model):
                 attributes.pop(attributes.index(attr))
                 flash("key was removed", "success")
         self.json_attributes = json.dumps(attributes)
+        db.session.commit()
         return attributes
 
 
@@ -547,8 +548,22 @@ class Part(db.Model):
     def link(self):  # required for use with "History" Table
         return url_for('show_part', ids=self.ids)
 
-    def attributes(self, attr, val):
-        attributes = json.loads()
+    def attributes(self, attr=None, val=None, delete=False):
+        attributes = json.loads(self.json_attributes)
+        if attr in self.part_type.attributes():
+            if delete and attr:
+                val = attributes[attr]
+                attributes.pop(attr)
+                flash("value \"{}\" was deleted".format(val), "success")
+            else:
+                attributes[attr] = val
+                flash("value was set", "success")
+            self.json_attributes = json.dumps(attributes)
+            db.session.commit()
+        else:
+            flash("The Key is not available", "warning")
+            return
+        return attributes
 
 
 class Place(db.Model):
