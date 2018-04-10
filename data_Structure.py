@@ -508,7 +508,7 @@ class PartType(db.Model):
         self.json_attributes = json.dumps([])
         self.description = ""
 
-    def attributes(self, attr=None, delete=False):
+    def args(self, attr=None, delete=False):
         attributes = json.loads(self.json_attributes)
         if not attr:
             return attributes
@@ -534,21 +534,36 @@ class Part(db.Model):
     exb_number = db.Column(db.Integer)
     json_attributes = db.Column(db.Text)
     out = db.Column(db.Boolean)
-    # bookings = db.relationship()
+    recommended = db.Column(db.Integer)
+
+    bookings = db.relationship('Booking',
+                               backref='part',
+                               lazy='dynamic',
+                               uselist=True)
+    orders = db.relationship('Order',
+                             backref='part',
+                             lazy='dynamic',
+                             uselist=True)
+    reservations = db.relationship('Reservation',
+                                   backref='part',
+                                   lazy='dynamic',
+                                   uselist=True)
     comments = db.relationship('History', backref='part', lazy='dynamic',
                                uselist=True)
     # documents = db.relationship()
-    place = db.relationship('place', backref='part', lazy='dynamic',
-                            uselist=True)
+    place_rel = db.relationship('Place', backref='part', lazy='dynamic')
+    # project
 
     def __init__(self, part_type_id: int):
         self.json_attributes = json.dumps({})
         PartType.query.get(part_type_id).parts.append(self)
+        self.recommended = 0
+        self.exb_number = 0
 
     def link(self):  # required for use with "History" Table
         return url_for('show_part', ids=self.ids)
 
-    def attributes(self, attr=None, val=None, delete=False):
+    def args(self, attr=None, val=None, delete=False):
         attributes = json.loads(self.json_attributes)
         if attr in self.part_type.attributes():
             if delete and attr:
@@ -565,6 +580,108 @@ class Part(db.Model):
             return
         return attributes
 
+    def messages(self):
+        if (self.available() - self.recommended) < 0:
+            flash("The available parts are lower than the recommended value.",
+                  "warning")
+        if out:
+            flash("The part is in Use, therefore unavailable for now.",
+                  "danger")
+
+    def available(self):
+        p = 0
+        for res in filter(lambda k: k.deprecated is False, self.reservations):
+            p -= res.number
+        return self.in_stock()-p
+
+    def in_stock(self):
+        r = 0
+        for booking in filter(lambda k: k.deprecated is False, self.bookings):
+            r += booking.number
+        return r
+
+    def order(self, number):
+        process = Process()
+        order = Order()
+        order.number = number
+        db.session.add(process)
+        db.session.add(order)
+        process.orders.append(order)
+        self.orders.append(order)
+        db.session.commit()
+
+    def reserve(self):
+        process = Process()
+        reservation = Reservation()
+        reservation.number = number
+        db.session.add(process)
+        db.session.add(reservation)
+        process.orders.append(reservation)
+        self.orders.append(reservation)
+        db.session.commit()
+
+    def take(self):
+        if self.out:
+            flash("""Part is out right now. It is impossible to take it. 
+            The action will be cancelled.""", "danger")
+            return False
+        stocktaking_process = Process()
+        b = Booking()
+        b.number = count
+        db.session.add(stocktaking_process)
+        db.session.add(b)
+        stocktaking_process.bookings.append(b)
+        self.bookings.append(b)
+        db.session.commit()
+        return True
+
+    def stocktaking(self, count):
+        if self.out:
+            flash("""Part is out right now. It is impossible to take it.
+            The action will be cancelled.
+            Please use the place function to define a new storage Place
+            and if neccesary enter the new number of parts in stock.""",
+                  "danger")
+            return False
+        for booking in self.bookings:
+            booking.deprecated = True
+            booking.floating = False
+        stocktaking_process = Process()
+        b = Booking()
+        b.number = count
+        db.session.add(stocktaking_process)
+        db.session.add(b)
+        stocktaking_process.bookings.append(b)
+        self.bookings.append(b)
+        db.session.commit()
+
+    def place(self, place_id=None, count=None):
+        """Returns the place of the component. If a place id is given,
+        the place is changed to the new Place and then returned.
+        if Place was out due to booking, out will be set to False.
+        """
+        if place_id:
+            try:
+                self.place_rel = Place.query.get(int(place_id))
+                if self.out:
+                    self.out = False
+                    floating = filter(self.bookings, lambda k: k.floating is True)
+                    if len(floating) > 1:
+                        flash("""There were more open Bookings regarding this Part.
+                        Since this should be impossible all open bookings are closed.
+                        Please Count the remainig pieces!""", "danger")
+                    for f in floating:
+                        f.floating = False
+                    db.session.commit()
+                db.session.commit()
+                # if e.g. a new part is stored, the initial amount can be set
+                if count:
+                    self.stocktaking(count)
+            except:
+                flash("""An Error occured in part.place
+                    \nplace_id: {}""".format(place_id), "danger")
+        return self.place_rel
+
 
 class Place(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -576,12 +693,155 @@ class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.Text)
     address = db.Column(db.Text)
-    places = db.relationship('place', backref='room', lazy='dynamic',
+    places = db.relationship('Place', backref='room', lazy='dynamic',
                              uselist=True)
 
     def __init__(self, title, address):
         self.title = title
         self.address = address
+
+
+class Process(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+# start relationships
+    reservations = db.relationship(
+                                   'Reservation',
+                                   backref='process',
+                                   lazy='dynamic',
+                                   uselist=True
+                                   )
+    orders = db.relationship(
+                             'Order',
+                             backref='process',
+                             lazy='dynamic',
+                             uselist=True
+                             )
+    bookings = db.relationship(
+                             'Booking',
+                             backref='process',
+                             lazy='dynamic',
+                             uselist=True
+                             )
+    user = db.relationship('User', backref='processes', lazy='dynamic',
+                           uselist=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.uid'))
+# end relationships
+    datetime = db.Column(db.DateTime)
+
+    def __init__(self):
+        self.user = current_user
+        self.datetime = datetime.datetime.now()
+
+    def children(self):
+        if self.reservations:
+            return self.reservations
+        elif self.orders:
+            return self.orders
+        elif self.booking:
+            return self.booking
+        else:
+            flash("""
+                    That should not have happened. \n//process.children()//\n
+                    Please inform Stefan about this incident
+                  """,
+                  "warning"
+                  )
+            return None
+
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    process_id = db.Column(db.Integer, db.ForeignKey('process.id'))
+    part_ids = db.Column(db.Integer, db.ForeignKey('part.ids'))
+    number = db.Column(db.Integer)
+    deprecated = db.Column(db.Boolean)
+
+    floating = db.Column(db.Boolean)
+
+    def __init(self)__:
+        self.deprecated = False
+        self.floating = True
+
+    def user(self):
+        return self.process.user
+
+    def book(self):
+        b = Booking()
+        b.number = self.number
+        db.session.add(b)
+        # add booking to connected part bookings list
+        self.part.bookings.append(b)
+        # add booking to connected process bookings list
+        self.process.bookings.append(b)
+        self.deprecated = True
+        db.session.commit()
+
+    def delete(self, only=True):
+        db.session.delete(self)
+        db.session.commit()
+        if only:
+            flash('Order was removed from the table', "success")
+
+
+class Reservation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    process_id = db.Column(db.Integer, db.ForeignKey('process.id'))
+    part_ids = db.Column(db.Integer, db.ForeignKey('part.ids'))
+    number = db.Column(db.Integer)
+    deprecated = db.Column(db.Boolean)
+
+    duedate = db.Column(db.DateTime)
+
+    def __init(self)__:
+        self.deprecated = False
+
+    def user(self):
+        return self.process.user
+
+    def book(self):
+        b = Booking()
+        b.number = self.number * (-1)  # negative because of removal
+        db.session.add(b)
+        # add booking to connected part bookings list
+        self.part.bookings.append(b)
+        # add booking to connected process bookings list
+        self.process.bookings.append(b)
+        self.deprecated = True
+        self.part.out = True
+        db.session.commit()
+
+    def delete(self, only=True):
+        db.session.delete(self)
+        db.session.commit()
+        if only:
+            flash('Reservation was removed from the table', "success")
+
+
+class Booking(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    process_id = db.Column(db.Integer, db.ForeignKey('process.id'))
+    part_ids = db.Column(db.Integer, db.ForeignKey('part.ids'))
+    number = db.Column(db.Integer)
+    deprecated = db.Column(db.Boolean)
+
+    floating = db.Column(db.Boolean)
+
+    def __init(self)__:
+        self.deprecated = False
+        self.floating = True
+
+    def user(self):
+        return self.process.user
+
+    def book(self):  # no more boking possible if already booked
+        self.floating = True
+        db.session.commit()
+
+    def delete(self, only=True):
+        db.session.delete(self)
+        db.session.commit()
+        if only:
+            flash('Booking was removed from the table', "success")
 
 
 def create_database(test=False):
