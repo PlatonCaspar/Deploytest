@@ -1124,7 +1124,10 @@ def delete_document_func(document):
     data_Structure.db.session.commit()
     return True
 
-
+@app.route('/parts/parttype/create/', methods=['GET', 'POST'])
+def create_part_type():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template('create_part_type.html')
 
 
 
