@@ -16,6 +16,9 @@ import re
 RELATIVE_PICTURE_PATH = 'static/Pictures'
 UPLOAD_FOLDER = path.join(path.dirname(path.abspath(__file__)),
                              RELATIVE_PICTURE_PATH)
+RESERVATION = 0
+BOOKING = 1
+ORDER = 2
 
 
 app = Flask(__name__)
@@ -235,6 +238,7 @@ class History(db.Model):
                                                       lazy='dynamic', uselist=True))
     parent_id = db.Column(db.Integer, db.ForeignKey('history.id'))
     answers = db.relationship('History', uselist=True)
+    part_ids = db.Column(db.Integer, db.ForeignKey('part.ids'))
 
     def __init__(self, history: str, board_code=None, parent_id=None):
         self.board_code = board_code
@@ -265,7 +269,7 @@ class History(db.Model):
         if self.board_code:
             return url_for('show_board_history', g_code=self.board_code)+'#comment_id'+str(self.id)
         else:
-            return url_for('show_board_history', g_code=self.parent().board_code)+'#comment_id'+str(self.id)
+            return self.parent().link()+'#comment_id'+str(self.id)
 
     def reduce(self):
         return self.history.replace(" ", ";")+";"+str(self.added_by.username)+";"+self.edited_by.username
@@ -490,7 +494,79 @@ class Device(db.Model):
             return {}
 
 
-# EXB-List from now on
+# Components from now on
+class PartType(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text)
+    description = db.Column(db.Text)
+    json_attributes = db.Column(db.Text)
+    parts = db.relationship('Part', backref="part_type", lazy='dynamic',
+                            uselist=True)
+
+    def __init__(name, description=None):
+        self.name = name
+        self.json_attributes = json.dumps([])
+        self.description = ""
+
+    def attributes(self, attr=None, delete=False):
+        attributes = json.loads(self.json_attributes)
+        if not attr:
+            return attributes
+        else if attr and not delete:
+            if attr in attributes:
+                flash("key is already present. Nothing was changed", "warning")
+                return attributes
+            attributes.append(attr)
+            if attr in attributes:
+                flash("key {} was added".format(attr), "success")
+        else if attr and delete:
+            if attr in attributes:
+                attributes.pop(attributes.index(attr))
+                flash("key was removed", "success")
+        self.json_attributes = json.dumps(attributes)
+        return attributes
+
+
+class Part(db.Model):
+    ids = db.Column(db.Integer, primary_key=True)
+    part_type_id = db.Column(db.Integer, db.ForeignKey('parttype.id'))
+    exb_number = db.Column(db.Integer)
+    json_attributes = db.Column(db.Text)
+    out = db.Column(db.Boolean)
+    # bookings = db.relationship()
+    comments = db.relationship('History', backref='part', lazy='dynamic',
+                               uselist=True)
+    # documents = db.relationship()
+    place = db.relationship('place', backref='part', lazy='dynamic',
+                            uselist=True)
+
+    def __init__(self, part_type_id: int):
+        self.json_attributes = json.dumps({})
+        PartType.query.get(part_type_id).parts.append(self)
+
+    def link(self):  # required for use with "History" Table
+        return url_for('show_part', ids=self.ids)
+
+    def attributes(self, attr, val):
+        attributes = json.loads()
+
+
+class Place(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
+    part_ids = db.Column(db.Integer, db.ForeignKey('part.ids'))
+
+
+class Room(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.Text)
+    address = db.Column(db.Text)
+    places = db.relationship('place', backref='room', lazy='dynamic',
+                             uselist=True)
+
+    def __init__(self, title, address):
+        self.title = title
+        self.address = address
 
 
 def create_database(test=False):
@@ -499,7 +575,5 @@ def create_database(test=False):
     else:
         SQLALCHEMY_DATABASE_URI = 'sqlite:///static/Database/test_data.sql'
         app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
-    
-
 
 # session = db.sessionmaker(bind=eng)
