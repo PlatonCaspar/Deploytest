@@ -566,6 +566,15 @@ class test_platos(TestCase):
         assertmsg("Description was changed!", response)
         assertmsg(data["patch_description"], response)
 
+    def test_create_part_type(self):
+        fname = "create_part_type"
+        response = self.client.get(url_for(fname))
+        self.assert200(response)
+        data = {"name": "Test_PartType", "input:1": "arg1", "input:2": "arg2"}
+        response = self.client.post(url_for(fname), data=data)
+        part_type = data_Structure.PartType.query.filter_by(name=data["name"]).first()
+        assert "arg1" in part_type.args() and "arg2" in part_type.args()
+
 
 
 

@@ -4,17 +4,28 @@
 {% endblock %}
 {% block content %}
         <div class="container col-xs-12 col-md-8 col-lg-8">
-            <div class="" id="input_container">
-                <form action="#" method="POST">
+            <form action="{{url_for('create_part_type')}}" method="POST">
+                <div class="">
                     <div class="form-group">
-                        <input class="form-control" placeholder="Please enter a property..."
-                        id="input:1">
+                        <input class="form-control" placeholder="Please name the Type..." name="name" required>
                     </div>
-                </form>
-            </div>
+                </div>
+                <div class="" id="input_container">
+                    <div class="input-group" id="group:1">
+                        <input class="form-control" placeholder="Please enter a property..."
+                        id="input:1" name="input:1">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" type="button" oncklick="$(this).parent('.input-group').remove()">
+                                <i class="glyphicon glyphicon-remove"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
             <button class="btn btn-success">
-                <span class="glyphicon glyphicon-plus">
+                <span class="glyphicon glyphicon-plus" onclick="add_input($('#input_container'))">
                 </span>
             </button>
         </div>
+
 {% endblock %}

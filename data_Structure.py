@@ -503,7 +503,7 @@ class PartType(db.Model):
     parts = db.relationship('Part', backref="part_type", lazy='dynamic',
                             uselist=True)
 
-    def __init__(name, description=None):
+    def __init__(self, name, description=None):
         self.name = name
         self.json_attributes = json.dumps([])
         self.description = ""
@@ -512,14 +512,14 @@ class PartType(db.Model):
         attributes = json.loads(self.json_attributes)
         if not attr:
             return attributes
-        else if attr and not delete:
+        elif attr and not delete:
             if attr in attributes:
                 flash("key is already present. Nothing was changed", "warning")
                 return attributes
             attributes.append(attr)
             if attr in attributes:
                 flash("key {} was added".format(attr), "success")
-        else if attr and delete:
+        elif attr and delete:
             if attr in attributes:
                 attributes.pop(attributes.index(attr))
                 flash("key was removed", "success")
@@ -530,7 +530,7 @@ class PartType(db.Model):
 
 class Part(db.Model):
     ids = db.Column(db.Integer, primary_key=True)
-    part_type_id = db.Column(db.Integer, db.ForeignKey('parttype.id'))
+    part_type_id = db.Column(db.Integer, db.ForeignKey('part_type.id'))
     exb_number = db.Column(db.Integer)
     json_attributes = db.Column(db.Text)
     out = db.Column(db.Boolean)
@@ -551,7 +551,7 @@ class Part(db.Model):
     comments = db.relationship('History', backref='part', lazy='dynamic',
                                uselist=True)
     # documents = db.relationship()
-    place_rel = db.relationship('Place', backref='part', lazy='dynamic')
+    place_rel = db.relationship('Place', backref='part')
     # project
 
     def __init__(self, part_type_id: int):
@@ -722,7 +722,7 @@ class Process(db.Model):
                              lazy='dynamic',
                              uselist=True
                              )
-    user = db.relationship('User', backref='processes', lazy='dynamic',
+    user = db.relationship('User', backref='processes',
                            uselist=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.uid'))
 # end relationships
@@ -758,7 +758,7 @@ class Order(db.Model):
 
     floating = db.Column(db.Boolean)
 
-    def __init(self)__:
+    def __init__(self):
         self.deprecated = False
         self.floating = True
 
@@ -792,7 +792,7 @@ class Reservation(db.Model):
 
     duedate = db.Column(db.DateTime)
 
-    def __init(self)__:
+    def __init__(self):
         self.deprecated = False
 
     def user(self):
@@ -826,7 +826,7 @@ class Booking(db.Model):
 
     floating = db.Column(db.Boolean)
 
-    def __init(self)__:
+    def __init__(self):
         self.deprecated = False
         self.floating = True
 

@@ -1127,8 +1127,26 @@ def delete_document_func(document):
 @app.route('/parts/parttype/create/', methods=['GET', 'POST'])
 def create_part_type():
     nav.nav.register_element("frontend_top", view.nav_bar())
-    return render_template('create_part_type.html')
-
+    if request.method == "GET":
+        return render_template('create_part_type.html')
+    elif request.method == "POST":
+        name = request.form.get('name')
+        if name:
+            if not data_Structure.PartType.query.filter_by(name=name).scalar():
+                part_type = data_Structure.PartType(name)
+                data_Structure.db.session.add(part_type)
+                data_Structure.db.session.commit()
+                for args in request.form:
+                    if "input" in args:
+                        part_type.args(attr=request.form[args])
+                flash("Part Type was created successfull.", "success")
+                return redirect(url_for("start"))
+            else:
+                flash("Part Type is already existing. It will not be created twice!", "warning")
+                return redirect(url_for('create_part_type'))
+        else:
+            flash('Please name the type!', "info")
+            return redirect(url_for('create_part_type'))
 
 
 
