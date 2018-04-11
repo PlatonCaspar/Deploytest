@@ -12,20 +12,16 @@
                         <input class="form-control" placeholder="Please name the Type..." name="name" required>
                     </div>
                 </div>
+                <hr>
                 <div class="" id="input_container">
-                    <div class="input-group" id="group:1">
+                    <div class="form-group" id="group:1">
                         <input class="form-control" placeholder="Please enter a property..."
                         id="input:1" name="input:1">
-                        <div class="input-group-btn">
-                            <button class="btn btn-default" type="button" oncklick="$(this).parent('.input-group').remove()">
-                                <i class="glyphicon glyphicon-remove"></i>
-                            </button>
-                        </div>
                     </div>
                 </div>
                 <div class="form-group">
-                    <button class="btn btn-default" type="button">
-                        <span class="glyphicon glyphicon-plus" onclick="add_input($('#input_container'));">
+                    <button class="btn btn-default" type="button"  onclick="add_input($('#input_container'));">
+                        <span class="glyphicon glyphicon-plus">
                         </span>
                     </button>
                 </div>
