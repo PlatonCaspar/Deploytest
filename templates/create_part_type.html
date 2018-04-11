@@ -43,11 +43,12 @@ function add_input(container){
         console.log("add_input was called")
         var start = 0;
         var inputs;
-        inputs = $('#input_container').find('input');
+        inputs = $(container).find('input');
         for (var input in inputs){
             var name = null;
-            console.log(inputs[input])
-            name = $(input).attr("name")
+            console.log(inputs[input]);
+            name = inputs[input].attr("name");
+            console.log(name);
             name = name.split(':')[1];
             nr = parseInt(name);
             if (nr>start){
