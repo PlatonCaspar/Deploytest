@@ -31,33 +31,34 @@ function showSlides(n) {
 //end document slider
 
 // flexible inputs on PartType
-function add_input(container){
-        var start = 0;
-        var inputs;
-        inputs = $(container).find('input');
-        for (var input in inputs){
-            var name;
-            name = input.name;
-            name = name.split(':')[1];
-            nr = parseInt(name);
-            if (nr>start){
-                start = nr;
-            }
-        }
-        start += 1;
-        var _str = "\".input-group\""
-        container.append(
-                    '<div class="input-group" id="group:'+toString(start)+'">'+
-                        '<input class="form-control" placeholder="Please enter a property..."'+
-                        'id="input:'+toString(start)+'" name="input:'+toString(start)+'">'+
-                        '<div class="input-group-btn">'+
-                            '<button class="btn btn-default" type="button" oncklick="$(this).parent('+_str+').remove()">'+
-                                '<i class="glyphicon glyphicon-remove"></i>'+
-                            '</button>'+
-                        '</div>'+
-                    '</div>'
-        )
-    }
+// function add_input(container){
+//         console.log("add_input was called")
+//         var start = 0;
+//         var inputs;
+//         inputs = $(container).find('input');
+//         for (var input in inputs){
+//             var name;
+//             name = input.name;
+//             name = name.split(':')[1];
+//             nr = parseInt(name);
+//             if (nr>start){
+//                 start = nr;
+//             }
+//         }
+//         start += 1;
+//         var _str = "\".input-group\""
+//         container.append(
+//                     '<div class="input-group" id="group:'+toString(start)+'">'+
+//                         '<input class="form-control" placeholder="Please enter a property..."'+
+//                         'id="input:'+toString(start)+'" name="input:'+toString(start)+'">'+
+//                         '<div class="input-group-btn">'+
+//                             '<button class="btn btn-default" type="button" oncklick="$(this).parent('+_str+').remove()">'+
+//                                 '<i class="glyphicon glyphicon-remove"></i>'+
+//                             '</button>'+
+//                         '</div>'+
+//                     '</div>'
+//         )
+//     }
 
 function remove_input(div){
   div.remove()
