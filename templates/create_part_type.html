@@ -25,7 +25,7 @@
                 </div>
                 <div class="form-group">
                     <button class="btn btn-default" type="button">
-                        <span class="glyphicon glyphicon-plus" onclick="add_input($('#input_container'))">
+                        <span class="glyphicon glyphicon-plus" onclick="add_input($('#input_container'));">
                         </span>
                     </button>
                 </div>
@@ -37,39 +37,4 @@
             </form>
         </div>
 </div>
-
-<script>
-function add_input(container){
-        console.log("add_input was called")
-        var start = 0;
-        var inputs;
-        inputs = $(container).find('input');
-        for (var input in inputs){
-            var name = null;
-            console.log(inputs[input]);
-            name = inputs[input].attr("name");
-            console.log(name);
-            name = name.split(':')[1];
-            nr = parseInt(name);
-            if (nr>start){
-                start = nr;
-            }
-        }
-        start += 1;
-        var _str = "\".input-group\""
-        container.append(
-                    '<div class="input-group" id="group:'+toString(start)+'">'+
-                        '<input class="form-control" placeholder="Please enter a property..."'+
-                        'id="input:'+toString(start)+'" name="input:'+toString(start)+'">'+
-                        '<div class="input-group-btn">'+
-                            '<button class="btn btn-default" type="button" oncklick="$(this).parent('+_str+').remove()">'+
-                                '<i class="glyphicon glyphicon-remove"></i>'+
-                            '</button>'+
-                        '</div>'+
-                    '</div>'
-        )
-    }
-    add_input($('#input_container'))
-</script>
-
 {% endblock %}
