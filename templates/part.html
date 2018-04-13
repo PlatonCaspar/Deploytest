@@ -1,0 +1,28 @@
+{%- extends 'base.html' %} {% block title %} {% if parttype %} IDS: {{part.ids}} {% else %} select a parttype {% endif %}
+{% endblock %} {% block content %}
+
+    <div class="container col-xs-12 col-md-8 col-md-offset-2">
+        <div class="row">
+            <div class="col-xs-12 col-md-6">
+                <div class="row">
+                    <div class="col-xs-8 col-md-8">
+                        <h3>IDS: {{part.ids}}<br>
+                            <small>EXB: {{part.exb_number or ""}}</small>
+                        </h3>                
+                    </div>
+                    <div class="col-xs-4 col-md-4">
+                        {% if part.out %}
+                            <h3><div class="label label-danger">Out</div></h3>
+                        {% else %}
+                           <h3> <div class="label label-success">In</div>         </h3>                   
+                        {% endif %}        
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6">
+
+            </div>
+        </div>
+    </div> 
+
+{% endblock %}

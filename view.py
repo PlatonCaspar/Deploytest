@@ -97,14 +97,15 @@ def nav_bar():
             title=View(tags.a(tags.img(src='/static/staticPictures/logo.png', width=200), Class="navbar-left", href=url_for('start')), 'start'),
             root_class='navbar navbar-default navbar-fixed-top visible_on_hover',
             items=(View('Start', 'start'),
-                    Subgroup('Label',
+                   Subgroup('Label',
                             View('Print Label', 'show_new_label')),
-                    Subgroup('Board',
+                   Subgroup('Board',
                             View('New Board', 'add__board')),
-                    Subgroup('Project',
+                   Subgroup('Project',
                             View('All Projects', 'show_project_all')),
-                    Subgroup("Components"),
-                    search_bar
+                   Subgroup("Components",
+                            View("Show Parts", 'show_part', ids=None)),
+                   search_bar
                    ),
 
             right_items=(
@@ -142,7 +143,8 @@ def nav_bar():
                              View("Create PartType", "create_part_type"),
                              View("PartType", "show_part_type",
                                   parttype_id=None),
-                             View("Create Part", "create_part")),
+                             View("Create Part", "create_part"),
+                             View("Show Parts", 'show_part', ids=None)),
 
                     search_bar
 

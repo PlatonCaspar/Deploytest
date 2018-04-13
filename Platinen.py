@@ -1196,15 +1196,46 @@ def add_part_type_args(parttype_id):
             parttype.args(request.form[key])
     return redirect(url_for("show_part_type", parttype_id=parttype_id))
 
-@app.route('/parts/part/create/', methods=["GET", 'POST'])
+@app.route('/parts/part/create/', methods=["GET"])
 def create_part():
     nav.nav.register_element("frontend_top", view.nav_bar())
     parttypes = data_Structure.PartType.query.all()    
-    if "parttype_id" not in request.args:
+    if "parttype_id" in request.args:
+        try:
+            parttype = data_Structure.PartType.query.get(int(request.args.get("parttype_id")))
+        except Exception as e:
+            flash("oops an error occured within //create_part()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("create_part"))
+        return render_template("create_part.html", parttype=parttype)        
+    else:
         return render_template("create_part.html", parttypes=parttypes)
 
+@app.route('/parts/part/create/do/<parttype_id>/', methods=["POST"])
+def create_part_do(parttype_id):
+    try:
+        parttype = data_Structure.PartType.query.get(int(parttype_id))
+    except Exception as e:
+        flash("oops an error occured within //create_part_do()//.\n\n{}".format(e), "danger")
+        return redirect(url_for("show_part_type", parttype_id=parttype_id))
+    part = data_Structure.Part(parttype.id)
+    for arg in parttype.args():
+        part.args(attr=arg, val=request.form.get(arg))
+    return redirect(url_for('create_part'))
 
-
+@app.route("/parts/part/show/", methods=["GET"])
+@app.route("/parts/part/show/ids/<ids>/", methods=["GET"])
+def show_part(ids=None):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    if not ids:
+        return render_template("table.html", parts=data_Structure.Part.query.all(),
+                               search_word="Parts")
+    else:
+        try:
+            part = data_Structure.Part.query.get(int(ids))
+        except Exception as e:
+            flash("oops an error occured within //show_part()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+        return render_template("part.html", part=part)
 
 
 if __name__ == '__main__':

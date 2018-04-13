@@ -40,6 +40,44 @@
 
             </div>
         {% endif %}
+        {% if parts %}
+            <div class="panel-default panel-collapse">
+                <div class="panel-heading"><h3>Parts:</h3></div>
+
+
+                <table class="table table-striped table-hover table-responsive table-condensed">
+                    <thead>
+
+                    <th class="text-info">IDS</th>
+                    <th class="text-info">EXB</th>                    
+                    <th class="text-info">PartType</th>
+
+                    </thead>
+                    <tbody>
+                    {% for part in parts %}
+
+                        <tr class="table_links"
+                            onclick="window.document.location='{{part.link()}}'">
+
+                            <td class="text-justify">
+                                {{ part.ids }}
+                            </td>
+                            
+                            <td class="text-justify">
+                                {{ part.exb_number or "N/A" }}
+                            </td>
+                            <td class="text-justify">
+                                {{ part.part_type.name }}
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+
+            </div>
+        {% endif %}
         {% if args %}
             <div class="panel-default panel-collapse">
                 <div class="panel-heading"><h3>Boards:</h3></div>

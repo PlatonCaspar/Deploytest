@@ -3,6 +3,7 @@
 <div class="row">
     <div class="col-md-2 col-ld-8"></div>
     <div class="container col-xs-12 col-md-8 col-ld-8">
+        {% if parttypes %}
         <div class="panel panel-default">
             <div class="panel-heading">
                 select a PartType
@@ -17,9 +18,30 @@
                         </select>
                     </form>
                 </div>
-                <!-- end of select form-->
             </div>
+        </div> <!-- end of select form-->
+        {% endif %}
+        {% if parttype %}
+        <div class="panel panel-default">
+            <div class="panel-heading">Create a {{parttype.name}}</div>
         </div>
+        <div class="panel-body">
+            <form action="{{url_for('create_part_do', parttype_id=parttype.id)}}" method="POST">
+                {% for arg in parttype.args() %}
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-group-addon">{{arg}}</span>
+                            <input id="{{arg}}" type="text" class="form-control" 
+                            name="{{arg}}" placeholder="Enter the Value here...">
+                        </div>
+                    </div>
+                {% endfor %}
+                <div class="form-group">
+                    <button class="btn btn-success btn-block" type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
     </div>
 </div>
 

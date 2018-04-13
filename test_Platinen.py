@@ -608,7 +608,7 @@ class test_platos(TestCase):
         self.assert405(response)
         self.test_create_part_type()  # creates a "Test_PartType"
         # with "arg1" and "arg2"
-        parttype = data_Structure.PartType.query.filter_by(name="Test_PartType").first()        
+        parttype = data_Structure.PartType.query.filter_by(name="Test_PartType").first()
         data = {"input:1": "arg3"}
         response = self.client.post(url_for(fname, parttype_id=parttype.id), data=data)
         assert "arg3" in parttype.args()
@@ -619,8 +619,28 @@ class test_platos(TestCase):
         assert "arg4" in parttype.args()
         assert "arg5" in parttype.args()
         assert302(response)
+    
+    def test_create_part(self):
+        fname = "create_part"
+        response = self.client.get(url_for(fname))
+        self.assert200(response)
+        self.test_create_part_type()  # creates a "Test_PartType"
+        # with "arg1" and "arg2"
+        parttype = data_Structure.PartType.query.filter_by(name="Test_PartType").first()
+        response = self.client.get(url_for(fname, parttype_id=parttype.id))
+        self.assert200(response)
 
-
+    def test_create_part_do(self):
+        fname = "create_part_do"
+        self.test_create_part_type()  # creates a "Test_PartType"
+        # with "arg1" and "arg2"
+        parttype = data_Structure.PartType.query.filter_by(name="Test_PartType").first()
+        data = dict(arg1="Test1", arg2="Test2")
+        response = self.client.post(url_for(fname, parttype_id=parttype.id), data=data)
+        assert302(response)
+        part = data_Structure.Part.query.all()[0]
+        assert "Test1" == part.args()["arg1"]
+        assert "Test2" == part.args()["arg2"]
 
 if __name__ == "__main__":
     unittest.main()

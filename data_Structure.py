@@ -565,7 +565,7 @@ class Part(db.Model):
 
     def args(self, attr=None, val=None, delete=False):
         attributes = json.loads(self.json_attributes)
-        if attr in self.part_type.attributes():
+        if attr and attr in self.part_type.args():
             if delete and attr:
                 val = attributes[attr]
                 attributes.pop(attr)
@@ -575,7 +575,7 @@ class Part(db.Model):
                 flash("value was set", "success")
             self.json_attributes = json.dumps(attributes)
             db.session.commit()
-        else:
+        elif attr and attr not in self.part_type.args():
             flash("The Key is not available", "warning")
             return
         return attributes
