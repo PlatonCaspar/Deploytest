@@ -103,6 +103,7 @@ def nav_bar():
                             View('New Board', 'add__board')),
                     Subgroup('Project',
                             View('All Projects', 'show_project_all')),
+                    Subgroup("Components"),
                     search_bar
                    ),
 
@@ -137,6 +138,9 @@ def nav_bar():
                              View('New Project', 'add_project')),
                     Subgroup('Device',
                              View('New Device', 'add_device')),
+                    Subgroup("Components",
+                             View("Create PartType", "create_part_type")),
+
                     search_bar
 
                    ),
