@@ -1140,7 +1140,7 @@ def create_part_type():
                     if "input" in args:
                         part_type.args(attr=request.form[args])
                 flash("Part Type was created successfull.", "success")
-                return redirect(url_for("start"))
+                return redirect(url_for("show_part_type", parttype_id=part_type.id))
             else:
                 flash("Part Type is already existing. It will not be created twice!", "warning")
                 return redirect(url_for('create_part_type'))
@@ -1220,7 +1220,7 @@ def create_part_do(parttype_id):
     part = data_Structure.Part(parttype.id)
     for arg in parttype.args():
         part.args(attr=arg, val=request.form.get(arg))
-    return redirect(url_for('create_part'))
+    return redirect(url_for('show_part', ids=part.ids))
 
 @app.route("/parts/part/show/", methods=["GET"])
 @app.route("/parts/part/show/ids/<ids>/", methods=["GET"])
