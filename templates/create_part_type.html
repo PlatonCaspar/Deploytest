@@ -1,36 +1,38 @@
-{%- extends 'base.html' %}
-{% block title %}
-    Create a new Part Type
-{% endblock %}
-{% block content %}
+{%- extends 'base.html' %} {% block title %} Create a new Part Type {% endblock %} {% block content %}
 <div class="row">
     <div class="col-md-2 col-ld-8"></div>
-        <div class="container col-xs-12 col-md-8 col-ld-8">
-            <form action="{{url_for('create_part_type')}}" method="POST">
-                <div class="">
+    <div class="container col-xs-12 col-md-8 col-ld-8">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                Create a new PartType
+            </div>
+            <div class="panel-body">
+                <form action="{{url_for('create_part_type')}}" method="POST">
+                    <div class="">
+                        <div class="form-group">
+                            <input class="form-control" placeholder="Please name the Type..." name="name" required>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="" id="input_container">
+                        <div class="form-group" id="group:1">
+                            <input class="form-control" placeholder="Please enter a property..." id="input:1" name="input:1">
+                        </div>
+                    </div>
                     <div class="form-group">
-                        <input class="form-control" placeholder="Please name the Type..." name="name" required>
-                    </div>
-                </div>
-                <hr>
-                <div class="" id="input_container">
-                    <div class="form-group" id="group:1">
-                        <input class="form-control" placeholder="Please enter a property..."
-                        id="input:1" name="input:1">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <button class="btn btn-default" type="button"  onclick="add_input($('#input_container'));">
+                        <button class="btn btn-default" type="button" onclick="add_input($('#input_container'));">
                         <span class="glyphicon glyphicon-plus">
                         </span>
                     </button>
-                </div>
-                <div class="form-group">
-                    <button class="btn btn-success" type="submit">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-success" type="submit">
                        Create
                     </button>
-                </div>
-            </form>
+                    </div>
+                </form>
+            </div>
         </div>
+    </div>
 </div>
 {% endblock %}

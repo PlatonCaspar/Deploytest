@@ -1,0 +1,81 @@
+{%- extends 'base.html' %} {% block title %} {% if parttype %} {{parttype.name}} {% else %} select a parttype {% endif %}
+{% endblock %} {% block content %}
+<div class="row">
+    <div class="col-md-2 col-ld-8"></div>
+    <div class="container col-xs-12 col-md-8 col-ld-8">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                select a PartType
+            </div>
+            <div class="panel-body">
+                <div id="select-form">
+                    <form id="parttype-form" action="{{url_for('show_part_type')}}" method="POST">
+                        <select class="form-control" name="parttype_id" onchange="this.form.submit()">
+                            {% for pt in parttypes %}
+                                <option value="{{pt.id}}">{{pt.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+                <!-- end of select form-->
+                {% if parttype %}
+                <hr>
+                <div id="parttype_view">
+                    <div class="panel-heading">
+                        <h3>{{parttype.name}}</h3>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-xs-12 col-md-4 col-ld-4" id="parttype_args">
+                            <h4>PartType Arguments
+                                <small>
+                                    <button type="button" class="btn btn-sm btn-info" data-toggle="popover" 
+                                        title="What is a PartType Argument?" 
+                                        data-content="The Arguments of a PartType define which values and arguments you can set and see on a specific Component of this PartType.
+                                            E.g. for a Resistor aa argument would be the resistance. To achieve this, create a PartType named Resistor
+                                            and add the argument Resistance. Then create the specific part and then you can set the resistance for that part.">
+                                        <span class="glyphicon glyphicon-question-sign"></span>
+                                    </button>
+                                </small>
+                            </h4>
+                            
+                            {% for arg in parttype.args() %}
+                            <form action="{{url_for('remove_part_type_arg', parttype_id=parttype.id)}}" method="POST">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        {% if current_user.is_authenticated %}
+                                        <div class="input-group-btn">
+                                            <button class="btn btn-default" name="{{arg}}" type="submit"><i class="glyphicon glyphicon-remove"></i></button>
+                                        </div>
+                                        {% endif %}
+                                        <input class="form-control" name="{{arg}}" value="{{arg}}" disabled>
+                                    </div>
+                                </div>
+                            </form>
+                            {% endfor %}
+                            {% if current_user.is_authenticated %}
+                            <form action="{{url_for('add_part_type_args', parttype_id=parttype.id)}}" method="POST">
+                                <div class="" id="input_container">
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn-default" type="button" onclick="add_input($('#input_container'));">
+                                        <span class="glyphicon glyphicon-plus">
+                                        </span>
+                                    </button>
+                                    <button class="btn btn-success pull-right" type="submit">Submit</button>                                    
+                                </div>
+                                <div class="form-group">
+                                </div>
+                            </form>
+                            {% endif %}
+                        </div> <!-- end of parttype view -->
+                    </div>
+                </div>
+                <hr> 
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

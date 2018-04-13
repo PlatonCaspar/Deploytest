@@ -1148,6 +1148,62 @@ def create_part_type():
             flash('Please name the type!', "info")
             return redirect(url_for('create_part_type'))
 
+@app.route("/parts/parttype/show/", methods=["GET", "POST"])
+@app.route("/parts/parttype/show/<parttype_id>/", methods=["GET", "POST"])
+def show_part_type(parttype_id=None):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    parttypes = data_Structure.PartType.query.all()
+    if request.method == "POST" and not parttype_id:  # if a part got selected from the form
+        parttype_id = request.form.get("parttype_id")
+        parttype = None
+        try:
+            parttype = data_Structure.PartType.query.get(int(parttype_id))
+        except Exception as e:
+            flash("oops an error occured within //show_part_type()//.\n\n{}".format(e), "danger")
+        return redirect(url_for("show_part_type", parttype_id=parttype_id))
+    elif parttype_id:  # if user gets redirected to parttype
+        try:
+            parttype = data_Structure.PartType.query.get(int(parttype_id))
+        except Exception as e:
+            flash("oops an error occured within //show_part_type()//.\n\n{}".format(e), "danger")
+        return render_template("parttype.html", parttypes=parttypes, parttype=parttype)
+    else:  # Just return select form
+        return render_template("parttype.html", parttypes=parttypes)
+
+@app.route('/parts/parttype/<parttype_id>/args/remove/do/', methods=["POST"])
+@login_required
+def remove_part_type_arg(parttype_id):
+    try:
+        parttype = data_Structure.PartType.query.get(int(parttype_id))
+    except Exception as e:
+        flash("oops an error occured within //remove_part_type_arg()//.\n\n{}".format(e), "danger")
+        return redirect(url_for("show_part_type", parttype_id=parttype_id))
+    for name in request.form:
+        if name in parttype.args():
+            parttype.args(name, delete=True) 
+    return redirect(url_for("show_part_type", parttype_id=parttype_id))
+
+@app.route("/parts/parttype/<parttype_id>/args/add/do/", methods=["POST"])
+@login_required
+def add_part_type_args(parttype_id):
+    try:
+        parttype = data_Structure.PartType.query.get(int(parttype_id))
+    except Exception as e:
+        flash("oops an error occured within //add_part_type_arg()//.\n\n{}".format(e), "danger")
+        return redirect(url_for("show_part_type", parttype_id=parttype_id))
+    for key in request.form:
+        if "input" in key:
+            parttype.args(request.form[key])
+    return redirect(url_for("show_part_type", parttype_id=parttype_id))
+
+@app.route('/parts/part/create/', methods=["GET", 'POST'])
+def create_part():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    parttypes = data_Structure.PartType.query.all()    
+    if "parttype_id" not in request.args:
+        return render_template("create_part.html", parttypes=parttypes)
+
+
 
 
 

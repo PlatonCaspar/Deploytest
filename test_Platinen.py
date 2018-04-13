@@ -575,8 +575,50 @@ class test_platos(TestCase):
         part_type = data_Structure.PartType.query.filter_by(name=data["name"]).first()
         assert "arg1" in part_type.args() and "arg2" in part_type.args()
 
+    def test_show_part_type(self):
+        fname = "show_part_type"
+        response = self.client.get(url_for(fname))
+        self.assert200(response)
+        self.test_create_part_type()  # creates a "Test_PartType"
+        # with "arg1" and "arg2"
+        parttype = data_Structure.PartType.query.filter_by(name="Test_PartType").first()
+        data = dict(parttype_id=parttype.id)
+        response = self.client.post(url_for(fname), data=data)
+        assert302(response)
+        response = self.client.get(url_for(fname, parttype_id=parttype.id))
+        self.assert200(response)
 
+    def test_remove_part_type_arg(self):
+        fname = "remove_part_type_arg"
+        self.test_login()
+        response = self.client.get(url_for(fname, parttype_id=0))
+        self.assert405(response)
+        self.test_create_part_type()  # creates a "Test_PartType"
+        # with "arg1" and "arg2"
+        parttype = data_Structure.PartType.query.filter_by(name="Test_PartType").first()
+        data = dict(arg1="arg1")
+        response = self.client.post(url_for(fname, parttype_id=parttype.id), data=data)
+        assert "arg1" not in parttype.args()
+        assert302(response)
 
+    def test_add_part_type_args(self):
+        fname = "add_part_type_args"
+        self.test_login()
+        response = self.client.get(url_for(fname, parttype_id=0))
+        self.assert405(response)
+        self.test_create_part_type()  # creates a "Test_PartType"
+        # with "arg1" and "arg2"
+        parttype = data_Structure.PartType.query.filter_by(name="Test_PartType").first()        
+        data = {"input:1": "arg3"}
+        response = self.client.post(url_for(fname, parttype_id=parttype.id), data=data)
+        assert "arg3" in parttype.args()
+        assert302(response)
+        data["input:2"] = "arg4"
+        data["input:3"] = "arg5"
+        response = self.client.post(url_for(fname, parttype_id=parttype.id), data=data)
+        assert "arg4" in parttype.args()
+        assert "arg5" in parttype.args()
+        assert302(response)
 
 
 

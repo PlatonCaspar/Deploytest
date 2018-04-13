@@ -139,7 +139,10 @@ def nav_bar():
                     Subgroup('Device',
                              View('New Device', 'add_device')),
                     Subgroup("Components",
-                             View("Create PartType", "create_part_type")),
+                             View("Create PartType", "create_part_type"),
+                             View("PartType", "show_part_type",
+                                  parttype_id=None),
+                             View("Create Part", "create_part")),
 
                     search_bar
 

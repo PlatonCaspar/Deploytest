@@ -1,0 +1,26 @@
+{%- extends 'base.html' %} {% block title %} {% if parttype %} {{parttype.name}} {% else %} select a parttype {% endif %}
+{% endblock %} {% block content %}
+<div class="row">
+    <div class="col-md-2 col-ld-8"></div>
+    <div class="container col-xs-12 col-md-8 col-ld-8">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                select a PartType
+            </div>
+            <div class="panel-body">
+                <div id="select-form">
+                    <form id="parttype-form" action="{{url_for('create_part')}}" method="GET">
+                        <select class="form-control" name="parttype_id" onchange="this.form.submit()">
+                            {% for pt in parttypes %}
+                                <option value="{{pt.id}}">{{pt.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+                <!-- end of select form-->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
