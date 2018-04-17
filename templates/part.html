@@ -68,9 +68,15 @@
                             <div class="row">
                                 {% for document in part.documents %}
                                     <div class="col-xs-4 col-md-3">
-                                        <a class="btn btn-default" href="{{document.path}}" download="{{document.name()}}" role="button">
-                                        {{document.name}}
+                                        <a class="btn btn-default" href="/{{document.path}}" download="{{document.name()}}" role="button">
+                                        {{document.name()}}
                                         </a>
+                                        <form action="{{url_for('delete_part_document', part_ids=part.ids, part_doc_id=document.id)}}"
+                                        method="POST">
+                                            <button class="btn btn-danger" type="submit">
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                            </button>
+                                        </form>
                                     </div>
                                 {% endfor %}
                                 {% if not part.documents %}
@@ -80,7 +86,7 @@
                                 {% endif %}
                                 {% if current_user.is_authenticated %}
                                     <div class="col-xs-12">
-                                        <form id="docUp" action="{{url_for('upload_part_document', part_ids=part.ids)}}" enctype="multipart/form-data" method="POST">  
+                                        <form  method="POST" id="docUp" action="{{url_for('upload_part_document', part_ids=part.ids)}}" enctype="multipart/form-data">  
                                             <div class="">
                                                 <label for="part_documents">Upload Documents</label>
                                                 <input class="" type="file" id="part_documents" 

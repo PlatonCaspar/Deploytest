@@ -1258,7 +1258,7 @@ def edit_part_value():
                 flash("thats strange, inform Stefan.", "danger")
         return redirect(url_for("show_part", ids=part.ids))
 
-@app.route("/parts/part/upload/document/")
+@app.route("/parts/part/upload/document/", methods=["POST"])
 def upload_part_document():
     if not current_user.is_authenticated:
         flash("Please log in to edit the component!", "info")
@@ -1285,6 +1285,26 @@ def upload_part_document():
             flash('file was uploaded successful.', 'success')
         else:
             flash('some error occured //upload_part_document()// (no file was sent)', 'warning')
+        return redirect(url_for("show_part", ids=part.ids))
+
+
+@app.route("/parts/part/delete/document/", methods=["POST"])
+def delete_part_document():
+    if not current_user.is_authenticated:
+        flash("Please log in to edit the component!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(request.args.get("part_ids")))
+            part_doc = data_Structure.PartDocument.query.get(int(request.args.get("part_doc_id")))
+            part_doc.delete()
+        except Exception as e:
+            flash("oops an error occured within //delete_part_document()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+        
+        return redirect(url_for("show_part", ids=part.ids))
+    
+        
         
 
 if __name__ == '__main__':

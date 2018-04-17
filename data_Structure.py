@@ -935,7 +935,10 @@ class PartDocument(db.Model):
             return only_name[0]+" "+str(self.description)
 
     def delete(self):
-        #TODO
+        db.session.delete(self)
+        remove(path.join(UPLOAD_FOLDER, self.name()))
+        db.session.commit()
+        flash("document was deleted.", "success")
 
 
 def create_database(test=False):
