@@ -642,5 +642,17 @@ class test_platos(TestCase):
         assert "Test1" == part.args()["arg1"]
         assert "Test2" == part.args()["arg2"]
 
+    def test_show_part(self):
+        fname = "show_part"
+        response = self.client.get(url_for(fname))
+        self.assert200(response)
+        self.test_create_part_do()
+        # Test_PartType was created
+        part = data_Structure.Part.query.all()[0]
+        response = self.client.get(url_for(fname, ids=part.ids))
+        self.assert200(response)
+    
+
+
 if __name__ == "__main__":
     unittest.main()

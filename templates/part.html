@@ -3,7 +3,7 @@
 
     <div class="container col-xs-12 col-md-8 col-md-offset-2">
         <div class="row">
-            <div class="col-xs-12 col-md-6">
+            <div class="col-xs-12 col-md-6"> <!-- First column-->
                 <div class="row">
                     <div class="col-xs-8 col-md-8">
                         <h3>IDS: {{part.ids}}<br>
@@ -18,10 +18,38 @@
                         {% endif %}        
                     </div>
                 </div>
-            </div>
-            <div class="col-xs-12 col-md-6">
+                <div class="row">
+                    <div class="col-xs-12 col-md-12 panel panel-default">
+                        <div class="panel-body">
+                            <dl class="dl-horizontal">
+                                <dt>Type:</dt>
+                                <dd>{{part.part_type.name}}</dd>
+                            </dl>
+                            <dl class="dl-horizontal">
+                                <dt>Location:</dt>
+                                <dd>{{part.place().id}}</dd>
+                            </dl>
+                            <table class="table table-bordered table-responsive">
+                                <thead>
+                                    <th>Attribute</th>
+                                    <th>Value</th>
+                                </thead>
+                                <tbody>
+                                    {% for arg in part.part_type.args() %}
+                                        <tr>
+                                            <td>{{arg}}</td>
+                                            <td>{{part.args()[arg]}}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- first column end -->
+            <div class="col-xs-12 col-md-6"><!-- second column -->
 
-            </div>
+            </div><!-- second column end>
         </div>
     </div> 
 

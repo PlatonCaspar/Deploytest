@@ -1237,7 +1237,6 @@ def show_part(ids=None):
             return redirect(url_for("show_part"))
         return render_template("part.html", part=part)
 
-
 if __name__ == '__main__':
     # app.secret_key = 'Test'
     test_queries()
