@@ -213,7 +213,7 @@
                             </form>
                         </div>
                         <div class="panel-body">
-                            {% for comment in part.comments %}
+                            {% for comment in part.comments[::-1] %}
                             <div class="panel panel-default">
                                 <div class="panel-body"><!-- comment and buttons-->
                                     <div class="row">
@@ -223,7 +223,7 @@
                                                     <img src="{{comment.added_by.avatar()}}" class="media-object" style="width:60px">
                                                 </div>
                                                 <div class="media-body">
-                                                    <h4 class="media-heading">John Doe TODO <small>EmailLink</small></h4>
+                                                    <h4 class="media-heading">{{comment.added_by.username}} <small><a href="mailto:{{comment.added_by.email}}">E-Mail</a></small></h4>
                                                     <hr>
                                                     {{comment.md_history()|safe}}
                                                 </div>
