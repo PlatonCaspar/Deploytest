@@ -550,7 +550,6 @@ class Part(db.Model):
                                    uselist=True)
     comments = db.relationship('History', backref='part', lazy='dynamic',
                                uselist=True)
-    # documents = db.relationship()
     place_rel = db.relationship('Place', backref='part')
     # project
 

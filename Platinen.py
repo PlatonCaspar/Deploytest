@@ -1304,7 +1304,30 @@ def delete_part_document():
         
         return redirect(url_for("show_part", ids=part.ids))
     
+@app.route("/parts/part/add/comment/", methods=["POST"])
+def add_part_comment():
+    if not current_user.is_authenticated:
+        flash("Please log in to edit the component!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(request.args.get("part_ids")))
+        except Exception as e:
+            flash("oops an error occured within //add_part_comment()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
         
+        try:
+            text = request.form.get("newComment")
+            comment = data_Structure.History(text)
+            data_Structure.db.session.add(comment)
+            part.comments.append(comment)
+            data_Structure.db.session.commit()
+        except Exception as e:
+            flash("oops an error occured within //add_part_comment()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part", ids=part.ids))
+        
+        
+        return redirect(url_for("show_part", ids=part.ids))
         
 
 if __name__ == '__main__':
