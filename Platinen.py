@@ -1197,6 +1197,7 @@ def add_part_type_args(parttype_id):
     return redirect(url_for("show_part_type", parttype_id=parttype_id))
 
 @app.route('/parts/part/create/', methods=["GET"])
+@login_required
 def create_part():
     nav.nav.register_element("frontend_top", view.nav_bar())
     parttypes = data_Structure.PartType.query.all()    
@@ -1211,6 +1212,7 @@ def create_part():
         return render_template("create_part.html", parttypes=parttypes)
 
 @app.route('/parts/part/create/do/<parttype_id>/', methods=["POST"])
+@login_required
 def create_part_do(parttype_id):
     try:
         parttype = data_Structure.PartType.query.get(int(parttype_id))
@@ -1236,6 +1238,26 @@ def show_part(ids=None):
             flash("oops an error occured within //show_part()//.\n\n{}".format(e), "danger")
             return redirect(url_for("show_part"))
         return render_template("part.html", part=part)
+
+@app.route("/parts/part/edit/value/", methods=["POST"])
+def edit_part_value():
+    if not current_user.is_authenticated:
+        flash("Please log in to edit the component!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(request.args.get("part_ids")))
+        except Exception as e:
+            flash("oops an error occured within //edit_part_value()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+        arg_name = None
+        for key in request.form:
+            if key in part.part_type.args():
+                part.args(attr=key, val=request.form.get(key))
+            else:
+                flash("thats strange, inform Stefan.", "danger")
+        return redirect(url_for("show_part", ids=part.ids))
+        
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'

@@ -21,14 +21,8 @@
                 <div class="row">
                     <div class="col-xs-12 col-md-12 panel panel-default">
                         <div class="panel-body">
-                            <dl class="dl-horizontal">
-                                <dt>Type:</dt>
-                                <dd>{{part.part_type.name}}</dd>
-                            </dl>
-                            <dl class="dl-horizontal">
-                                <dt>Location:</dt>
-                                <dd>{{part.place().id}}</dd>
-                            </dl>
+                                <p><strong>Type:</strong> {{part.part_type.name}}</p>
+                                <p><strong>Location:</strong> {{part.place().id}}</p>
                             <table class="table table-bordered table-responsive">
                                 <thead>
                                     <th>Attribute</th>
@@ -36,10 +30,24 @@
                                 </thead>
                                 <tbody>
                                     {% for arg in part.part_type.args() %}
+                                    <form action="{{url_for('edit_part_value', part_ids=part.ids)}}" method="POST">
                                         <tr>
                                             <td>{{arg}}</td>
-                                            <td>{{part.args()[arg]}}</td>
+                                            <td><input type="text" id="input:{{arg|replace(' ', '_')}}" name="{{arg}}" value="{{part.args()[arg]}}"
+                                            style="border: none; background-color: white"
+                                            {% if not current_user.is_authenticated %}
+                                            disabled="true"
+                                            {%endif%}
+                                            >
+                                            <button class="btn btn-default btn-sm pull-right"  type="submit"
+                                            {% if not current_user.is_authenticated %}
+                                            disabled="true"
+                                            {%endif%}
+                                            >
+                                            <span class="glyphicon glyphicon-pencil"></span></button>
+                                            </td>
                                         </tr>
+                                    </form>
                                     {% endfor %}
                                 </tbody>
                             </table>
@@ -49,7 +57,7 @@
             </div><!-- first column end -->
             <div class="col-xs-12 col-md-6"><!-- second column -->
 
-            </div><!-- second column end>
+            </div><!-- second column end-->
         </div>
     </div> 
 

@@ -622,6 +622,7 @@ class test_platos(TestCase):
     
     def test_create_part(self):
         fname = "create_part"
+        self.test_login()        
         response = self.client.get(url_for(fname))
         self.assert200(response)
         self.test_create_part_type()  # creates a "Test_PartType"
@@ -632,6 +633,7 @@ class test_platos(TestCase):
 
     def test_create_part_do(self):
         fname = "create_part_do"
+        self.test_login()        
         self.test_create_part_type()  # creates a "Test_PartType"
         # with "arg1" and "arg2"
         parttype = data_Structure.PartType.query.filter_by(name="Test_PartType").first()
@@ -652,6 +654,22 @@ class test_platos(TestCase):
         response = self.client.get(url_for(fname, ids=part.ids))
         self.assert200(response)
     
+    def test_edit_part_value(self):
+        fname="edit_part_value"
+        response = self.client.post(url_for(fname))
+        assert302(response)
+        self.test_login()
+        self.test_show_part() #Test_PartType and a Test part was created
+        part = data_Structure.Part.query.all()[0]        
+        response = self.client.get(url_for(fname))
+        self.assert405(response)
+        data = dict(arg1="TestValue")
+        response = self.client.post(url_for(fname, part_ids=part.ids), data=data)
+        assert302(response)
+        assert data["arg1"] == part.args()["arg1"]
+
+
+
 
 
 if __name__ == "__main__":

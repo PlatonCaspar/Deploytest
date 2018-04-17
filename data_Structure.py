@@ -610,14 +610,15 @@ class Part(db.Model):
         self.orders.append(order)
         db.session.commit()
 
-    def reserve(self):
-        process = Process()
-        reservation = Reservation()
+    def reserve(self, duedate, number, process=None):
+        if not process:
+            process = Process()
+        reservation = Reservation(duedate)
         reservation.number = number
         db.session.add(process)
         db.session.add(reservation)
-        process.orders.append(reservation)
-        self.orders.append(reservation)
+        process.reservations.append(reservation)
+        self.reservations.append(reservation)
         db.session.commit()
 
     def take(self):
@@ -792,9 +793,9 @@ class Reservation(db.Model):
 
     duedate = db.Column(db.DateTime)
 
-    def __init__(self):
+    def __init__(self, duedate):
         self.deprecated = False
-
+        self.duedate = duedate
     def user(self):
         return self.process.user
 
@@ -842,6 +843,32 @@ class Booking(db.Model):
         db.session.commit()
         if only:
             flash('Booking was removed from the table', "success")
+
+class BOM(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Integer)
+    project = db.relationship(
+                              'Project',
+                              backref='bom',
+                              uselist=False
+                              )
+    part = db.relationship(
+                           'Part',
+                            backref='bom',
+                            uselist=False
+                           )
+    def __init__(self, project, part, amount):
+        self.project = project
+        self.part = part
+        self.amount = amount
+        
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+        flash("part was removed from bom", "success")
+
+    def reserve(self, duedate, process):
+        self.part.reserve(duedate, self.amount, process)
 
 
 def create_database(test=False):
