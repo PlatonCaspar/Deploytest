@@ -559,9 +559,38 @@ class Part(db.Model):
         PartType.query.get(part_type_id).parts.append(self)
         self.recommended = 0
         self.exb_number = 0
+    
+    def exb(self, exb_nr=None, number=False):
+        if exb_nr:
+            if "EXB" in exb_nr:
+                exb_nr = exb_nr.strip("EXB")
+            try:
+                self.exb_number = int(exb_nr)
+                db.session.commit()
+            except Exception as e:
+                flash("an error occured in //part.exb()//\n{}".format(e), "danger")
+                return
+        if number:
+            return self.exb_number
+        return "EXB{}".format(self.exb_number)
 
     def link(self):  # required for use with "History" Table
         return url_for('show_part', ids=self.ids)
+
+    def description(self, human=False):
+        if human:
+            ret = "{}:: ".format(self.part_type.name)
+            for key in self.part_type.args():
+                ret+="{0}:{1}; ".format(key, self.args()[key])
+        else:
+            return """{part_type};{json_attributes};EXB:{exb_number};
+                      out:{out};recommended{recommended}""".format(
+                          part_type=self.part_type.name,
+                          json_attributes=self.json_attributes,
+                          exb_number=self.exb(),
+                          out=self.out,
+                          recommended=self.recommended
+                      )
 
     def args(self, attr=None, val=None, delete=False):
         attributes = json.loads(self.json_attributes)
@@ -599,6 +628,12 @@ class Part(db.Model):
         for booking in filter(lambda k: k.deprecated is False, self.bookings):
             r += booking.number
         return r
+
+    def ordered(self):
+        o = 0
+        for order in filter(lambda k: k.deprecated is False, self.orders):
+            p+=k.number
+        return o
 
     def order(self, number):
         process = Process()
@@ -682,6 +717,9 @@ class Part(db.Model):
                 flash("""An Error occured in part.place
                     \nplace_id: {}""".format(place_id), "danger")
         return self.place_rel
+
+    def last_active_reservations(self):
+        return list(filter(lambda k: k.deprecated is False, self.reservations))[:5]
 
 
 class Place(db.Model):
@@ -791,6 +829,9 @@ class Reservation(db.Model):
     number = db.Column(db.Integer)
     deprecated = db.Column(db.Boolean)
 
+    project = db.relationship('Project', backref="reservations", uselist=False)
+    project_id = db.Column(db.Text, db.ForeignKey('project.project_name'))
+
     duedate = db.Column(db.DateTime)
 
     def __init__(self, duedate):
@@ -816,6 +857,8 @@ class Reservation(db.Model):
         db.session.commit()
         if only:
             flash('Reservation was removed from the table', "success")
+    
+    
 
 
 class Booking(db.Model):
@@ -847,6 +890,8 @@ class Booking(db.Model):
 class BOM(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount = db.Column(db.Integer)
+    project_id = db.Column(db.Text, db.ForeignKey('project.project_name'))
+    part_ids = db.Column(db.Integer, db.ForeignKey('part.ids'))
     project = db.relationship(
                               'Project',
                               backref='bom',
@@ -869,6 +914,28 @@ class BOM(db.Model):
 
     def reserve(self, duedate, process):
         self.part.reserve(duedate, self.amount, process)
+
+class PartDocument(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    part_ids = db.Column(db.Integer, db.ForeignKey('part.ids'))
+    path = db.Column(db.Text)
+    description = db.Column(db.Text)
+    part = db.relationship("Part", backref="documents", uselist=False)
+
+    def __init__(self, path, part, description=""):
+        self.description = description
+        self.path = path
+        self.part = part
+
+    def name(self):
+        only_name = self.path.replace('/','\\').split('\\')
+        if len(only_name) > 1:
+            return only_name[len(only_name)-1]+" "+str(self.description)
+        else:
+            return only_name[0]+" "+str(self.description)
+
+    def delete(self):
+        #TODO
 
 
 def create_database(test=False):

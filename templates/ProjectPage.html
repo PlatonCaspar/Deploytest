@@ -248,10 +248,48 @@
 
 {# End of patches #}
 
+{# Parts #}
+    <!--New parts-->
+        <div class="panel panel-default">
+            <div class="panel-heading" role="button" id="headingpartlist" data-toggle="collapse" data-parent="#Part_list" 
+                        href="#collapsepartlist" aria-controls="collapsepartlist" aria-expanded="false" toggle="false">
+                <h4 class="panel-title">
+                        Partlist (BOM)
+                        <span class="glyphicon glyphicon-menu-down pull-right"></span>
+                </h4>
+            </div>
+            <div id="collapsepartlist" class="panel-collapse collapse" role="tabpanel" 
+                 aria-labelledby="headingpartlist">
+                <div class="panel-body">
+                    <table class="table table-striped table-hover table-responsive table-condensed ">
+                        <thead>
+                            <th class="text-info">EXB</th>
+                            <th class="text-info">IDS</th>
+                            <th class="text-info">quantity</th>                           
+                            <th class="text-info">Description</th>
+                        </thead>
+                        <tbody>
+                            {% for bom in project.bom %}
+                                <tr class="table_links" onclick="window.document.location='{{bom.part.link()}}';">
+                                    <td class="text-justify table-links">{{bom.part.exb() or ""}}</td>
+                                    <td class="text-justify table-links">{{bom.part.ids}}</td>
+                                    <td class="text-justify table-links">{{bom.amount}}</td>
+                                    <td class="text-justify table-links">{{bom.part.description(human=True)}}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    <!-- end of new patch panel-->
+{# end of parts #}
+
+{# Boards #}
             <div class="">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h3>Boards:</h3>
+                        Boards
                     </div>
                 <div class="panel-body">
                     <table class="table table-striped table-hover table-responsive table-condensed ">

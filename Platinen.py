@@ -1257,6 +1257,34 @@ def edit_part_value():
             else:
                 flash("thats strange, inform Stefan.", "danger")
         return redirect(url_for("show_part", ids=part.ids))
+
+@app.route("/parts/part/upload/document/")
+def upload_part_document():
+    if not current_user.is_authenticated:
+        flash("Please log in to edit the component!", "info")
+        return redirect(request.referrer)
+    
+    file = request.files['file']
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(request.args.get("part_ids")))
+        except Exception as e:
+            flash("oops an error occured within //upload_part_document()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+            
+        if file:
+            file_id = id(file.filename)
+            filename = secure_filename('partdoc_'+str(file_id) +"_"+ file.filename)
+        
+
+            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(file_path)
+            file_to_add = data_Structure.PartDocument(os.path.join(RELATIVE_PICTURE_PATH, filename), part)
+            data_Structure.db.session.add(file_to_add)
+            data_Structure.db.session.commit()
+            flash('file was uploaded successful.', 'success')
+        else:
+            flash('some error occured //upload_part_document()// (no file was sent)', 'warning')
         
 
 if __name__ == '__main__':

@@ -12,15 +12,15 @@
                     </div>
                     <div class="col-xs-4 col-md-4">
                         {% if part.out %}
-                            <h3><div class="label label-danger">Out</div></h3>
+                            <h3><div class="label label-danger col-xs-6 pull-right">Out</div></h3>
                         {% else %}
-                           <h3> <div class="label label-success">In</div>         </h3>                   
+                           <h3> <div class="label label-success col-xs-6 pull-right">In</div>         </h3>                   
                         {% endif %}        
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-xs-12 col-md-12 panel panel-default">
-                        <div class="panel-body">
+                    <div class="col-xs-12 col-md-12">
+                        <div class="">
                                 <p><strong>Type:</strong> {{part.part_type.name}}</p>
                                 <p><strong>Location:</strong> {{part.place().id}}</p>
                             <table class="table table-bordered table-responsive">
@@ -54,9 +54,122 @@
                         </div>
                     </div>
                 </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="button" id="headingDocuments" data-toggle="collapse"
+                        href="#collapseDocuments" aria-controls="collapseDocuments" aria-expanded="false" toggle="false">
+                        <h4 class="panel-title">
+                            Documents
+                            <span class="glyphicon glyphicon-menu-down pull-right"></span>
+                        </h4>
+                    </div>
+                    <div class="panel-collapse collapse" role="tabpanel" aria-labeledby="headingDocuments"
+                        id="collapseDocuments">
+                        <div class="panel-body">
+                            <div class="row">
+                                {% for document in part.documents %}
+                                    <div class="col-xs-4 col-md-3">
+                                        <a class="btn btn-default" href="{{document.path}}" download="{{document.name()}}" role="button">
+                                        {{document.name}}
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                                {% if not part.documents %}
+                                    <div class="col-xs-4 col-md-3">
+                                        <p>No Documents...</p>
+                                    </div>
+                                {% endif %}
+                                {% if current_user.is_authenticated %}
+                                    <div class="col-xs-12">
+                                        <form id="docUp" action="{{url_for('upload_part_document', part_ids=part.ids)}}" enctype="multipart/form-data" method="POST">  
+                                            <div class="">
+                                                <label for="part_documents">Upload Documents</label>
+                                                <input class="" type="file" id="part_documents" 
+                                                name="file" 
+                                                onchange="document.getElementById('docUp').submit()">
+                                                <p class="help-block">Upload part related Documents here.</p>
+                                            </div>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div><!-- first column end -->
             <div class="col-xs-12 col-md-6"><!-- second column -->
-
+                <div class="row" style="margin-bottom: 1rem">
+                    <div class="col-xs-12 col-md-4">
+                        <h3><div class="label label-success col-xs-12">Available: {{part.available()}}</div></h3>
+                    </div>
+                    <div class="col-xs-12 col-md-4 col-md-offset-4">
+                        <h3><div class="label label-info col-xs-12">Ordered: {{part.ordered()}}</div></h3>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        Reservations
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-striped table-responsive">
+                            <thead>
+                                <tr>
+                                    <th class="text-info">Quantity</th>
+                                    <th class="text-info">Project</th>
+                                    <th class="text-info">User</th>
+                                    <th class="text-info">Due Date</th>                                
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reservation in part.last_active_reservations() %}
+                                    <tr>
+                                        <td class="text-justify">{{reservation.number}}</td>
+                                        <td class="text-justify">{{reservation.project.project_name}}</td>
+                                        <td class="text-justify">{{reservation.process.user.username}}</td>
+                                        <td class="text-justify">{{reservation.duedate.strftime("%b\\%d\\%Y")}}</td>
+                                    </tr>
+                                {% endfor %}
+                                {% if not part.last_active_reservations() %}
+                                    <tr>
+                                        <td>No Reservations...</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% if current_user.is_authenticated %}
+                <!-- action Buttons-->
+                <form class="row">
+                    <div class="form-group col-xs-8">
+                        <input type="number" placeholder="please enter the amount of parts..."
+                        name="amount" class="form-control">
+                    </div>
+                    <div class="form-group col-xs-4">
+                        <button class="btn btn-primary btn-block">Reserve</button>
+                    </div>
+                </form>
+                 <form class="row">
+                    <div class="form-group col-xs-8">
+                        <input type="number" placeholder="please enter the amount of parts..."
+                        name="amount" class="form-control">
+                    </div>
+                    <div class="form-group col-xs-4">
+                        <button class="btn btn-danger btn-block">Take</button>
+                    </div>
+                </form> <form class="row">
+                    <div class="form-group col-xs-8">
+                        <input type="number" placeholder="please enter the amount of parts..."
+                        name="amount" class="form-control">
+                    </div>
+                    <div class="form-group col-xs-4">
+                        <button class="btn btn-success btn-block">Order</button>
+                    </div>
+                </form>
+                <!-- action Buttons end-->
+                {% endif %}
             </div><!-- second column end-->
         </div>
     </div> 
