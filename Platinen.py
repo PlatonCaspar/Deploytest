@@ -25,6 +25,7 @@ import view
 import board_labels
 import search
 import HTTPErrorTable
+import helper
 from data_Structure import app
 from historyForm import HistoryForm, EditHistoryForm
 
@@ -442,19 +443,7 @@ def add_project():
 
 
 def delete_history_all(history):
-    for obj in history.data_objects:
-        image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(obj.id))
-        # board = data_Structure.db.session.query(data_Structure.board).get(int(board_id))
-
-        os.remove(os.path.join(UPLOAD_FOLDER, image_to_delete.file_path))
-        data_Structure.db.session.delete(image_to_delete)
-        data_Structure.db.session.commit()
-    
-    for answer in history.answers:
-        delete_history_all(answer)
-
-    data_Structure.db.session.delete(history)
-    data_Structure.db.session.commit()
+    history.delete()
 
 
 @app.route('/deleteboard/', methods=['GET', 'POST'])
@@ -1235,6 +1224,11 @@ def show_part(ids=None):
         except Exception as e:
             flash("oops an error occured within //show_part()//.\n\n{}".format(e), "danger")
             return redirect(url_for("show_part"))
+        if (part.available()+part.ordered()) < part.recommended:
+            flash("Please order some of this parts!", "warning")
+        floating_nr = len(part.orders.filter_by(floating=True).all()) 
+        if floating_nr > 0:
+            flash("There are <strong>{}</strong> floating orders for this Component. Please take care of that!".format(floating_nr), "danger")
         return render_template("part.html", part=part)
 
 @app.route("/parts/part/edit/value/", methods=["POST"])
@@ -1316,9 +1310,8 @@ def add_part_comment():
         
         try:
             text = request.form.get("newComment")
-            comment = data_Structure.History(text)
+            comment = data_Structure.History(text, part=part)
             data_Structure.db.session.add(comment)
-            part.comments.append(comment)
             data_Structure.db.session.commit()
         except Exception as e:
             flash("oops an error occured within //add_part_comment()//.\n\n{}".format(e), "danger")
@@ -1373,6 +1366,11 @@ def edit_comment():
         except Exception as e:
             flash("oops an error occured within //upload_comment_docment_part()//.\n\n{}".format(e), "danger")
             return redirect(url_for("show_part"))
+        if "delete" in request.form.keys():
+            part = comment.part
+            comment.delete()
+            flash("Comment was deleted!", "success")
+            return redirect(part.link())
         comment.history = request.form.get('edit')
         data_Structure.db.session.commit()
         flash("Comment was edited!", "success")
@@ -1389,9 +1387,109 @@ def part_reservation(part_ids):
         except Exception as e:
             flash("oops an error occured within //part_reservation()//.\n\n{}".format(e), "danger")
             return redirect(url_for("show_part"))
-        print(request.form.get('date'))
+        date = helper.parse_date(request.form.get("date"))
+        if not date:
+            flash("""Please be sure to enter a valid date. \nThe Pattern should be \"DD.MM.YYY\"
+            \nThe date also must be today or in the future!""", "info")
+            return redirect(url_for('show_part', ids=part.ids))
+        if int(request.form.get("amount"))<0:
+            flash("Please enter only values greater than zero!","warning" )
+        else:    
+            part.reserve(date, int(request.form.get("amount")))
         return redirect(url_for('show_part', ids=part.ids))
-        
+    
+@app.route("/parts/part/<part_ids>/reservations/delete/<id>/", methods=["POST"])
+def delete_part_reservation(part_ids, id):
+    if not current_user.is_authenticated:
+        flash("Please log in to change reservations!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(part_ids))
+        except Exception as e:
+            flash("oops an error occured within //delete_part_reservation()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+        try:
+            res = data_Structure.Reservation.query.get(int(id))
+        except Exception as e:
+            flash("oops an error occured within //delete_part_reservation()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part", ids=part.ids))
+        res.delete()
+        return redirect(url_for("show_part", ids=part.ids))
+
+@app.route("/parts/part/<part_ids>/reservations/book/<id>/", methods=["POST"])
+def book_part_reservation(part_ids, id):
+    if not current_user.is_authenticated:
+        flash("Please log in to change reservations!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(part_ids))
+        except Exception as e:
+            flash("oops an error occured within //book_part_reservation()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+        try:
+            res = data_Structure.Reservation.query.get(int(id))
+        except Exception as e:
+            flash("oops an error occured within //book_part_reservation()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part", ids=part.ids))
+        res.book(single=True)
+        return redirect(url_for("show_part", ids=part.ids))
+
+@app.route("/parts/part/take/<part_ids>/", methods=["POST"])
+def take_part(part_ids):
+    if not current_user.is_authenticated:
+        flash("Please log in to change reservations!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(part_ids))
+        except Exception as e:
+            flash("oops an error occured within //take_part()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+        if part.take(int(request.form.get("amount"))):
+            flash("The process was book successfully", "success")
+        return redirect(url_for("show_part", ids=part.ids))
+
+@app.route("/parts/part/order/<part_ids>/", methods=["POST"])
+def order_part(part_ids):
+    if not current_user.is_authenticated:
+        flash("Please log in to change reservations!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(part_ids))
+        except Exception as e:
+            flash("oops an error occured within //take_part()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+        if part.order(int(request.form.get("amount"))):
+            flash("The process was book successfully", "success")
+        return redirect(url_for("show_part", ids=part.ids))
+
+@app.route("/parts/part/exb/edit/<part_ids>/", methods=["POST"])
+def edit_exb(part_ids):
+    if not current_user.is_authenticated:
+        flash("Please log in to change reservations!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(part_ids))
+        except Exception as e:
+            flash("oops an error occured within //edit_exb()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+    new_exb = request.form.get("exb")
+    if "new_exb" in request.form.keys():
+        part.exb(new=True)
+        flash("EXB Number was changed successfully!", "success")
+    elif  len(new_exb) is not 6:
+        flash("Please enter a valid EXB Number!")
+        return redirect(url_for('show_part', ids=part.ids))
+    elif len(new_exb) is 6:
+        part.exb(exb_nr=new_exb)
+        flash("EXB Number was changed successfully!", "success")
+    return redirect(url_for('show_part', ids=part.ids))
+    
+
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'

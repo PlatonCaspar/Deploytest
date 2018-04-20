@@ -1,0 +1,83 @@
+""" This File contains helper functions.
+"""
+import datetime
+import re
+
+
+def parse_date(date_str):
+    """This function returns a datetime.date object parsed from 
+    the passed value or False if the passed string was not a date"""
+    type_one = re.compile('.{4}-.{2}-.{2}')
+    type_two = re.compile('.{2}\..{2}\..{4}')
+    type_three = re.compile('.{2}/.{2}/.{4}')
+    type_four = re.compile('.{4}/.{2}/.{2}')
+    if type_one.match(date_str):
+        date_arr = re.split("-", date_str, 2)
+        try:
+            date_arr = [int(d) for d in date_arr]
+        except Exception as e:
+            return False
+        try:
+            date = datetime.date(date_arr[0], date_arr[1], date_arr[2])
+        except:
+            return False
+        if (date-datetime.date.today()).days < 0:
+            return False
+        else:
+            return date
+
+    if type_two.match(date_str):
+        date_arr = re.split("\.", date_str, 2)
+        try:
+            date_arr = [int(d) for d in date_arr]
+        except Exception as e:
+            return False
+        try:
+            date = datetime.date(date_arr[2], date_arr[1], date_arr[0])
+        except:
+            return False
+        if (date-datetime.date.today()).days < 0:
+            return False
+        else:
+            return date
+
+    if type_three.match(date_str):
+        date_arr = re.split("/", date_str, 2)
+        try:
+            date_arr = [int(d) for d in date_arr]
+        except Exception as e:
+            return False
+        try:
+            date = datetime.date(date_arr[2], date_arr[1], date_arr[0])
+        except:
+            return False
+        if (date-datetime.date.today()).days < 0:
+            return False
+        else:
+            return date
+
+    if type_four.match(date_str):
+        date_arr = re.split("/", date_str, 2)
+        try:
+            date_arr = [int(d) for d in date_arr]
+        except Exception as e:
+            return False
+        try:
+            date = datetime.date(date_arr[0], date_arr[1], date_arr[2])
+        except:
+            return False
+        if (date-datetime.date.today()).days < 0:
+            return False
+        else:
+            return date
+
+    return False
+
+
+def array_max_val(arr):
+    val = 0
+    for v in arr:
+        if int(v) > val:
+            val = int(v)
+
+    return val

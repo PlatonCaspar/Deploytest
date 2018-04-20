@@ -11,7 +11,7 @@ import datetime
 import time
 import markdown
 import re
-
+import helper
 
 RELATIVE_PICTURE_PATH = 'static/Pictures'
 UPLOAD_FOLDER = path.join(path.dirname(path.abspath(__file__)),
@@ -240,7 +240,7 @@ class History(db.Model):
     answers = db.relationship('History', uselist=True)
     part_ids = db.Column(db.Integer, db.ForeignKey('part.ids'))
 
-    def __init__(self, history: str, board_code=None, parent_id=None):
+    def __init__(self, history: str, board_code=None, parent_id=None, part=None):
         self.board_code = board_code
         self.history = history
         if parent_id:
@@ -252,6 +252,8 @@ class History(db.Model):
             return redirect(url_for('login', next=request.referrer))
         self.time_and_date = datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         self.last_edited = self.time_and_date
+        if part:
+            part.comments.append(self)
         self.check_mentions()
 
     def add_answer(self, text: str):
@@ -314,6 +316,17 @@ class History(db.Model):
                              self.link())
             else:
                 flash("You mentioned a User that does not exist! ({})".format(name), "info")
+
+    def delete(self):
+        for obj in self.data_objects:
+            image_to_delete = obj
+            remove(path.join(UPLOAD_FOLDER, image_to_delete.file_path))
+            db.session.delete(image_to_delete)
+            db.session.commit()
+        for answer in self.answers:
+            answer.delete()
+        db.session.delete(self)
+        db.session.commit()
 
 
 class Message(db.Model):
@@ -561,7 +574,7 @@ class Part(db.Model):
         self.recommended = 0
         self.exb_number = 0
     
-    def exb(self, exb_nr=None, number=False):
+    def exb(self, exb_nr=None, number_only=False, new=False):
         if exb_nr:
             if "EXB" in exb_nr:
                 exb_nr = exb_nr.strip("EXB")
@@ -571,8 +584,14 @@ class Part(db.Model):
             except Exception as e:
                 flash("an error occured in //part.exb()//\n{}".format(e), "danger")
                 return
-        if number:
+        if number_only:
             return self.exb_number
+        if new:
+            exb_numbers = [part.exb(number_only=True) for part in Part.query.all()]
+            self.exb_number = helper.array_max_val(exb_numbers)+1
+            print(exb_numbers)
+            db.session.commit()
+
         return "EXB{}".format(self.exb_number)
 
     def link(self):  # required for use with "History" Table
@@ -621,7 +640,7 @@ class Part(db.Model):
     def available(self):
         p = 0
         for res in filter(lambda k: k.deprecated is False, self.reservations):
-            p -= res.number
+            p += res.number
         return self.in_stock()-p
 
     def in_stock(self):
@@ -633,11 +652,12 @@ class Part(db.Model):
     def ordered(self):
         o = 0
         for order in filter(lambda k: k.deprecated is False, self.orders):
-            p+=k.number
+            o += order.number
         return o
 
-    def order(self, number):
-        process = Process()
+    def order(self, number, process=None):
+        if not process:
+            process = Process()
         order = Order()
         order.number = number
         db.session.add(process)
@@ -657,17 +677,21 @@ class Part(db.Model):
         self.reservations.append(reservation)
         db.session.commit()
 
-    def take(self):
+    def take(self, count):
         if self.out:
             flash("""Part is out right now. It is impossible to take it. 
             The action will be cancelled.""", "danger")
             return False
-        stocktaking_process = Process()
+        if count > self.available():
+            flash("""<h3>You cannot take what isn't there.
+                  </h3>\nNothing was done.""", "warning")
+            return False
+        taking_process = Process()
         b = Booking()
-        b.number = count
-        db.session.add(stocktaking_process)
+        b.number = -count
+        db.session.add(taking_process)
         db.session.add(b)
-        stocktaking_process.bookings.append(b)
+        taking_process.bookings.append(b)
         self.bookings.append(b)
         db.session.commit()
         return True
@@ -780,12 +804,6 @@ class Process(db.Model):
         elif self.booking:
             return self.booking
         else:
-            flash("""
-                    That should not have happened. \n//process.children()//\n
-                    Please inform Stefan about this incident
-                  """,
-                  "warning"
-                  )
             return None
 
 
@@ -796,6 +814,7 @@ class Order(db.Model):
     number = db.Column(db.Integer)
     deprecated = db.Column(db.Boolean)
 
+    estimated_arrival = db.Column(db.DateTime)
     floating = db.Column(db.Boolean)
 
     def __init__(self):
@@ -841,7 +860,7 @@ class Reservation(db.Model):
     def user(self):
         return self.process.user
 
-    def book(self):
+    def book(self, single=False):
         b = Booking()
         b.number = self.number * (-1)  # negative because of removal
         db.session.add(b)
@@ -850,16 +869,22 @@ class Reservation(db.Model):
         # add booking to connected process bookings list
         self.process.bookings.append(b)
         self.deprecated = True
-        self.part.out = True
+        if not single:
+            self.part.out = True
         db.session.commit()
 
-    def delete(self, only=True):
+    def delete(self):
+        process = self.process
         db.session.delete(self)
         db.session.commit()
-        if only:
+        if not process.children():
+            db.session.delete(process)
+            db.session.commit()
             flash('Reservation was removed from the table', "success")
-    
-    
+            return True
+        return True
+
+
 
 
 class Booking(db.Model):
