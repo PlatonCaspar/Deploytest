@@ -159,10 +159,11 @@
                 </div>
                 {% if current_user.is_authenticated %}
                 <!-- action Buttons-->
-                <form class="row">
+                <form class="row" action="{{url_for('part_reservation', part_ids=part.ids)}}" methods=["POST"]>
                     <div class="form-group col-xs-8">
                         <input type="number" placeholder="please enter the amount of parts..."
                         name="amount" class="form-control">
+                        <input class="form-control" name="date" placeholder="DD/MM/YYYY" type="date">
                     </div>
                     <div class="form-group col-xs-4">
                         <button class="btn btn-primary btn-block">Reserve</button>

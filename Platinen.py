@@ -1378,6 +1378,20 @@ def edit_comment():
         flash("Comment was edited!", "success")
         return redirect(comment.link())
 
+@app.route("/parts/part/reservation/<part_ids>/", methods=["POST"])
+def part_reservation(part_ids):
+    if not current_user.is_authenticated:
+        flash("Please log in to make reservations!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(part_ids))
+        except Exception as e:
+            flash("oops an error occured within //part_reservation()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+        print(request.form.get('date'))
+        return redirect(url_for('show_part', ids=part.ids))
+        
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'
