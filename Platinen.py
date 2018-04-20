@@ -562,7 +562,7 @@ def show_board_history(g_code):
                                    key=getSortKeyHistory, reverse=True),
                                add_form=add_form, edit_form=edit_form)
 
-@app.route('/board/comment/answer/do/', methods=['POST'])
+@app.route('/comment/answer/do/', methods=['POST'])
 @login_required
 def answer_board_comment():
     parent_id = request.args.get('parent_id')
@@ -575,7 +575,7 @@ def answer_board_comment():
         flash('some error occured in //answer_board_comment()//', 'danger')
     finally:
         if parent:
-            return redirect(request.referrer or url_for("show_board_history", g_code=parent.board_code))
+            return redirect(request.referrer or parent.link())
                 
         return redirect(request.referrer or url_for("start"))
 
@@ -654,26 +654,24 @@ def upload_avatar():
               ) 
     return redirect(url_for('my_profile'))
 
-
-@app.route('/board/delete/image/<img_id>/<board_id>/', methods=['POST'])
+@app.route("/comment/delete/image/<img_id>/", methods=["POST"])
+@app.route('/comment/delete/image/<img_id>/<board_id>/', methods=['POST'])
 @login_required
-def delete_history_image(img_id, board_id):
-    view.logged_user = view.get_logged_user()
+def delete_history_image(img_id, board_id=None):
     image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
     # board = data_Structure.db.session.query(data_Structure.board).get(int(board_id))
-
+    comment = image_to_delete.belongs_to_history
     os.remove(os.path.join(UPLOAD_FOLDER, image_to_delete.file_path))
     # os.remove(str(DATA_FOLDER + image_to_delete.file_path.replace('/', '\\')))
     data_Structure.db.session.delete(image_to_delete)
     data_Structure.db.session.commit()
 
-    return redirect(url_for('show_board_history', g_code=board_id))
+    return redirect(comment.link())
 
 
 @app.route('/board/add/file/<history_id>/<board_id>', methods=['POST'])
 @login_required
 def board_history_add_file(history_id, board_id):
-    view.logged_user = view.get_logged_user()
     history = data_Structure.db.session.query(data_Structure.History).get(int(history_id))
     file = request.files.get(str(history_id) + 'new_upfile')
     if file:
@@ -1329,6 +1327,57 @@ def add_part_comment():
         
         return redirect(url_for("show_part", ids=part.ids))
         
+@app.route("/parts/part/add/comment/file/<part_ids>/", methods=["POST"])
+def upload_comment_document_part(part_ids=None):
+    if not current_user.is_authenticated:
+        flash("Please log in to upload a File on the Comment!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(part_ids))
+        except Exception as e:
+            flash("oops an error occured within //upload_comment_docment_part()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+        try:
+            comment = data_Structure.History.query.get(int(request.args.get('comment_id')))
+        except Exception as e:
+            flash("oops an error occured within //upload_comment_docment_part()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+        file = request.files['file']
+        if file:
+            file_id = id(file.filename)
+            filename = secure_filename(str(file_id) +"_"+ file.filename)
+        
+
+            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(file_path)
+            file_to_add = data_Structure.Files(comment, filename)
+            data_Structure.db.session.add(file_to_add)
+            data_Structure.db.session.commit()
+            flash('file was uploaded successful.', 'success')
+        else:
+            flash('some error occured //upload_part_document()// (no file was sent)', 'warning')
+        return redirect(url_for("show_part", ids=part.ids))
+        
+        
+        return redirect(url_for("show_part", ids=part.ids))
+
+@app.route('/comment/edit/', methods=["POST"])
+def edit_comment():
+    if not current_user.is_authenticated:
+        flash("Please log in to edit a comment!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            comment = data_Structure.History.query.get(int(request.args.get('comment_id')))
+        except Exception as e:
+            flash("oops an error occured within //upload_comment_docment_part()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+        comment.history = request.form.get('edit')
+        data_Structure.db.session.commit()
+        flash("Comment was edited!", "success")
+        return redirect(comment.link())
+
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'

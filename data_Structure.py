@@ -268,6 +268,8 @@ class History(db.Model):
     def link(self):
         if self.board_code:
             return url_for('show_board_history', g_code=self.board_code)+'#comment_id'+str(self.id)
+        elif self.part:
+            return self.part.link()+'#comment_id'+str(self.id)        
         else:
             return self.parent().link()+'#comment_id'+str(self.id)
 

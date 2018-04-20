@@ -230,13 +230,13 @@
                                             </div>
                                         </div>
                                         <div class="col-xs-12 col-md-2">
-                                            <button class="btn btn-danger btn-block" data-toggle="modal" data-target="#modalTODO">
+                                            <button class="btn btn-danger btn-block" data-toggle="modal" data-target="#modal{{comment.id}}">
                                             Edit
                                             </button>
                                         </div>
                                     </div>
                                     <!-- Edit Modal -->
-                                    <div id="modalTODO" class="modal fade" role="dialog">
+                                    <div id="modal{{comment.id}}" class="modal fade" role="dialog">
                                         <div class="modal-dialog">
 
                                             <!-- Modal content-->
@@ -245,10 +245,10 @@
                                                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                                                     <h4 class="modal-title">Edit Comment</h4>
                                                 </div>
-                                            <form>
+                                            <form action="{{url_for('edit_comment', comment_id=comment.id)}}" method="POST">
                                                 <div class="modal-body">
                                                     <div class="form-group">
-                                                        <textarea class="form-control" name="editTODO" id="editTODO" rows="10">{{comment.history}}</textarea>
+                                                        <textarea class="form-control" name="edit" id="edit{{comment.id}}}" rows="10">{{comment.history}}</textarea>
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
@@ -263,16 +263,76 @@
                                 </div> <!-- end comment and buttons-->
                                 <div class="panel-body">
                                     <div class="panel panel-default"><!-- files -->
-                                        <div class="panel-heading" role="button" id="headingTODO" data-toggle="collapse"
-                                            href="#collapseTODO" aria-controls="collapseTODO" aria-expanded="false" toggle="false">
-                                            <h4 class="panel-title">Files <span class="badge">NoIm</span>
+                                        <div class="panel-heading" role="button" id="headingFiles{{comment.id}}" data-toggle="collapse"
+                                            href="#collapseFiles{{comment.id}}" aria-controls="collapseFiles{{comment.id}}" aria-expanded="false" toggle="false">
+                                            <h4 class="panel-title">Files <span class="badge">{{comment.data_objects|length}}</span>
                                                 <span class="glyphicon glyphicon-menu-down pull-right"></span>
                                             </h4>
                                         </div>
-                                        <div class="collapse panel-collapse" role="tabpanel" aria-labelledby="headingTODO"
-                                            id="collapseTODO">
+                                        <div class="collapse panel-collapse" role="tabpanel" aria-labelledby="headingFiles{{comment.id}}"
+                                            id="collapseFiles{{comment.id}}">
                                             <div class="panel-body">
-                                                files
+                                                <div class="row">
+                                                    {% for file in comment.data_objects %}
+                                                        <div class="col-xs-6 col-md-2">
+                                                            <div class="thumbnail">
+                                                                {% if '.jpg' in file.file_path|lower or '.jpeg' in file.file_path|lower or '.bmp' in file.file_path|lower or '.png' in file.file_path|lower or '.svg' in file.file_path|lower %}
+                                                                    <a class="" href="/static/Pictures/{{ file.file_path }}" target="_blank">
+                                                                        <img class=""
+                                                                        src="/static/Pictures/{{ file.file_path }}"
+                                                                        style="width: 100%">
+                                                                    </a>
+                                                                {% else %}
+                                                                    <img src="/static/staticPictures/file.svg"
+                                                                    style="width: 50%">
+                                                                {% endif %}
+                                                                {% set filename=file.file_path.split('/') %}
+                                                                <div class="caption">
+                                                                    <p class="text-justify" style="white-space: normal; word-break: break-all">
+                                                                        {{ filename[filename|length-1] }}
+                                                                    </p>
+                                                                </div>
+                                                                <div class="row">
+                                                                {% if current_user.is_authenticated %}
+                                                                    <form action="{{ url_for('delete_history_image', img_id=file.id) }}"
+                                                                    method="POST">
+                                                                        <div class="form-group col-xs-3">
+                                                                            <button class="btn btn-danger" type="submit">
+                                                                                <span class="glyphicon glyphicon-remove"></span>
+                                                                            </button>
+                                                                        </div>
+                                                                    </form>
+                                                                {% endif %}
+                                                                    <div class="col-xs-9">
+                                                                        <div class="form-group">
+                                                                            <a href="/static/Pictures/{{file.file_path}}" role="button"
+                                                                                class="btn btn-default btn-block" download="{{filename}}">
+                                                                                <span class="glyphicon glyphicon-download">
+                                                                                Download
+                                                                                </span>
+                                                                            </a>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+
+                                                    {% endfor %}
+                                                    {#% if current_user.is_authenticated %#}
+                                                        <div class="col-xs-12">
+                                                            <form  method="POST" id="docUpComment{{comment.id}}" action="{{url_for('upload_comment_document_part', part_ids=part.ids, comment_id=comment.id)}}" enctype="multipart/form-data">  
+                                                                <div class="">
+                                                                <label for="part_comment_document{{comment.id}}">Upload Documents</label>
+                                                                <input class="" type="file" id="part_comment_document{{comment.id}}" 
+                                                                name="file" 
+                                                                onchange="document.getElementById('docUpComment{{comment.id}}').submit()">
+                                                                    <p class="help-block">Attach Documents to the Comment.</p>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    {#% endif %#}
+                                                </div>
                                             </div>
                                         </div>
                                     </div><!-- end files-->
@@ -285,21 +345,52 @@
                                             {% for answer in comment.answers %}
                                             <div class="media">
                                                 <div class="media-body">
-                                                    <h4 class="media-heading">TODO name</h4>
+                                                    <h4 class="media-heading">{{answer.added_by.username}}</h4>
                                                     {{answer.md_history()|safe}}
                                                 </div>
                                                 <div class="media-right">
                                                     <img src="{{answer.added_by.avatar()}}" class="media-object" style="width:60px">
+                                                    <div class="form-group">
+                                                        <button class="btn btn-warning btn-block" data-toggle="modal" data-target="#modal{{answer.id}}">
+                                                            <span class="glyphicon glyphicon-pencil"></span>
+                                                        </button>
+                                                        <!-- Edit Modal -->
+                                                        <div id="modal{{answer.id}}" class="modal fade" role="dialog">
+                                                            <div class="modal-dialog">
+
+                                                            <!-- Modal content-->
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                                    <h4 class="modal-title">Edit Comment</h4>
+                                                                </div>
+                                                                <form action="{{url_for('edit_comment', comment_id=answer.id)}}" method="POST">
+                                                                    <div class="modal-body">
+                                                                        <div class="form-group">
+                                                                            <textarea class="form-control" name="edit" id="edit{{answer.id}}}" rows="10">{{answer.history}}</textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-success pull-left" type="submit">Edit</button>
+                                                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- end Edit Modal-->
+                                                    </div>
                                                 </div>
                                             </div>
+                                            <hr>
                                             {% endfor %}
                                         </div>
-                                        <hr><hr>
+                                        <hr>
                                         <div class="panel-body">
-                                            <form>
+                                            <form action="{{url_for('answer_board_comment', parent_id=comment.id)}}" method="POST">
                                                 <div class="form-group">
                                                     <div class="input-group">
-                                                        <input class="form-control" type="text" name="answerTODO" placeholder="Type an Answer...">
+                                                        <input class="form-control" type="text" name="text" placeholder="Type an Answer...">
                                                         <div class="input-group-btn">
                                                             <button class="btn btn-success">Send!</button>
                                                         </div>

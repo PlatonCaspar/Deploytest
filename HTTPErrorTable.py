@@ -1,7 +1,10 @@
 # in this document the HTTP Messages are defined
 
 def lookup(e):
-    e = e.code
+    try:
+        e = e.code
+    except:
+        return str(e)
     return msg[str(e)] or msg["default"]
 
 msg = {
