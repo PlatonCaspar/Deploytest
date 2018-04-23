@@ -144,7 +144,8 @@ def nav_bar():
                              View("PartType", "show_part_type",
                                   parttype_id=None),
                              View("Create Part", "create_part"),
-                             View("Show Parts", 'show_part', ids=None)),
+                             View("Show Parts", 'show_part', ids=None),
+                             View('Orders', 'show_orders')),
 
                     search_bar
 

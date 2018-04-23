@@ -1224,6 +1224,9 @@ def show_part(ids=None):
         except Exception as e:
             flash("oops an error occured within //show_part()//.\n\n{}".format(e), "danger")
             return redirect(url_for("show_part"))
+        if not part:
+            flash("The part was not Found.", "danger")
+            return redirect(url_for("show_part"))
         if (part.available()+part.ordered()) < part.recommended:
             flash("Please order some of this parts!", "warning")
         floating_nr = len(part.orders.filter_by(floating=True).all()) 
@@ -1482,14 +1485,80 @@ def edit_exb(part_ids):
         part.exb(new=True)
         flash("EXB Number was changed successfully!", "success")
     elif  len(new_exb) is not 6:
-        flash("Please enter a valid EXB Number!")
+        flash("Please enter a valid EXB Number!", "Warning")
         return redirect(url_for('show_part', ids=part.ids))
     elif len(new_exb) is 6:
         part.exb(exb_nr=new_exb)
         flash("EXB Number was changed successfully!", "success")
     return redirect(url_for('show_part', ids=part.ids))
-    
 
+@app.route("/parts/orders/open/", methods=["GET"])
+@login_required
+def show_orders():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    orders = data_Structure.Order.query.all()
+    new = list(filter(lambda o: o.floating and not o.deprecated, orders))
+    ordered = list(filter(lambda o: not o.floating and not o.deprecated, orders))
+    return render_template("orders.html", orders=orders, new=new, ordered=ordered)    
+
+@app.route("/parts/oder/delivered/<order_id>/", methods=["POST"])
+def order_delivered(order_id):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            order = data_Structure.Order.query.get(int(order_id))
+        except Exception as e:
+            flash("oops an error occured within //order_delivererd()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_orders"))
+        number = request.form.get("number")
+        try:
+            number = int(number)
+        except Exception as e:
+            flash("Plase be sure to enter an Integer! //order_delivererd()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_orders"))
+        if number <=0:
+            flash("Please enter a number bigger than 0!\nNothing was done", "Warning")
+            return(redirect(request.referrer))
+        if number > order.number:
+            flash("you cannot check in more parts than you ordered. Please create another order if that really happened!", "info")
+            return(redirect(request.referrer))
+        if number is order.number:
+            order.book()
+        else:
+            order.book(number)
+            flash("The remaining order stays open!", "info")
+        return(redirect(request.referrer))
+        
+
+@app.route("/parts/oder/order/<order_id>/", methods=["POST"])
+def order_ordered(order_id):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            order = data_Structure.Order.query.get(int(order_id))
+        except Exception as e:
+            flash("oops an error occured within //order_delivererd()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_orders"))
+        number = request.form.get("number")
+        try:
+            number = int(number)
+        except Exception as e:
+            flash("Plase be sure to enter an Integer! //order_delivererd()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_orders"))
+        if number <=0:
+            flash("Please enter a number bigger than 0!\nNothing was done", "Warning")
+            return(redirect(request.referrer))
+        if number is order.number:
+            order.ordered()
+        else:
+            order.ordered(number)
+            # flash("The remaining order stays open!")
+        return(redirect(request.referrer))
+        
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'

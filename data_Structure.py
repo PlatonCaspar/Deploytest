@@ -815,7 +815,7 @@ class Order(db.Model):
     deprecated = db.Column(db.Boolean)
 
     estimated_arrival = db.Column(db.DateTime)
-    floating = db.Column(db.Boolean)
+    floating = db.Column(db.Boolean)  # means no one took care of that
 
     def __init__(self):
         self.deprecated = False
@@ -824,15 +824,26 @@ class Order(db.Model):
     def user(self):
         return self.process.user
 
-    def book(self):
+    def book(self, number=None):
         b = Booking()
-        b.number = self.number
+        if not number or number is self.number:
+            b.number = self.number
+            self.deprecated = True
+        else:
+            b.number = number
+            self.number = self.number-number  # so a few 
+            # were delivered but not all
         db.session.add(b)
         # add booking to connected part bookings list
         self.part.bookings.append(b)
         # add booking to connected process bookings list
         self.process.bookings.append(b)
-        self.deprecated = True
+        db.session.commit()
+    
+    def ordered(self, number=None):
+        self.floating = False
+        if number:
+            self.number = number
         db.session.commit()
 
     def delete(self, only=True):
