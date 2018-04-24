@@ -13,35 +13,20 @@ def value_search(search_word: str, value: str):  # returns a score for each give
             else:
                 score += res
 
-    search_words = search_word.split(' ')
-    # for w in search_words:
-
-    #     if w in value:
-    #         score += 1
-    #     if '&' in w:
-    #         # print('& in w')
-    #         temp_w = w.split('&')
-    #         for tw in temp_w:
-    #             for v in value.split(";"):
-    #                 score += check_property(tw, v)
-    #             if tw not in value:
-    #                 # print('tw not in value '+tw+" value: "+value )
-    #                 score = 0
-    #                 return score
-    #             elif tw in value:
-    #                 score += 1
-
+    search_words = search_word.split()
     okay = True
 
     # adds 1 to score if words are in the same row
     start_count = 0
 
     split_value = value.split(';')
+    for w in search_words:
+        if w in value:
+            score+=1
     for v in split_value:
         # print(str(search_word in v)+" "+search_word+" in "+v)
         for w in search_words:
             score += check_property(w, v)
-
         if search_words[0] == v:
             score += 1
             start_count += 1
