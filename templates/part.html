@@ -6,7 +6,7 @@
             <div class="col-xs-12 col-md-6"> <!-- First column-->
                 <div class="row">
                     <div class="col-xs-8 col-md-8">
-                        <h3>IDS: {{part.ids}}<br>
+                        <h3>IDS: {{part.ids}}<br>{{part.description()}}
                             <small>EXB: {{"%06d" % part.exb_number or ""}}
                                 {% if current_user.is_authenticated %}
                                     <button class="btn btn-default btn-sm" data-toggle="modal" data-target="#modalEXB">

@@ -606,12 +606,17 @@ class Part(db.Model):
             return """{part_type};{json_attributes};EXB:{exb_number};
                       out:{out};recommended{recommended}""".format(
                           part_type=self.part_type.name,
-                          json_attributes=self.json_attributes,
+                          json_attributes=self.ref_json(),
                           exb_number=self.exb(),
                           out=self.out,
                           recommended=self.recommended
                       )
-
+    def ref_json(self, json):
+        data = json.loads(self.json_attributes)
+        ret = ""
+        for k in data.keys():
+            ret+="""{key}:{value};""".format(key=k, value=data[k])
+        return ret
     def args(self, attr=None, val=None, delete=False):
         attributes = json.loads(self.json_attributes)
         if attr and attr in self.part_type.args():
