@@ -252,7 +252,7 @@ def start():
     search_form = searchForm.SearchForm(request.form)
     results_board = None
     results_project = None
-    results_component = None
+    results_component = []
     results_comments = None
     results_devices = None
     users = data_Structure.db.session.query(data_Structure.User.username).all()
@@ -265,18 +265,22 @@ def start():
             search_word = request.form.get('search_field_main')
             search_area = 'All'
         
-        if "EXB" in search_word and "Q" in search_word:
-            search_word = clean_exb_scan(search_word)
-            exb_number = data_Structure.Exb.query.get(search_word)
-            if exb_number:
-                component = exb_number.associated_components
-                return redirect(url_for('show_component', component_id=component.id))
-        elif "EXB" in search_word:
-            search_word = search_word.strip()
-            exb_number = data_Structure.Exb.query.get(search_word)
-            if exb_number:
-                component = exb_number.associated_components
-                return redirect(url_for('show_component', component_id=component.id))
+        if "EXB" in search_word:
+            if "Q" in search_word:
+                search_word = clean_exb_scan(search_word)  # TODO find this function!
+            components = data_Structure.Part.query.filter_by(exb_number=int(search_word.strip("EXB"))).all()
+            if len(components) is 1:
+                component = components[0]
+                return redirect(url_for('show_part', ids=component.ids))
+            if len(components) > 1:
+                results_component.append(components)
+                # return render_template('table.html',
+                #                        search_form=searchForm.SearchForm(),
+                #                        search_word=search_word,
+                #                        parts=results_component)
+        if search_area == "Part" or search_area == "All":
+            results_component.append(search.search(search_word=search_word, items=data_Structure.Part.query.all()))
+
         if data_Structure.db.session.query(data_Structure.Board).get(search_word) is not None:
             return redirect(url_for('show_board_history',
                                     g_code=data_Structure.db.session.query(data_Structure.Board).get(search_word).code))

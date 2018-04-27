@@ -599,24 +599,32 @@ class Part(db.Model):
 
     def description(self, human=False):
         if human:
-            ret = "{}:: ".format(self.part_type.name)
+            ret = "{0}::IDS:{1} ".format(self.part_type.name, self.ids)
             for key in self.part_type.args():
                 ret+="{0}:{1}; ".format(key, self.args()[key])
         else:
-            return """{part_type};{json_attributes};EXB:{exb_number};
-                      out:{out};recommended{recommended}""".format(
+            return """PartType:{part_type};{json_attributes};EXB:{exb_number};
+                      EXB:{exb_nr_no};
+                      out:{out};recommended:{recommended};IDS:{ids}""".format(
                           part_type=self.part_type.name,
                           json_attributes=self.ref_json(),
                           exb_number=self.exb(),
-                          out=self.out,
-                          recommended=self.recommended
+                          out=self.out or False,
+                          recommended=self.recommended,
+                          ids=self.ids,
+                          exb_nr_no=self.exb(number_only=True)
                       )
-    def ref_json(self, json):
+
+    def reduce(self):
+        return self.description()
+
+    def ref_json(self):
         data = json.loads(self.json_attributes)
         ret = ""
         for k in data.keys():
-            ret+="""{key}:{value};""".format(key=k, value=data[k])
+            ret += """{key}:{value};""".format(key=k, value=data[k])
         return ret
+
     def args(self, attr=None, val=None, delete=False):
         attributes = json.loads(self.json_attributes)
         if attr and attr in self.part_type.args():
