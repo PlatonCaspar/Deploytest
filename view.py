@@ -38,7 +38,7 @@ def write_code_for_search_bar():
         with tags.form(method="post", name="nav_search_form", Class="navbar-form navbar-left", role="search", action="/"):
             with tags.div(Class="form-group"):
                     with tags.select(Class="form-control", name="selector"):
-                        for opt in ["All", "Boards", "Projects", "Devices"]:
+                        for opt in ["All", "Boards", "Projects", "Devices", "Part"]:
                             tags.option(opt, value=opt)
             with tags.div(Class="input-group"):
                 tags.input(Type="text", Class="form-control ", placeholder="Search", name="search_field")

@@ -51,6 +51,7 @@
                     <th class="text-info">IDS</th>
                     <th class="text-info">EXB</th>                    
                     <th class="text-info">PartType</th>
+                    <th class="text-info">Attributes</th>
 
                     </thead>
                     <tbody>
@@ -68,6 +69,9 @@
                             </td>
                             <td class="text-justify">
                                 {{ part.part_type.name }}
+                            </td>
+                            <td>
+                                {{part.ref_json()|replace(";", "<br>")|safe}}
                             </td>
                         </tr>
 

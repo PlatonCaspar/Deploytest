@@ -273,13 +273,16 @@ def start():
                 component = components[0]
                 return redirect(url_for('show_part', ids=component.ids))
             if len(components) > 1:
-                results_component.append(components)
+                results_component.extend(components)
                 # return render_template('table.html',
                 #                        search_form=searchForm.SearchForm(),
                 #                        search_word=search_word,
                 #                        parts=results_component)
         if search_area == "Part" or search_area == "All":
-            results_component.append(search.search(search_word=search_word, items=data_Structure.Part.query.all()))
+            if search_word == "":
+                results_component.extend(data_Structure.Part.query.all())
+            else:
+                results_component.extend(search.search(search_word=search_word, items=data_Structure.Part.query.all()))
 
         if data_Structure.db.session.query(data_Structure.Board).get(search_word) is not None:
             return redirect(url_for('show_board_history',
@@ -311,7 +314,7 @@ def start():
             return render_template('base.html')
 
         return render_template('table.html', args=results_board, projects=results_project,
-                               search_form=searchForm.SearchForm(), search_word=search_word, components=results_component,
+                               search_form=searchForm.SearchForm(), search_word=search_word, parts=results_component,
                                results_comments=results_comments, results_devices=results_devices)
     return render_template('start.html', search_form=search_form)
 
