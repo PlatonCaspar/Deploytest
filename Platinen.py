@@ -279,10 +279,18 @@ def start():
                 #                        search_word=search_word,
                 #                        parts=results_component)
         if search_area == "Part" or search_area == "All":
+            try:
+                ids = search_word.strip("IDS")
+                part = data_Structure.Part.query.get(int(ids))
+                if part:
+                    return redirect(url_for("show_part", ids=part.ids))   
+            except Exception as e:
+                flash("An Error occured in //start()// Part block\n{}".format(e), "danger")
             if search_word == "":
                 results_component.extend(data_Structure.Part.query.all())
             else:
-                results_component.extend(search.search(search_word=search_word, items=data_Structure.Part.query.all()))
+                results_component.extend(search.search(search_word=search_word.lower(),
+                                                       items=data_Structure.Part.query.all()))
 
         if data_Structure.db.session.query(data_Structure.Board).get(search_word) is not None:
             return redirect(url_for('show_board_history',
