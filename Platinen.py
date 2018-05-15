@@ -281,9 +281,12 @@ def start():
         if search_area == "Part" or search_area == "All":
             try:
                 ids = search_word.strip("IDS")
-                part = data_Structure.Part.query.get(int(ids))
+                part = None
+                if helper.isNum(ids):
+                    part = data_Structure.Part.query.get(int(ids))
                 if part:
-                    return redirect(url_for("show_part", ids=part.ids))   
+                    return redirect(url_for("show_part", ids=part.ids))
+
             except Exception as e:
                 flash("An Error occured in //start()// Part block\n{}".format(e), "danger")
             if search_word == "":
@@ -1573,6 +1576,44 @@ def order_ordered(order_id):
             order.ordered(number)
             # flash("The remaining order stays open!")
         return(redirect(request.referrer))
+
+@app.route('/poject/<project_id>/add/bom/do/', methods=['POST'])
+@login_required
+def bom_upload_do(project_id):
+    bom_file = request.files['bom_file']
+    description = request.form.get('description')
+    #print(bom_file.read())
+    temp = tempfile.mkstemp(dir=DATA_UPLOAD_FOLDER)
+    with open(temp[1], 'wb') as open_temp:
+        open_temp.write(bom_file.read())
+    with open(temp[1], 'rt') as temp_bom:
+        reservations = BOM_Converter.read_csv(temp_bom)
+        print("REservations ReservationsReservations: "+str(reservations))
+        process = data_Structure.Process(description=description)
+        data_Structure.db.session.add(process)
+        data_Structure.db.session.commit()
+        for e in reservations:
+            r = data_Structure.Reservation(int(e[1]))
+            exb = data_Structure.Exb.query.get(e[0])
+            if not exb:
+                flash(e[0]+" was not found!", 'warning')
+            else:
+                r.component = data_Structure.Exb.query.get(e[0]).associated_components
+                data_Structure.db.session.add(r)
+                data_Structure.db.session.commit()
+                print(r)
+                process.reservations.append(r)
+                print(process.reservations.all())
+                data_Structure.db.session.commit()
+                print("After Commit: "+str(process.reservations.all()))
+        
+        flash("reservation was made")
+
+    
+        
+    return redirect(url_for('bom_upload'))
+
+
         
 
 if __name__ == '__main__':

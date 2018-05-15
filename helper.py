@@ -81,3 +81,34 @@ def array_max_val(arr):
             val = int(v)
 
     return val
+
+
+def isNum(val):
+    """Returns true if val is a number that can  be parsed as an integer"""
+    try:
+        int(val)
+    except:
+        return False
+    return True
+
+
+def read_bom(_file):
+    rows = None
+    exb = []
+    a5e = []
+    gwe = []
+    with open(_file) as file:
+        rows = file.readlines()
+    header = rows[0]
+    rows = rows[1:]
+    for row in rows:
+        temp = dict()
+        for i, head in enumerate(header):
+            temp[head] = row[i]
+        if "exb" in temp["EXB"]:
+            pass
+        #  TODO: continue Bom Parser.
+        
+
+
+
