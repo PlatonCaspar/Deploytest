@@ -261,7 +261,7 @@
             <div id="collapsepartlist" class="panel-collapse collapse" role="tabpanel" 
                  aria-labelledby="headingpartlist">
                 <div class="panel-body">
-                    <form class="form-inline" action="#" method="" enctype="multipart/form-data" id="bom_upload_form">
+                    <form class="form-inline" action="{{url_for('bom_upload_do', project_id=project.project_name)}}" method="POST" enctype="multipart/form-data" id="bom_upload_form">
                         <div class="form-group">
                             <label class="" for="bom_upload">Upload a BOM.csv here!</label>
                             <input type="file" name="bom_upload" id="bom_upload">
@@ -276,16 +276,20 @@
                         <thead>
                             <th class="text-info">EXB</th>
                             <th class="text-info">IDS</th>
-                            <th class="text-info">quantity</th>                           
+                            <th class="text-info">Quantity</th>                           
                             <th class="text-info">Description</th>
+                            <th class="text-info">Action</th>
                         </thead>
                         <tbody>
                             {% for bom in project.bom %}
                                 <tr class="table_links" onclick="window.document.location='{{bom.part.link()}}';">
-                                    <td class="text-justify table-links">{{bom.part.exb() or ""}}</td>
+                                    <td class="text-justify table-links">EXB: {{"%06d" % bom.part.exb_number or ""}}</td>
                                     <td class="text-justify table-links">{{bom.part.ids}}</td>
                                     <td class="text-justify table-links">{{bom.amount}}</td>
                                     <td class="text-justify table-links">{{bom.part.description(human=True)}}</td>
+                                    <td class=""><form action="{{url_for('remove_part_from_bom', bom_id=bom.id)}}" method="POST">
+                                        <button type="submit" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
+                                    </form></td>                                    
                                 </tr>
                             {% endfor %}
                         </tbody>

@@ -601,7 +601,13 @@ class Part(db.Model):
         if human:
             ret = "{0}::IDS:{1} ".format(self.part_type.name, self.ids)
             for key in self.part_type.args():
-                ret+="{0}:{1}; ".format(key, self.args()[key])
+                try:
+                    ret+="{0}:{1}; ".format(key, self.args()[key])
+                except KeyError as e:
+                    self.args(attr=key, val="")
+                finally:
+                    ret+="{0}:{1}; ".format(key, self.args()[key])
+                    
         else:
             return """PartType:{part_type};{json_attributes};EXB:{exb_number};
                       EXB:{exb_nr_no};
@@ -937,6 +943,7 @@ class Booking(db.Model):
         if only:
             flash('Booking was removed from the table', "success")
 
+
 class BOM(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount = db.Column(db.Integer)
@@ -952,11 +959,12 @@ class BOM(db.Model):
                             backref='bom',
                             uselist=False
                            )
+                        
     def __init__(self, project, part, amount):
         self.project = project
         self.part = part
         self.amount = amount
-        
+       
     def delete(self):
         db.session.delete(self)
         db.session.commit()
@@ -964,6 +972,7 @@ class BOM(db.Model):
 
     def reserve(self, duedate, process):
         self.part.reserve(duedate, self.amount, process)
+
 
 class PartDocument(db.Model):
     id = db.Column(db.Integer, primary_key=True)

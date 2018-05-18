@@ -1578,42 +1578,71 @@ def order_ordered(order_id):
         return(redirect(request.referrer))
 
 @app.route('/poject/<project_id>/add/bom/do/', methods=['POST'])
-@login_required
 def bom_upload_do(project_id):
-    bom_file = request.files['bom_file']
-    description = request.form.get('description')
-    #print(bom_file.read())
-    temp = tempfile.mkstemp(dir=DATA_UPLOAD_FOLDER)
-    with open(temp[1], 'wb') as open_temp:
-        open_temp.write(bom_file.read())
-    with open(temp[1], 'rt') as temp_bom:
-        reservations = BOM_Converter.read_csv(temp_bom)
-        print("REservations ReservationsReservations: "+str(reservations))
-        process = data_Structure.Process(description=description)
-        data_Structure.db.session.add(process)
+    # try:
+    bom_file = request.files['bom_upload']
+        # print(bom_file.stream.read())
+    exb, a5e, gwe, failed = helper.read_bom(str(bom_file.read()))
+    # except Exception as e:
+    #         flash("""An error occured in //bom_upload_do()//__1__\n{}""".format(e), "danger")
+    #         return redirect(request.referrer or url_for("start"))
+    try:
+            project = data_Structure.Project.query.get(project_id)
+    except Exception as e:
+        flash("""An error occured in //bom_upload_do()__2__//\n{}""".format(e), "danger")
+        return redirect(request.referrer or url_for("start"))
+    bom = None
+    for e in exb:
+        try:
+            exb_nr = int(e["EXB"].strip("EXB"))
+            qty = int(e["Qty"])
+        except Exception as e:
+            flash("""An error occured in //bom_upload_do()__3__//\n{}""".format(e), "danger")
+            return redirect(request.referrer or url_for("start"))
+        part = data_Structure.Part.query.filter_by(exb_number=exb_nr).all()
+        boms = None
+        for p in part:
+            boms = list(filter(lambda b: b.part_ids is p.ids, project.bom))
+        print(boms)
+        if boms:
+            for b in boms:
+                b.amount = qty
+                data_Structure.db.session.commit()
+        elif len(part) is 1:
+            bom = data_Structure.BOM(project, part[0], qty)
+            data_Structure.db.session.add(bom)    
+            
+        elif len(part) > 1:
+            flash("Multiple Parts found for \"{exb}\" Please check the BOM on the Project Page and remove the doubles!".format(exb=exb_nr), "warning")
+            for p in part:
+                bom = data_Structure.BOM(project, p, qty)                    
+                data_Structure.db.session.add(bom)    
+        # else:
+        #     flash("Part was not found in the database! Please add Part to the database and try again. Operation was cancelled!\n\n{}\n\n".format(e["EXB"]), "danger")
+        #     data_Structure.db.session.rollback()
+        #     return redirect(request.referrer or url_for("show_project", project_name=project_id))
+    for f in failed:
+        flash("Part with the following information could not be identified as EXB or A5E or GWE Part\n***************\n{}\n**********************", "danger".format(f))
+    data_Structure.db.session.commit()
+    return redirect(request.referrer or url_for("show_project", project_name=project_id))
+
+@app.route("/bom/remove/do/", methods=["POST"])
+def remove_part_from_bom():
+    try:
+        bom_id = request.args.get("bom_id")
+        bom_id = int(bom_id)
+    except Exception as e:
+        flas("An Error occured in //remove_part_from_bom()//\n{}".format(e), "danger")
+        return redirect(request.referrer or url_for("start"))
+    bom = data_Structure.BOM.query.get(bom_id)
+    if bom:
+        data_Structure.db.session.delete(bom)
         data_Structure.db.session.commit()
-        for e in reservations:
-            r = data_Structure.Reservation(int(e[1]))
-            exb = data_Structure.Exb.query.get(e[0])
-            if not exb:
-                flash(e[0]+" was not found!", 'warning')
-            else:
-                r.component = data_Structure.Exb.query.get(e[0]).associated_components
-                data_Structure.db.session.add(r)
-                data_Structure.db.session.commit()
-                print(r)
-                process.reservations.append(r)
-                print(process.reservations.all())
-                data_Structure.db.session.commit()
-                print("After Commit: "+str(process.reservations.all()))
-        
-        flash("reservation was made")
-
+        flash("Part was removed from the BOM!", "success")
+    else:
+        flash("An Error occured in //remove_part_from_bom()// \nbom Query was not successful")
+    return redirect(request.referrer or url_for("start"))
     
-        
-    return redirect(url_for('bom_upload'))
-
-
         
 
 if __name__ == '__main__':

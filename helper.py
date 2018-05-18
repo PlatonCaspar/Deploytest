@@ -92,21 +92,26 @@ def isNum(val):
     return True
 
 
-def read_bom(file):
-    rows = None
+def read_bom(_file: str):
+    rows = _file.strip("b'").replace("\\r\\n", '\n').split("\n")
     exb = []
     a5e = []
     gwe = []
     failed = []
     # with open(_file) as file:
-    rows = file.readlines()
+        # rows = file.readlines()
     header = rows[0].split(";")
-    rows = rows[1:]
+
+    rows = rows[1:-1]
+
     for row in rows:
         temp = dict()
-        row = row.strip("\n").split(";")
+        row = row.strip("\n").strip("\r").split(";")
         for i, head in enumerate(header):
-            temp[head] = row[i]
+            try:
+                temp[str(head)] = row[i]
+            except Exception as e:
+                print("""__1__ :{0}\\{2}: {1}""".format(head, e, i), "\n\n {}".format(row))
         if "exb" in temp["EXB"].lower():
             exb.append(temp)
         elif "a5e" in temp["EXB"].lower():
@@ -115,4 +120,5 @@ def read_bom(file):
             gwe.append(temp)
         else:
             failed.append(temp)
+  
     return exb, a5e, gwe, failed
