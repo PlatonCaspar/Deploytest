@@ -92,23 +92,27 @@ def isNum(val):
     return True
 
 
-def read_bom(_file):
+def read_bom(file):
     rows = None
     exb = []
     a5e = []
     gwe = []
-    with open(_file) as file:
-        rows = file.readlines()
-    header = rows[0]
+    failed = []
+    # with open(_file) as file:
+    rows = file.readlines()
+    header = rows[0].split(";")
     rows = rows[1:]
     for row in rows:
         temp = dict()
+        row = row.strip("\n").split(";")
         for i, head in enumerate(header):
             temp[head] = row[i]
-        if "exb" in temp["EXB"]:
-            pass
-        #  TODO: continue Bom Parser.
-        
-
-
-
+        if "exb" in temp["EXB"].lower():
+            exb.append(temp)
+        elif "a5e" in temp["EXB"].lower():
+            a5e.append(temp)
+        elif "gwe" in temp["EXB"].lower():
+            gwe.append(temp)
+        else:
+            failed.append(temp)
+    return exb, a5e, gwe, failed
