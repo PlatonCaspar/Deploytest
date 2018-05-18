@@ -395,6 +395,9 @@ class Project(db.Model):
 
     def reduce(self):
         return str(self.project_name)+";"+str(self.project_description.replace(" ", ";"))
+    
+    def link(self):
+        return url_for("show_project", project_name=self.project_name)
 
 
 class Patch(db.Model):
@@ -845,7 +848,7 @@ class Order(db.Model):
 
     def book(self, number=None):
         b = Booking()
-        if not number or number is self.number:
+        if not number or number is self.number or number == self.number:
             b.number = self.number
             self.deprecated = True
         else:

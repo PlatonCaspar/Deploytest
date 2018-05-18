@@ -222,6 +222,31 @@
                         </table>
                     </div>
                 </div>
+                <!-- Projects using that part-->
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        Related Projects
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-striped table-responsive">
+                            <thead>
+                                <tr>
+                                    <th class="text-info">Project</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bom in part.bom %}
+                                    <tr class="table_links" onclick="window.document.location='{{bom.project.link()}}';">
+                                        <td class="text-justify table_links">{{bom.project.project_name}}</td>
+                                    </tr>
+                                {% endfor %}
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!--End Projects using that Part-->
+
                 {% if current_user.is_authenticated %}
                 <!-- action Buttons-->
                 <form class="row" action="{{url_for('part_reservation', part_ids=part.ids)}}" method="POST">

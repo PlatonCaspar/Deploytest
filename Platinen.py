@@ -1521,6 +1521,7 @@ def show_orders():
 
 @app.route("/parts/oder/delivered/<order_id>/", methods=["POST"])
 def order_delivered(order_id):
+    # TODO: Create possibility to cancel order!
     if not current_user.is_authenticated:
         flash("Please log in to contribute!", "info")
         return redirect(request.referrer)
@@ -1579,15 +1580,15 @@ def order_ordered(order_id):
 
 @app.route('/poject/<project_id>/add/bom/do/', methods=['POST'])
 def bom_upload_do(project_id):
-    # try:
-    bom_file = request.files['bom_upload']
-        # print(bom_file.stream.read())
-    exb, a5e, gwe, failed = helper.read_bom(str(bom_file.read()))
-    # except Exception as e:
-    #         flash("""An error occured in //bom_upload_do()//__1__\n{}""".format(e), "danger")
-    #         return redirect(request.referrer or url_for("start"))
     try:
-            project = data_Structure.Project.query.get(project_id)
+        bom_file = request.files['bom_upload']
+        # print(bom_file.stream.read())
+        exb, a5e, gwe, failed = helper.read_bom(str(bom_file.read()))
+    except Exception as e:
+        flash("""An error occured in //bom_upload_do()//__1__\n{}""".format(e), "danger")
+        return redirect(request.referrer or url_for("start"))
+    try:
+        project = data_Structure.Project.query.get(project_id)
     except Exception as e:
         flash("""An error occured in //bom_upload_do()__2__//\n{}""".format(e), "danger")
         return redirect(request.referrer or url_for("start"))
@@ -1600,10 +1601,9 @@ def bom_upload_do(project_id):
             flash("""An error occured in //bom_upload_do()__3__//\n{}""".format(e), "danger")
             return redirect(request.referrer or url_for("start"))
         part = data_Structure.Part.query.filter_by(exb_number=exb_nr).all()
-        boms = None
+        boms = []
         for p in part:
-            boms = list(filter(lambda b: b.part_ids is p.ids, project.bom))
-        print(boms)
+            boms.extend(list(filter(lambda b: b.part_ids == p.ids, project.bom)))
         if boms:
             for b in boms:
                 b.amount = qty
@@ -1617,12 +1617,12 @@ def bom_upload_do(project_id):
             for p in part:
                 bom = data_Structure.BOM(project, p, qty)                    
                 data_Structure.db.session.add(bom)    
-        # else:
-        #     flash("Part was not found in the database! Please add Part to the database and try again. Operation was cancelled!\n\n{}\n\n".format(e["EXB"]), "danger")
-        #     data_Structure.db.session.rollback()
-        #     return redirect(request.referrer or url_for("show_project", project_name=project_id))
+        else:
+            flash("Part was not found in the database! Please add Part to the database and try again. Operation was cancelled!\n\n{}\n\n".format(e["EXB"]), "danger")
+            data_Structure.db.session.rollback()
+            return redirect(request.referrer or url_for("show_project", project_name=project_id))
     for f in failed:
-        flash("Part with the following information could not be identified as EXB or A5E or GWE Part\n***************\n{}\n**********************", "danger".format(f))
+        flash("Part with the following information could not be identified as EXB or A5E or GWE Part\n***************\n{}\n**********************".format(f), "danger")
     data_Structure.db.session.commit()
     return redirect(request.referrer or url_for("show_project", project_name=project_id))
 
