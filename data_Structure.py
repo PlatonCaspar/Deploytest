@@ -568,7 +568,7 @@ class Part(db.Model):
                                    uselist=True)
     comments = db.relationship('History', backref='part', lazy='dynamic',
                                uselist=True)
-    place_rel = db.relationship('Place', backref='part')
+    place_rel = db.relationship('Place', backref='part', uselist=False)
     # project
 
     def __init__(self, part_type_id: int):
@@ -753,10 +753,10 @@ class Part(db.Model):
                 self.place_rel = Place.query.get(int(place_id))
                 if self.out:
                     self.out = False
-                    floating = filter(self.bookings, lambda k: k.floating is True)
+                    floating = list(filter(lambda k: k.floating is True, self.bookings))
                     if len(floating) > 1:
                         flash("""There were more open Bookings regarding this Part.
-                        Since this should be impossible all open bookings are closed.
+                        Since this should be impossible, all open bookings are closed.
                         Please Count the remainig pieces!""", "danger")
                     for f in floating:
                         f.floating = False
@@ -765,9 +765,9 @@ class Part(db.Model):
                 # if e.g. a new part is stored, the initial amount can be set
                 if count:
                     self.stocktaking(count)
-            except:
+            except Exception as e:
                 flash("""An Error occured in part.place
-                    \nplace_id: {}""".format(place_id), "danger")
+                    \nplace_id: {0}\n{1}""".format(place_id, e), "danger")
         return self.place_rel
 
     def last_active_reservations(self):
@@ -791,6 +791,8 @@ class Room(db.Model):
         self.title = title
         self.address = address
 
+    def link(self):
+        return url_for("show_room", room_id=self.id)
 
 class Process(db.Model):
     id = db.Column(db.Integer, primary_key=True)

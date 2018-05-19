@@ -55,7 +55,21 @@
                     <div class="col-xs-12 col-md-12">
                         <div class="">
                                 <p><strong>Type:</strong> {{part.part_type.name}}</p>
-                                <p><strong>Location:</strong> {{part.place().id}}</p>
+                                <div class="row">
+                                    <p>
+                                        <div class="col-xs-6"><strong>Location:</strong> {% if part.place() %}<strong>{{part.place().id}}</strong> :: {{part.place().room.title}}@{{part.place().room.address}}{% endif %}</div>
+                                        <form action="{{url_for('assign_place', part_ids=part.ids)}}" method="POST" class="form-inline">
+                                            <div class="form-group">
+                                                <input class="form-control" placeholder="Assign Place... (Enter the ID)" required type="number" name="place_id">
+                                            </div>
+                                            <div class="form-group">
+                                                <button class="btn btn-default">
+                                                    <span class="glyphicon glyphicon-pencil"></span>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </p>
+                                </div>
                             <table class="table table-bordered table-responsive">
                                 <thead>
                                     <th>Attribute</th>
@@ -208,6 +222,7 @@
                                         </div>
                                         {% endif %}
                                         </td>
+                                        <td></td>
                                     </tr>
                                 {% endfor %}
                                 {% if not part.last_active_reservations() %}

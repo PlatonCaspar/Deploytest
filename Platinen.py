@@ -1708,15 +1708,71 @@ def edit_room_property(room_id):
         return redirect(request.referrer or url_for("start"))
     room = data_Structure.Room.query.get(room_id)
     if room:
-    
+        if prop == "address":
+            room.address = request.form.get(prop)
+            data_Structure.db.session.commit()
+        elif prop == "title":
+            room.title = request.form.get(prop)
+            data_Structure.db.session.commit()            
+        else:
+            flash("What did you do? //edit_room_property()//", "danger")
+        return redirect(request.referrer or url_for("show_room", room_id=room_id) or url_for("start"))
     else:
         flash("""The Room query did not return a room""", "danger")
         return redirect(request.referrer or url_for("start"))
         
-
-
-    
+@app.route("/room/place/add/<room_id>/", methods=["POST"])
+def add_place(room_id):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer)
+    elif current_user.is_authenticated:
+        try:
+            room_id = int(room_id)
+        except Exception as e:
+            flash("An error occured in //add_place()//\n{}".format(e), "danger")
+        room = data_Structure.Room.query.get(room_id)
+        if room:
+            place = data_Structure.Place()
+            data_Structure.db.session.add(place)
+            room.places.append(place)
+            data_Structure.db.session.commit()
+            flash("place '{}' was created!".format(place.id), "success")
+            return redirect(request.referrer or url_for("show_room", room_id=room_id) or url_for("start"))            
+        else:
+            flash("The Room Query returned nothing! //add_place()//", "danger")
+            return redirect(request.referrer or url_for("show_room", room_id=room_id) or url_for("start"))
         
+@app.route("/part/place/assign/<part_ids>/", methods=["POST"])
+def assign_place(part_ids):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+    elif current_user.is_authenticated:
+        try:
+            part_ids = int(part_ids)
+        except Exception as e:
+            flash("An error occured in //assign_place()//\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+        part = data_Structure.Part.query.get(part_ids)
+        place_id = request.form.get("place_id")
+        try:
+            place_id = int(place_id)
+            place = data_Structure.Place.query.get(place_id)
+        except Exception as e:
+            flash("An error occured in //assign_place()//\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+        if place.part:
+            flash("Place is already in use! Look for another one.", "danger")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+            
+        if part.place(place_id).id is place_id:
+            flash("Place was assigned successfull", "success")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+        else:
+            flash("Place could not be changed for some reason!", "danger")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+            
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'

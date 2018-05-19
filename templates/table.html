@@ -188,7 +188,7 @@
                         <tr class="table_links" onclick="window.document.location='{{ room.link() }}';">
                             <td class="text-justify">{{room.title}}</td>
                             <td class="text-justify">{{room.address}}</td>
-                            <td class="text-justify">{{room.places|length}}</td>
+                            <td class="text-justify">{{room.places.all()|length}}</td>
                         </tr>                            
                         {% endfor %}
                     </tbody>

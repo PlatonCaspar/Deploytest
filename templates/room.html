@@ -3,14 +3,14 @@
 
 <div class="container col-xs-12 col-md-8 col-md-offset-2"> <!-- container -->
     <div class="row">
-        <div class="col-xs-12 col-md-6"><!-- First Column-->
+        <div class="col-xs-12 col-md-6 col-md-offset-3"><!-- First Column-->
             <h3>{{room.title}} <small>id: {{room.id}}</small></h3>
             <hr>
             <table class="table table-bordered table-responsive">
                 <thead>
                     <tr>
-                        <td>Name</td>
-                        <td>Value</td>
+                        <th class="text-info">Name</td>
+                        <th class="text-info">Value</td>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,7 +39,7 @@
                     <tr>
                         <form action="{{url_for('edit_room_property', room_id=room.id, property='address')}}"
                         method="POST">
-                            <td>address</td>
+                            <td>Address</td>
                             <td><input type="text" id="{{room.address}}" name="address" value="{{room.address}}" 
                                 {% if current_user.is_authenticated %}
                                 placeholder="Enter the value here..."                                            
@@ -62,7 +62,36 @@
 
             </table>
         </div><!--End First Column-->
-    </div>
+    </div><!--End first row-->
+    <div class="row"><!--Second row-->
+        <div class="col-xs-12 col-md-6 col-md-offset-3"><!-- First Column second row-->
+            <h4>Places</h4>
+            <hr>
+            {% if current_user.is_authenticated %}
+            <form action="{{url_for('add_place', room_id=room.id)}}" method="POST">
+                <div class="form-group">
+                    <button class="btn btn-info btn-block"><span class="glyphicon glyphicon-plus"></span> Add Place</button>
+                </div>
+            </form>
+            {% endif %}
+            <table class="table table-bordered table-striped table-responsive">
+                <thead>
+                    <tr>
+                        <th class="text-info">ID</th>
+                        <th class="text-info">Part IDS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for place in room.places %}
+                    <tr>
+                        <td>{{place.id}}</td>
+                        <td>{{place.part.ids}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div><!--End first col second row-->
+    </div><!--End second row-->
 </div> <!--End Container-->
 
 {% endblock %}
