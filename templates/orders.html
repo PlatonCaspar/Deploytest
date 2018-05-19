@@ -26,6 +26,7 @@
                                 <th class="text-info">Quantity</th>
                                 <th class="text-info">Ordered by</th>
                                 <th class="text-info">Delivered</th>
+                                <th class="text-info">Action</th>
                             </thead>
                             <tbody>
                         {% for order in ordered %}
@@ -45,6 +46,13 @@
                                             </button>
                                         </div>
                                     </div>
+                                </form>
+                            </td>
+                            <td class="">
+                                <form action="{{url_for('cancel_order', order_id=order.id)}}" method="POST">
+                                    <button class="btn btn-danger" type="submit">
+                                        <span class="glyphicon glyphicon-remove"></span>
+                                    </button>
                                 </form>
                             </td>
                             </tr>

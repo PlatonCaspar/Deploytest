@@ -1549,7 +1549,21 @@ def order_delivered(order_id):
             order.book(number)
             flash("The remaining order stays open!", "info")
         return(redirect(request.referrer))
-        
+
+@app.route("/parts/order/cancel/<order_id>/", methods=["POST"])
+def cancel_order(order_id):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer)
+    elif current_user.is_authenticated:
+        try:
+            order = data_Structure.Order.query.get(int(order_id))
+        except Exception as e:
+            flash("An Error occured in //cancel_order()//\n{}".format(e), "danger")
+        data_Structure.db.session.delete(order)
+        data_Structure.db.session.commit()
+        flash("Order was cancelled", "success")
+        return redirect(request.referrer or url_for("start"))
 
 @app.route("/parts/oder/order/<order_id>/", methods=["POST"])
 def order_ordered(order_id):
