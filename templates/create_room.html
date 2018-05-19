@@ -1,0 +1,32 @@
+{%- extends 'base.html' %} {% block title %} New Room
+{% endblock %} {% block content %}
+
+<div class="container col-xs-12 col-md-8 col-md-offset-2"> <!-- container -->
+    <div class="row">
+        <div class="col-xs-12 col-md-6 col-md-offset-3"><!-- First Column-->
+            <div class="page-header">
+                <h3>
+                    Create a new Room
+                </h3>
+            </div>
+            <form class="" action="{{url_for('create_room')}}" method="POST">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon">Title</span>
+                        <input id="title" type="text" class="form-control" name="title" placeholder="Enter the Title here...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon">Address</span>
+                        <input id="address" type="text" class="form-control" name="address" placeholder="Enter the Address here...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-success btn-block">Create</button>
+                </div>
+            </form>
+        </div> <!--End First column-->
+    </div>
+</div>
+{% endblock %}

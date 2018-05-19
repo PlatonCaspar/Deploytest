@@ -71,14 +71,24 @@ def check_property(search_word, value):
         return 0
     search_property = search_word.split(":")[0]
     search_values = search_word.split(":")[1]
-    if search_property not in value:
-        return 0
+    # if search_property not in value:
+    #     return 0
     value_property = value.split(":")[0]
     if value_property != search_property:
         return 0
     values = value.split(":")[1]
+    try:
+        values = float(values)
+    except Exception as e:
+        print(e)
     for s_val in search_values.split(","):
-        if s_val in values:
+        try:
+            s_val = float(s_val)
+            print(s_val)
+            print(values)
+        except Exception as e:
+            print(e)
+        if s_val == values:
             score += 1
         else:
             return 0

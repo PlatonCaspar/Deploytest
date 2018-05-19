@@ -1,0 +1,68 @@
+{%- extends 'base.html' %} {% block title %} Room {{room.id}}
+{% endblock %} {% block content %}
+
+<div class="container col-xs-12 col-md-8 col-md-offset-2"> <!-- container -->
+    <div class="row">
+        <div class="col-xs-12 col-md-6"><!-- First Column-->
+            <h3>{{room.title}} <small>id: {{room.id}}</small></h3>
+            <hr>
+            <table class="table table-bordered table-responsive">
+                <thead>
+                    <tr>
+                        <td>Name</td>
+                        <td>Value</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <form action="{{url_for('edit_room_property', room_id=room.id, property='title')}}"
+                        method="POST">
+                            <td>Title</td>
+                            <td><input type="text" id="{{room.title}}" name="title" value="{{room.title}}" 
+                                {% if current_user.is_authenticated %}
+                                placeholder="Enter the value here..."                                            
+                                {%endif%}
+                                style="border: none; background-color: white"
+                                {% if not current_user.is_authenticated %}
+                                disabled="true"
+                                {%endif%}
+                                >
+                                <button class="btn btn-default btn-sm pull-right"  type="submit"
+                                {% if not current_user.is_authenticated %}
+                                disabled="true"
+                                {%endif%}
+                                >
+                                <span class="glyphicon glyphicon-pencil"></span></button>
+                            </td>
+                        </form>
+                    </tr>
+                    <tr>
+                        <form action="{{url_for('edit_room_property', room_id=room.id, property='address')}}"
+                        method="POST">
+                            <td>address</td>
+                            <td><input type="text" id="{{room.address}}" name="address" value="{{room.address}}" 
+                                {% if current_user.is_authenticated %}
+                                placeholder="Enter the value here..."                                            
+                                {%endif%}
+                                style="border: none; background-color: white"
+                                {% if not current_user.is_authenticated %}
+                                disabled="true"
+                                {%endif%}
+                                >
+                                <button class="btn btn-default btn-sm pull-right"  type="submit"
+                                {% if not current_user.is_authenticated %}
+                                disabled="true"
+                                {%endif%}
+                                >
+                                <span class="glyphicon glyphicon-pencil"></span></button>
+                            </td>
+                        </form>
+                    </tr>
+                </tbody>
+
+            </table>
+        </div><!--End First Column-->
+    </div>
+</div> <!--End Container-->
+
+{% endblock %}

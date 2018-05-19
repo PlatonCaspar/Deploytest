@@ -630,7 +630,7 @@ class Part(db.Model):
     def ref_json(self):
         data = json.loads(self.json_attributes)
         ret = ""
-        for k in data.keys():
+        for k in self.part_type.args():
             ret += """{key}:{value};""".format(key=k, value=data[k])
         return ret
 
@@ -642,6 +642,11 @@ class Part(db.Model):
                 attributes.pop(attr)
                 flash("value \"{}\" was deleted".format(val), "success")
             else:
+                try:
+                    if not val[0] == "0":
+                        val = float(val)
+                except:
+                    pass
                 attributes[attr] = val
                 flash("value was set", "success")
             self.json_attributes = json.dumps(attributes)

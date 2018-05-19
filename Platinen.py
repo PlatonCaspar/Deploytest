@@ -1656,6 +1656,65 @@ def remove_part_from_bom():
     else:
         flash("An Error occured in //remove_part_from_bom()// \nbom Query was not successful")
     return redirect(request.referrer or url_for("start"))
+
+@app.route("/room/create/", methods=["POST", "GET"])
+@login_required
+def create_room():
+    if request.method == "GET":
+        nav.nav.register_element("frontend_top", view.nav_bar())
+        return render_template("create_room.html")
+    elif request.method == "POST":
+        title = request.form.get("title")
+        address = request.form.get("address")
+        room = data_Structure.Room(title, address)
+        data_Structure.db.session.add(room)
+        data_Structure.db.session.commit()
+        return redirect(url_for("show_room", room_id=room.id) or url_for('start'))
+    else:
+        flash("An Error occured in //create_room()//", "danger")
+        return redirect(request.referrer or url_for("start"))
+
+
+@app.route("/room/show/", methods=["GET"])
+def show_all_rooms():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template("table.html", results_rooms=data_Structure.Room.query.all())
+    
+@app.route("/room/show/<room_id>/", methods=["GET"])
+def show_room(room_id=None):
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    if room_id:
+        try:
+            room_id = int(room_id)
+            room = data_Structure.Room.query.get(room_id)
+        except Exception as e:
+            flash("An Error ocured in //show_room()//\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("start"))
+        if room:
+            return render_template("room.html", room=room)
+        else:
+            flash("Something went Wrong\nThe query for the rooms ID returned nothing.", "danger")
+            return render_template("table.html", results_rooms=data_Structure.Room.query.all())
+    else:
+        return redirect(url_for("show_all_rooms"))
+        
+@app.route("/room/edit/property/<room_id>/", methods=["POST"])
+def edit_room_property(room_id):
+    prop = request.args.get("property")
+    try:
+        room_id = int(room_id)
+    except Exception as e:
+        flash("""An Error occured in //edit_room_property()//\n{}""".format(e), "danger")
+        return redirect(request.referrer or url_for("start"))
+    room = data_Structure.Room.query.get(room_id)
+    if room:
+    
+    else:
+        flash("""The Room query did not return a room""", "danger")
+        return redirect(request.referrer or url_for("start"))
+        
+
+
     
         
 

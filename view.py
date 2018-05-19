@@ -105,6 +105,9 @@ def nav_bar():
                             View('All Projects', 'show_project_all')),
                    Subgroup("Components",
                             View("Show Parts", 'show_part', ids=None)),
+                   Subgroup("Rooms",
+                            View("Show Rooms", "show_all_rooms")
+                   ),        
                    search_bar
                    ),
 
@@ -146,7 +149,10 @@ def nav_bar():
                              View("Create Part", "create_part"),
                              View("Show Parts", 'show_part', ids=None),
                              View('Orders', 'show_orders')),
-
+                    Subgroup("Rooms",
+                             View("Show Rooms", "show_all_rooms"),
+                             View("Create Room", "create_room", room_id=None)
+                             ),
                     search_bar
 
                    ),
