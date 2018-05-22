@@ -1410,7 +1410,7 @@ def part_reservation(part_ids):
             return redirect(url_for("show_part"))
         date = helper.parse_date(request.form.get("date"))
         if not date:
-            flash("""Please be sure to enter a valid date. \nThe Pattern should be \"DD.MM.YYY\"
+            flash("""Please be sure to enter a valid date. \nThe Pattern should be \"DD.MM.YYYY\"
             \nThe date also must be today or in the future!""", "info")
             return redirect(url_for('show_part', ids=part.ids))
         if int(request.form.get("amount"))<0:
@@ -1747,7 +1747,7 @@ def add_place(room_id):
 def assign_place(part_ids):
     if not current_user.is_authenticated:
         flash("Please log in to contribute!", "info")
-        return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+        return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
     elif current_user.is_authenticated:
         try:
             part_ids = int(part_ids)
@@ -1772,8 +1772,92 @@ def assign_place(part_ids):
         else:
             flash("Place could not be changed for some reason!", "danger")
             return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
-            
 
+@app.route("/project/bom/reserve/<project_name>/", methods=["POST"])
+def reserve_bom(project_name):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer or url_for("show_project", ids=project_name) or url_for("start"))
+    elif current_user.is_authenticated:
+        try:
+            project = data_Structure.Project.query.get(project_name)
+        except Exception as e:
+            flash("An error occured in //assign_place()//\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+        date = helper.parse_date(request.form.get("date"))
+        amount = request.form.get("number")
+        try:
+            amount = int(amount)
+        except Exception as e:
+            flash("""An Exception occured in //reserve_bom()// Please enter a valid number\n{}""".format(e))
+            return redirect(request.referrer or url_for("show_project", ids=project_name) or url_for("start"))            
+        if date is False:
+            flash("""Please be sure to enter a valid date. \nThe Pattern should be \"DD.MM.YYYY\"
+            \nThe date also must be today or in the future!""", "info")
+            return redirect(request.referrer or url_for("show_project", ids=project_name) or url_for("start"))
+        if project:
+            process = data_Structure.Process(project=project)
+            data_Structure.db.session.add(process)
+            data_Structure.db.session.commit()
+            for bom in project.bom:
+                bom.reserve(duedate=date, process=process, number=amount)
+            flash("Reservations are made. For checking out the Parts got to your Profile and see your processes.", "info")
+        else:
+            flash("The Query did not return a Project!", "danger")
+        return redirect(request.referrer or url_for("show_project", ids=project_name) or url_for("start"))
+
+@app.route("/process/edit/number/<process_id>/", methods=["POST"])
+def edit_process_number(process_id):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer or url_for("my_profile") or url_for("start"))
+    elif current_user.is_authenticated:
+        try:
+            process = data_Structure.Process.query.get(int(process_id))
+        except Exception as e:
+            flash("An error occured in //edit_process_number()//\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("my_profile") or url_for("start"))
+        if not process:
+            flash("Query did not return a Process!", "danger")
+            return redirect(request.referrer or url_for("my_profile") or url_for("start"))
+        else:
+            nr = request.form.get("number")
+            try:
+                nr = int(nr)
+            except Exception as e:
+                flash("An error occured in //edit_process_number()// Be sure to enter a valid number.\n{}".format(e), "danger")
+                return redirect(request.referrer or url_for("my_profile") or url_for("start"))
+            process.EditNumber(nr)
+            return redirect(request.referrer or url_for("my_profile") or url_for("start"))
+
+
+@app.route("/process/edit/date/<process_id>/", methods=["POST"])
+def edit_process_date(process_id):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer or url_for("my_profile") or url_for("start"))
+    elif current_user.is_authenticated:
+        try:
+            process = data_Structure.Process.query.get(int(process_id))
+        except Exception as e:
+            flash("An error occured in //edit_process_date())//\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("my_profile") or url_for("start"))
+        if not process:
+            flash("Query did not return a Process!", "danger")
+            return redirect(request.referrer or url_for("my_profile") or url_for("start"))
+        else:
+            date = helper.parse_date(request.form.get("date"))
+            if not date:
+                flash("""Please be sure to enter a valid date. \nThe Pattern should be \"DD.MM.YYYY\"
+                \nThe date also must be today or in the future!""", "info")
+                return redirect(request.referrer or url_for("my_profile") or url_for("start"))
+            else:
+                if process.GetType().lower() == "reservation":
+                    for child in process.children():
+                        child.duetate = date
+                    data_Structure.db.session.commit()
+                return redirect(request.referrer or url_for("my_profile") or url_for("start"))
+                
 if __name__ == '__main__':
     # app.secret_key = 'Test'
     test_queries()

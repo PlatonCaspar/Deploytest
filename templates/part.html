@@ -57,7 +57,12 @@
                                 <p><strong>Type:</strong> {{part.part_type.name}}</p>
                                 <div class="row">
                                     <p>
-                                        <div class="col-xs-6"><strong>Location:</strong> {% if part.place() %}<strong>{{part.place().id}}</strong> :: {{part.place().room.title}}@{{part.place().room.address}}{% endif %}</div>
+                                        <div class="col-xs-6"><strong>Location:</strong> {% if part.place() and current_user.is_authenticated %}<strong>{{part.place().id}}</strong> :: {{part.place().room.title}}@{{part.place().room.address}}
+                                            {% elif not current_user.is_authenticated %}
+                                            Please log in to see the location.
+                                            {% endif %}</div>
+                                        
+                                        {% if current_user.is_authenticated %}
                                         <form action="{{url_for('assign_place', part_ids=part.ids)}}" method="POST" class="form-inline">
                                             <div class="form-group">
                                                 <input class="form-control" placeholder="Assign Place... (Enter the ID)" required type="number" name="place_id">
@@ -68,6 +73,7 @@
                                                 </button>
                                             </div>
                                         </form>
+                                        {% endif %}
                                     </p>
                                 </div>
                             <table class="table table-bordered table-responsive">

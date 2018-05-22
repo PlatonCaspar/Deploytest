@@ -3,7 +3,7 @@ import os
 from ftplib import FTP
 from flask import flash, url_for
 
-from data_Structure import app
+# from data_Structure import app
 
 DATA_FOLDER = os.path.dirname(os.path.abspath(__file__))
 LABEL_PATH = os.path.join(DATA_FOLDER, 'static/label.txt')
@@ -45,12 +45,12 @@ def generate_label(code_number, code_url=None):
     
     return text
 
-def print_label(address, user='anonymous', passwd=None):
+def print_label(address, user='root', passwd="0000"):
     #print(address+' '+user+" "+str(passwd))
-    if app.config["TESTING"]:
-        return
+    # if app.config["TESTING"]:
+    #     return
     try:
-        with FTP(address, user='root', passwd='0000') as ftp:
+        with FTP(address, user=user, passwd=passwd) as ftp:
             ftp.cwd('/execute')
             with open(LABEL_PATH, 'rb') as file:
                 #print('Sending File')
@@ -85,6 +85,26 @@ def main():
         i+=1
     write_doc(text)
 
+
+def print_place_label(place):
+    text = generate_label(place.id)
+    write_doc(text)
+    print_label("labelprinter01.internal.sdi.tools")
+
+
+def print_part_label(part):
+    text = generate_label("""IDS{}""".format(part.ids))
+    write_doc(text)
+    print_label("labelprinter01.internal.sdi.tools")
+
+def print_device_label(device):
+    try:
+        code_url = url_for('show_device', device_id=device.device_id, _external=True)
+    except:
+        pass
+    label = board_labels.generate_label(device.device_name, code_url=code_url)
+    write_doc(label)
+    print_label("labelprinter01.internal.sdi.tools")
 
 if __name__=='__main__':
     config = []

@@ -12,6 +12,7 @@ import time
 import markdown
 import re
 import helper
+import board_labels
 
 RELATIVE_PICTURE_PATH = 'static/Pictures'
 UPLOAD_FOLDER = path.join(path.dirname(path.abspath(__file__)),
@@ -219,6 +220,9 @@ class User(db.Model):
                 return len(self.get_messages())
             else:
                 return 0
+
+    def project_related_processes(self):
+        return sorted(list(filter(lambda p: p.project is not None, self.processes)),key=lambda p: p.id, reverse=True)
 
 
 class History(db.Model):
@@ -511,6 +515,9 @@ class Device(db.Model):
         else:
             return {}
 
+    def print_label(self):
+        board_labels.print_device_label(self)
+
 
 # Components from now on
 class PartType(db.Model):
@@ -595,7 +602,7 @@ class Part(db.Model):
             print(exb_numbers)
             db.session.commit()
 
-        return "EXB{}".format(self.exb_number)
+        return "EXB%06d" % self.exb_number
 
     def link(self):  # required for use with "History" Table
         return url_for('show_part', ids=self.ids)
@@ -609,7 +616,9 @@ class Part(db.Model):
                 except KeyError as e:
                     self.args(attr=key, val="")
                 finally:
-                    ret+="{0}:{1}; ".format(key, self.args()[key])
+                    pass
+                    # ret+="{0}:{1}; ".format(key, self.args()[key])
+            return ret
                     
         else:
             return """PartType:{part_type};{json_attributes};EXB:{exb_number};
@@ -773,11 +782,17 @@ class Part(db.Model):
     def last_active_reservations(self):
         return list(filter(lambda k: k.deprecated is False, self.reservations))[:5]
 
+    def print_label(self):
+        board_labels.print_part_label(self)
+
 
 class Place(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
     part_ids = db.Column(db.Integer, db.ForeignKey('part.ids'))
+
+    def print_label(self):
+        board_labels.print_place_label(self)
 
 
 class Room(db.Model):
@@ -793,6 +808,7 @@ class Room(db.Model):
 
     def link(self):
         return url_for("show_room", room_id=self.id)
+
 
 class Process(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -818,12 +834,20 @@ class Process(db.Model):
     user = db.relationship('User', backref='processes',
                            uselist=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.uid'))
+    project = db.relationship(
+        "Project",
+        backref='process',
+        uselist=False
+    )
+    project_id = db.Column(db.Text, db.ForeignKey("project.project_name"))
 # end relationships
     datetime = db.Column(db.DateTime)
 
-    def __init__(self):
+    def __init__(self, project=None):
         self.user = current_user
         self.datetime = datetime.datetime.now()
+        if project:
+            self.project = project
 
     def children(self):
         if self.reservations:
@@ -834,6 +858,65 @@ class Process(db.Model):
             return self.booking
         else:
             return None
+    
+    def ProcessType(self):
+        if self.reservations:
+            return "Reservation"
+        elif self.orders:
+            return "Order"
+        elif self.booking:
+            return "Booking"
+        else:
+            return None
+
+    def GetAmount(self):
+        """Returns the amount of reserved Projects. So if there are 12 reserved parts for a Project and 3 are needed for one complete assembly, 4 is returned"""
+        val = None
+        if not self.project:
+            return None
+        for child in self.children()[::5]:
+            bom = list(filter(lambda b: b.part_ids is child.part_ids and b.project_id == self.project_id, self.project.bom))
+            if len(bom) is 1:
+                if not val:
+                    val = child.number/bom.amount
+                else:
+                    if val is not child.number/bom.amount:
+                        raise Exception("Process.GetAmount(self):: multiple processes open for same project. That should not happen!")
+            elif len(bom) > 1:
+                raise Exception("Process.GetAmount(self):: multiple processes open for same project. That should not happen!")
+        return val
+    
+    def GetChildDate(self):
+        if not self.project or self.ProcessType().lower() != "reservation":
+            return None
+        for child in self.children()[::5]:
+            bom = list(filter(lambda b: b.part_ids is child.part_ids and b.project_id == self.project_id, self.project.bom))
+            if len(bom) is 1:
+                if not val:
+                    val = child.duedate
+                else:
+                    if val is not child.duedate:
+                        raise Exception("Process.GetChildDate(self):: multiple processes open for same project. That should not happen!")
+            elif len(bom) > 1:
+                raise Exception("Process.GetChildDate(self):: multiple processes open for same project. That should not happen!")
+        return val
+    
+    def EditNumber(self, number):
+        if not self.project or self.ProcessType().lower() != "reservation":
+            return None
+        date = self.GetChildDate()
+        for res in self.reservation:
+            db.session.delete(res)
+        db.session.commit()    
+        for bom in self.project.bom:
+            bom.amount = number
+            bom.reserve(duedate=date, process=process)
+
+    def delete(self):
+        for child in self.children():
+            db.session.delete(child)
+        db.session.delete(self)
+        db.session.commit()
 
 
 class Order(db.Model):
@@ -980,8 +1063,8 @@ class BOM(db.Model):
         db.session.commit()
         flash("part was removed from bom", "success")
 
-    def reserve(self, duedate, process):
-        self.part.reserve(duedate, self.amount, process)
+    def reserve(self, number, duedate, process):
+        self.part.reserve(duedate, self.amount*number, process)
 
 
 class PartDocument(db.Model):

@@ -6,7 +6,8 @@ import re
 
 def parse_date(date_str):
     """This function returns a datetime.date object parsed from 
-    the passed value or False if the passed string was not a date"""
+    the passed value or False if the passed string was not a date
+    also it checks if date is already in the past and returns false as well."""
     type_one = re.compile('.{4}-.{2}-.{2}')
     type_two = re.compile('.{2}\..{2}\..{4}')
     type_three = re.compile('.{2}/.{2}/.{4}')

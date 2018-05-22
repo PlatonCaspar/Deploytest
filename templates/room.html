@@ -79,13 +79,20 @@
                     <tr>
                         <th class="text-info">ID</th>
                         <th class="text-info">Part IDS</th>
+                        <th class="text-info">In Stock</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for place in room.places %}
                     <tr>
                         <td>{{place.id}}</td>
-                        <td>{{place.part.ids}}</td>
+                        {% if place.part %}
+                            <td>{{place.part.ids}}</td>
+                            <td>{{place.part.in_stock()}}</td>
+                        {% else %}
+                            <td></td>
+                            <td></td>
+                        {% endif %}    
                     </tr>
                     {% endfor %}
                 </tbody>
