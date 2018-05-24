@@ -878,7 +878,7 @@ class Process(db.Model):
             bom = list(filter(lambda b: b.part_ids is child.part_ids and b.project_id == self.project_id, self.project.bom))
             if len(bom) is 1:
                 if not val:
-                    val = child.number/bom.amount
+                    val = child.number/bom[0].amount
                 else:
                     if val is not child.number/bom.amount:
                         raise Exception("Process.GetAmount(self):: multiple processes open for same project. That should not happen!")
@@ -887,6 +887,7 @@ class Process(db.Model):
         return val
     
     def GetChildDate(self):
+        val = None
         if not self.project or self.ProcessType().lower() != "reservation":
             return None
         for child in self.children()[::5]:
@@ -894,9 +895,13 @@ class Process(db.Model):
             if len(bom) is 1:
                 if not val:
                     val = child.duedate
+                elif val is not child.duedate:
+                    raise Exception("Process.GetChildDate(self):: multiple processes open for same project. That should not happen!")
                 else:
-                    if val is not child.duedate:
-                        raise Exception("Process.GetChildDate(self):: multiple processes open for same project. That should not happen!")
+                    val = child.duedate
+                # print(val)
+                # print(child.id, "IDIDID")
+                # return val
             elif len(bom) > 1:
                 raise Exception("Process.GetChildDate(self):: multiple processes open for same project. That should not happen!")
         return val
@@ -905,12 +910,12 @@ class Process(db.Model):
         if not self.project or self.ProcessType().lower() != "reservation":
             return None
         date = self.GetChildDate()
-        for res in self.reservation:
+        for res in self.reservations:
             db.session.delete(res)
-        db.session.commit()    
+        db.session.commit()
+        old = self.GetAmount()    
         for bom in self.project.bom:
-            bom.amount = number
-            bom.reserve(duedate=date, process=process)
+            bom.reserve(duedate=date, process=self, number=number)
 
     def delete(self):
         for child in self.children():
@@ -980,6 +985,7 @@ class Reservation(db.Model):
     def __init__(self, duedate):
         self.deprecated = False
         self.duedate = duedate
+
     def user(self):
         return self.process.user
 
@@ -1007,7 +1013,9 @@ class Reservation(db.Model):
             return True
         return True
 
-
+    def set_date(self, date):
+        self.duedate = date
+        
 
 
 class Booking(db.Model):

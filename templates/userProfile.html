@@ -64,6 +64,7 @@
                 </div>
                 <div class="col-xs-12 col-md-7 col-lg-7 col-ld-7">
                 {# Processes #}
+                
                     <div class="panel panel-default">
                         <div class="panel-heading" role="button" id="headingpartlist" data-toggle="collapse" data-parent="#Process_list" 
                                     href="#collapseprocesslist" aria-controls="collapseprocesslist" aria-expanded="false" toggle="false">
@@ -75,19 +76,21 @@
                         <div id="collapseprocesslist" class="panel-collapse collapse" role="tabpanel" 
                              aria-labelledby="headingprocesslist">
                             {# start single processes #}
-
+                            <div class="panel-body">
                             {% for process in current_user.project_related_processes() %}
+                            <div class="">
                             <div class="panel panel-default">
                                 <div class="panel-heading" role="button" id="headingpartlist{{process.id}}" data-toggle="collapse" data-parent="#Process_list{{process.id}}" 
                                             href="#collapseprocesslist{{process.id}}" aria-controls="collapseprocesslist{{process.id}}" aria-expanded="false" toggle="false">
                                     <h4 class="panel-title">
-                                        Process {{process.id}} :: Project {{process.project.project_name}} :: Type {{process.ProcessType()}} :: Created {{process.datetime.strftime('%d.%m.%Y')}}
+                                        Process {{process.id}} :: <a class="btn btn-default" href="{{process.project.link()}}" role="button" onclick="window.document.location='{{process.project.link()}}'">Project {{process.project.project_name}}</a> :: Type {{process.ProcessType()}} :: Created {{process.datetime.strftime('%d.%m.%Y')}}
                                         <span class="glyphicon glyphicon-menu-down pull-right"></span>
                                     </h4>
                                 </div>
                                 <div id="collapseprocesslist{{process.id}}" class="panel-collapse collapse" role="tabpanel" 
                                      aria-labelledby="headingprocesslist{{process.id}}">
-                                     {% if process.ProcessType() == "reservation" %}
+                                    <div class="panel-body">
+                                     {% if process.ProcessType().lower() == "reservation" %}
                                      <div class="row">
                                         <div class="col-xs-4">Number of Assemblies</div>
                                         <div class="col-xs-8">
@@ -107,7 +110,7 @@
                                         </div>
                                     </div>
                                     {% endif %}
-                                    <table class="table table-bordered table-striped">
+                                    <table class="table table-bordered table-striped table-hover">
                                         <thead>
                                             <tr>
                                                 <th>IDS</th>
@@ -119,7 +122,7 @@
                                         </thead>
                                         <tbody>
                                             {% for child in process.children() %}
-                                            <tr>
+                                            <tr class="table_links" onclick="window.document.location='{{child.part.link()}}'">
                                                 <td>{{child.part_ids}}</td>
                                                 <td>{{child.part.exb()}}</td>
                                                 <td>{{child.number}}</td>
@@ -132,11 +135,12 @@
                                             {% endfor %}
                                         </tbody>
                                     </table>
-
+                                </div>
                                 </div>
                             </div>
+                            </div>
                             {% endfor %}
-
+                            </div>
                             {# end single processes #}
                         </div>
                     </div>

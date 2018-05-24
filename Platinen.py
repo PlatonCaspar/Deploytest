@@ -1852,9 +1852,9 @@ def edit_process_date(process_id):
                 \nThe date also must be today or in the future!""", "info")
                 return redirect(request.referrer or url_for("my_profile") or url_for("start"))
             else:
-                if process.GetType().lower() == "reservation":
+                if process.ProcessType().lower() == "reservation":
                     for child in process.children():
-                        child.duetate = date
+                        child.set_date(date)
                     data_Structure.db.session.commit()
                 return redirect(request.referrer or url_for("my_profile") or url_for("start"))
                 
