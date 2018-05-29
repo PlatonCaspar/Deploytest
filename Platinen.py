@@ -1759,6 +1759,8 @@ def assign_place(part_ids):
         try:
             place_id = int(place_id)
             place = data_Structure.Place.query.get(place_id)
+            if not place:
+                raise Exception("The place with the ID {} does not exist!".format(place_id))
         except Exception as e:
             flash("An error occured in //assign_place()//\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
