@@ -87,7 +87,7 @@ def check_property(search_word, value):
             print(s_val)
             print(values)
         except Exception as e:
-            print(e)
+            pass
         if s_val == values:
             score += 1
         else:

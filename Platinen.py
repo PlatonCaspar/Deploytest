@@ -334,7 +334,7 @@ def start():
         if not results_board and not results_project and not results_component and not results_comments and not results_devices and not results_places and not results_rooms:
             flash('No results were found', 'warning')
             return render_template('base.html')
-
+        print(results_comments)
         return render_template('table.html', args=results_board, projects=results_project,
                                search_form=searchForm.SearchForm(), search_word=search_word, parts=results_component,
                                results_comments=results_comments, results_devices=results_devices, results_places=results_places,
@@ -1897,7 +1897,32 @@ def clear_place(place_id):
 
     return redirect(request.referrer or url_for("show_room", ids=part.ids) or url_for("start"))
          
-
+@app.route("/part/change/recommended/<part_ids>/", methods=["POST"])
+def change_recommended(part_ids):
+    if not current_user.is_authenticated:
+        flash("Please log in to edit the component!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(part_ids))
+        except Exception as e:
+            flash("oops an error occured within //change_recommended()//.\n\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
+        try:
+            recommended = request.form.get("recommended")
+            recommended = int(recommended)
+            if recommended < 0:
+                flash("That makes absolutely no sense. Please enter a Number bigger or equal to zero (0)", "warning")
+                return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
+            else:
+                part.recommended=recommended
+                data_Structure.db.session.commit()
+        except Exception as e:
+            flash("oops an error occured within //change_recommended() - 2 -//.\n\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
+            
+        return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
+        
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'

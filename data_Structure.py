@@ -272,11 +272,14 @@ class History(db.Model):
                                           "%d.%m.%Y %H:%M:%S")
 
     def link(self):
+
         if self.board_code:
             return url_for('show_board_history', g_code=self.board_code)+'#comment_id'+str(self.id)
         elif self.part:
             return self.part.link()+'#comment_id'+str(self.id)        
         else:
+            if not self.parent():
+                return None
             return self.parent().link()+'#comment_id'+str(self.id)
 
     def reduce(self):
@@ -640,7 +643,8 @@ class Part(db.Model):
         data = json.loads(self.json_attributes)
         ret = ""
         for k in self.part_type.args():
-            ret += """{key}:{value};""".format(key=k, value=data[k])
+            if k in data.keys():
+                ret += """{key}:{value};""".format(key=k, value=data[k])
         return ret
 
     def args(self, attr=None, val=None, delete=False):
