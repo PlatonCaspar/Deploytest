@@ -74,24 +74,39 @@
                 </div>
             </form>
             {% endif %}
-            <table class="table table-bordered table-striped table-responsive">
+            <table class="table table-bordered table-hover table-striped table-responsive">
                 <thead>
                     <tr>
                         <th class="text-info">ID</th>
                         <th class="text-info">Part IDS</th>
                         <th class="text-info">In Stock</th>
+                        {% if current_user.is_authenticated %}                        
+                        <th class="text-info">Clear</th>
+                        {% endif %}                        
                     </tr>
                 </thead>
                 <tbody>
                     {% for place in room.places %}
-                    <tr>
+                    <tr class="table_links" 
+                        {% if place.part %}
+                        onclick="window.document.location='{{place.part.link()}}';"
+                        {% endif %}
+                        >
+                        
                         <td>{{place.id}}</td>
                         {% if place.part %}
                             <td>{{place.part.ids}}</td>
                             <td>{{place.part.in_stock()}}</td>
+                            <td>
+                                {% if current_user.is_authenticated %}
+                                <form action="{{url_for('clear_place', place_id=place.id)}}" method="POST">
+                                    <button class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
+                                </form>
+                                {% endif %}
+                            </td>
                         {% else %}
                             <td></td>
-                            <td></td>
+                            <td></td>                          
                         {% endif %}    
                     </tr>
                     {% endfor %}

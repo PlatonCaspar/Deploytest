@@ -87,7 +87,7 @@ def main():
 
 
 def print_place_label(place):
-    text = generate_label(place.id)
+    text = generate_label(str(place.id))
     write_doc(text)
     print_label("labelprinter01.internal.sdi.tools")
 

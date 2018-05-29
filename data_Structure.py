@@ -793,6 +793,13 @@ class Place(db.Model):
 
     def print_label(self):
         board_labels.print_place_label(self)
+    
+    def clear(self):
+        self.part_ids = None
+        db.session.commit()
+    
+    def link(self):
+        return self.room.link()
 
 
 class Room(db.Model):

@@ -1737,6 +1737,7 @@ def add_place(room_id):
             data_Structure.db.session.add(place)
             room.places.append(place)
             data_Structure.db.session.commit()
+            place.print_label()
             flash("place '{}' was created!".format(place.id), "success")
             return redirect(request.referrer or url_for("show_room", room_id=room_id) or url_for("start"))            
         else:
@@ -1859,7 +1860,33 @@ def edit_process_date(process_id):
                         child.set_date(date)
                     data_Structure.db.session.commit()
                 return redirect(request.referrer or url_for("my_profile") or url_for("start"))
-                
+
+
+@app.route("/room/place/clear/<place_id>/", methods=["POST"])
+def clear_place(place_id):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
+    elif current_user.is_authenticated:
+        try:
+            place_id = int(place_id)
+            place = data_Structure.Place.query.get(place_id)
+            if not place:
+                raise Exception("The place with the ID {} does not exist!".format(place_id))
+        except Exception as e:
+            flash("An error occured in //clear_place()//\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_room", ids=part.ids) or url_for("start"))
+        if place:
+            place.clear()
+        else:
+            e = "the place Variable is not set."
+            flash("An error occured in //clear_place()//\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_room", ids=part.ids) or url_for("start"))
+
+    return redirect(request.referrer or url_for("show_room", ids=part.ids) or url_for("start"))
+         
+
+
 if __name__ == '__main__':
     # app.secret_key = 'Test'
     test_queries()
