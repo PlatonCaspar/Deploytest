@@ -318,15 +318,27 @@ def start():
             if search_word == "":
                 results_devices = data_Structure.Device.query.all()
             elif search_word is not "":
-                results_devices = search.search(search_word=search_word, items=data_Structure.Device.query.all()) 
+                results_devices = search.search(search_word=search_word, items=data_Structure.Device.query.all())
+        if search_area == "All" or search_area == "Place":
+            results_places = None
+            try:
+                results_places = [data_Structure.Place.query.get(int(search_word))]
+            except:
+                pass
+        
+        if search_area == "All" or search_area == "Room":
+            results_rooms = None
+            if search_word is not "":
+                results_rooms = search.search(search_word=search_word, items=data_Structure.Room.query.all())
 
-        if not results_board and not results_project and not results_component and not results_comments and not results_devices:
+        if not results_board and not results_project and not results_component and not results_comments and not results_devices and not results_places and not results_rooms:
             flash('No results were found', 'warning')
             return render_template('base.html')
 
         return render_template('table.html', args=results_board, projects=results_project,
                                search_form=searchForm.SearchForm(), search_word=search_word, parts=results_component,
-                               results_comments=results_comments, results_devices=results_devices)
+                               results_comments=results_comments, results_devices=results_devices, results_places=results_places,
+                               results_rooms=results_rooms)
     return render_template('start.html', search_form=search_form)
 
 

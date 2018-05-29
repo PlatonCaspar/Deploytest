@@ -816,6 +816,9 @@ class Room(db.Model):
     def link(self):
         return url_for("show_room", room_id=self.id)
 
+    def reduce(self):
+        return "Room;title:{title};address:{address};".format(title=self.title, address=self.address)
+
 
 class Process(db.Model):
     id = db.Column(db.Integer, primary_key=True)
