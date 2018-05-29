@@ -267,7 +267,7 @@ def start():
         
         if "EXB" in search_word:
             if "Q" in search_word:
-                search_word = clean_exb_scan(search_word)  # TODO find this function!
+                search_word = helper.clean_exb_scan(search_word)
             components = data_Structure.Part.query.filter_by(exb_number=int(search_word.strip("EXB"))).all()
             if len(components) is 1:
                 component = components[0]

@@ -123,3 +123,9 @@ def read_bom(_file: str):
             failed.append(temp)
   
     return exb, a5e, gwe, failed
+
+
+def clean_exb_scan(exb_scan):
+    expr = re.compile("EXB\d\d\d\d\d\d")
+    res = expr.search(exb_scan)
+    return res.group()
