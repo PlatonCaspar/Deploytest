@@ -1,0 +1,34 @@
+{%- extends 'base.html' %} {% block title %} Stocktaking {% endblock %} {% block content %}
+
+<div class="container">
+    <div class="row">
+        <!-- Row 1-->
+        <div class="col-xs-6 col-xs-offset-3">
+            <!-- col 1-->
+            <div class="page-header">
+                <h3>Stocktaking</h3>
+            </div>
+            <form action="{{url_for('stocktaking_do')}}" method="POST">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon">IDS</span>
+                        <input id="title" type="text" class="form-control" required name="ids" placeholder="Enter the IDS here...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon">Number</span>
+                        <input class="form-control" type="number" name="number" required placeholder="Please enter the amunt of parts....">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-success btn-block">Save</button>
+                </div>
+            </form>
+        </div>
+        <!-- end col 1 -->
+    </div>
+    <!--end row 1-->
+</div>
+
+{% endblock %}

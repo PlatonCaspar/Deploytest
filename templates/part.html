@@ -7,12 +7,15 @@
                 <div class="row">
                     <div class="col-xs-8 col-md-8">
                         <h3>IDS: {{part.ids}}<br>
-                            <small>EXB: {{"%06d" % part.exb_number or ""}}
+                            <small>EXB: {{"%06d" % part.exb_number or ""}} <span class="label label-info">
+                                    {{part.same_exb()|length}}
+                            </span>
                                 {% if current_user.is_authenticated %}
                                     <button class="btn btn-default btn-sm" data-toggle="modal" data-target="#modalEXB">
                                         <span class="glyphicon glyphicon-pencil"></span>        
                                     </button>
                                 {% endif %}
+                                
                             </small>
                         </h3>                
                     </div>
@@ -48,7 +51,7 @@
                             <h3><div class="label label-danger col-xs-6 pull-right">Out</div></h3>
                         {% else %}
                            <h3> <div class="label label-success col-xs-6 pull-right">In</div>         </h3>                   
-                        {% endif %}        
+                        {% endif %}    
                     </div>
                 </div>
                 <div class="row">

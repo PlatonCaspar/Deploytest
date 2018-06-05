@@ -250,11 +250,11 @@ def start():
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
     search_form = searchForm.SearchForm(request.form)
-    results_board = None
-    results_project = None
-    results_component = []
-    results_comments = None
-    results_devices = None
+    results_board = list()
+    results_project = list()
+    results_component = list()
+    results_comments = list()
+    results_devices = list()
     users = data_Structure.db.session.query(data_Structure.User.username).all()
     if request.method == 'POST':
         if request.form.get('submit_main') is None:
@@ -281,7 +281,7 @@ def start():
         if search_area == "Part" or search_area == "All":
             try:
                 ids = search_word.strip("IDS")
-                part = None
+                part = list()
                 if helper.isNum(ids):
                     part = data_Structure.Part.query.get(int(ids))
                 if part:
@@ -311,7 +311,7 @@ def start():
                 results_project = search.search(search_word=search_word, items=data_Structure.Project.query.all())
 
         if search_area == 'All':
-            results_comments = None
+            results_comments = list()
             if search_word is not "":
                 results_comments = search.search(search_word=search_word, items=data_Structure.History.query.all())
         if search_area == 'All' or search_area =='Devices':
@@ -320,14 +320,14 @@ def start():
             elif search_word is not "":
                 results_devices = search.search(search_word=search_word, items=data_Structure.Device.query.all())
         if search_area == "All" or search_area == "Place":
-            results_places = None
+            results_places = list()
             try:
                 results_places = [data_Structure.Place.query.get(int(search_word))]
             except:
                 pass
         
         if search_area == "All" or search_area == "Room":
-            results_rooms = None
+            results_rooms = list()
             if search_word is not "":
                 results_rooms = search.search(search_word=search_word, items=data_Structure.Room.query.all())
 
@@ -335,10 +335,10 @@ def start():
             flash('No results were found', 'warning')
             return render_template('base.html')
         print(results_comments)
-        return render_template('table.html', args=results_board, projects=results_project,
-                               search_form=searchForm.SearchForm(), search_word=search_word, parts=results_component,
-                               results_comments=results_comments, results_devices=results_devices, results_places=results_places,
-                               results_rooms=results_rooms)
+        return render_template('table.html', args=set(results_board), projects=set(results_project),
+                               search_form=searchForm.SearchForm(), search_word=search_word, parts=set(results_component),
+                               results_comments=set(results_comments), results_devices=set(results_devices), results_places=set(results_places),
+                               results_rooms=set(results_rooms))
     return render_template('start.html', search_form=search_form)
 
 
@@ -1922,7 +1922,37 @@ def change_recommended(part_ids):
             return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
             
         return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
-        
+
+@app.route("/parts/stocktaking/")
+@login_required
+def show_stocktaking():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template("count.html")        
+
+@app.route("/parts/stocktaking/do/", methods=["POST"])
+@login_required
+def stocktaking_do():
+    if not current_user.is_authenticated:
+        flash("Please log in to edit the component!", "info")
+        return redirect(request.referrer)
+    elif current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(request.form.get("ids"))
+        except Exception as e:
+            flash("oops an error occured within //change_recommended()//_0_.\n\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_stocktaking"))
+        try:
+            number = request.form.get("number")
+            number = int(number)    
+        except Exception as e:
+            flash("An error occured in //stocktaking_do()//_1_//\n{}\nPlease be sure to enter an Integer as number!".format(e), "danger")
+            return redirect(request.referrer or url_for("show_stocktaking"))
+        part.stocktaking(number)
+        flash("Updating the amount was successful.", "success")
+        return redirect(request.referrer or url_for("show_stocktaking"))
+    else:
+        flash("Wow, that should not happen. //stocktaking_do()//_2_", "danger")
+        return redirect(request.referrer or url_for("show_stocktaking"))
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'

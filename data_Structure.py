@@ -607,6 +607,11 @@ class Part(db.Model):
 
         return "EXB%06d" % self.exb_number
 
+    def same_exb(self):
+        ret = Part.query.filter_by(exb_number=self.exb_number).all()
+        print(ret)
+        return ret
+
     def link(self):  # required for use with "History" Table
         return url_for('show_part', ids=self.ids)
 
@@ -745,8 +750,8 @@ class Part(db.Model):
                   "danger")
             return False
         for booking in self.bookings:
-            booking.deprecated = True
-            booking.floating = False
+            if booking.floating:
+                booking.deprecated = True
         stocktaking_process = Process()
         b = Booking()
         b.number = count
@@ -903,8 +908,9 @@ class Process(db.Model):
     def GetChildDate(self):
         val = None
         if not self.project or self.ProcessType().lower() != "reservation":
+            # print("not self.project or self.ProcessType().lower() is 'reservation'")
             return None
-        for child in self.children()[::5]:
+        for child in self.children():
             bom = list(filter(lambda b: b.part_ids is child.part_ids and b.project_id == self.project_id, self.project.bom))
             if len(bom) is 1:
                 if not val:
@@ -913,10 +919,11 @@ class Process(db.Model):
                     raise Exception("Process.GetChildDate(self):: multiple processes open for same project. That should not happen!")
                 else:
                     val = child.duedate
-                # print(val)
+                # print("val",val)
                 # print(child.id, "IDIDID")
-                # return val
+                return val
             elif len(bom) > 1:
+                # print("Exception")
                 raise Exception("Process.GetChildDate(self):: multiple processes open for same project. That should not happen!")
         return val
     
@@ -1029,7 +1036,6 @@ class Reservation(db.Model):
 
     def set_date(self, date):
         self.duedate = date
-        
 
 
 class Booking(db.Model):

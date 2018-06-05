@@ -148,7 +148,8 @@ def nav_bar():
                                   parttype_id=None),
                              View("Create Part", "create_part"),
                              View("Show Parts", 'show_part', ids=None),
-                             View('Orders', 'show_orders')),
+                             View('Orders', 'show_orders'),
+                             View("Stocktaking", "show_stocktaking")),
                     Subgroup("Rooms",
                              View("Show Rooms", "show_all_rooms"),
                              View("Create Room", "create_room", room_id=None)
