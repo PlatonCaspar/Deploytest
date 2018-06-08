@@ -144,3 +144,35 @@ def is_ids(word):
         return None
     return ids
     
+
+def is_container(word):
+    expr = re.compile("container\d*")
+    res = expr.search(word)
+    try:
+        if res:
+            id = res.group().strip("container")
+            id = int(id)
+        else:
+            id = int(word)
+    except:
+        return None
+    return id
+    
+
+def recommend_containers(part, amount):
+    containers = sorted(part.containers, key=lambda c: c.in_stock())
+    ret = []
+    for c in containers:
+        if amount <= c.in_stock():
+            ret.append([c, amount])
+            return ret
+        else:
+            for c in containers:
+                if amount <= c.in_stock():
+                    ret.append([c, amount])
+                    return ret
+                else:
+                    ret.append(c, c.in_stock())
+                    amount = amount-c.in_stock()
+            
+    return ret

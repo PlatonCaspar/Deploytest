@@ -564,10 +564,10 @@ class Part(db.Model):
     out = db.Column(db.Boolean)
     recommended = db.Column(db.Integer)
 
-    bookings = db.relationship('Booking',
-                               backref='part',
-                               lazy='dynamic',
-                               uselist=True)
+    # bookings = db.relationship('Booking',
+    #                            backref='part',
+    #                            lazy='dynamic',
+    #                            uselist=True)
     orders = db.relationship('Order',
                              backref='part',
                              lazy='dynamic',
@@ -578,7 +578,7 @@ class Part(db.Model):
                                    uselist=True)
     comments = db.relationship('History', backref='part', lazy='dynamic',
                                uselist=True)
-    place_rel = db.relationship('Place', backref='part', uselist=False)
+    containers = db.relationship('Container', backref='part', uselist=True)
     # project
 
     def __init__(self, part_type_id: int):
@@ -679,9 +679,9 @@ class Part(db.Model):
         if (self.available() - self.recommended) < 0:
             flash("The available parts are lower than the recommended value.",
                   "warning")
-        if out:
-            flash("The part is in Use, therefore unavailable for now.",
-                  "danger")
+        # if out:
+        #     flash("The part is in Use, therefore unavailable for now.",
+        #           "danger")
 
     def available(self):
         p = 0
@@ -691,8 +691,8 @@ class Part(db.Model):
 
     def in_stock(self):
         r = 0
-        for booking in filter(lambda k: k.deprecated is False, self.bookings):
-            r += booking.number
+        for container in self.containers:
+            r += container.in_stock()
         return r
 
     def ordered(self):
@@ -724,32 +724,27 @@ class Part(db.Model):
         db.session.commit()
 
     def take(self, count):
-        if self.out:
-            flash("""Part is out right now. It is impossible to take it. 
-            The action will be cancelled.""", "danger")
-            return False
+        # if self.out:
+        #     flash("""Part is out right now. It is impossible to take it. 
+        #     The action will be cancelled.""", "danger")
+        #     return False
         if count > self.available():
-            flash("""<h3>You cannot take what isn't there.
-                  </h3>\nNothing was done.""", "warning")
+            flash("""<h4>You cannot take what isn't there.
+                  </h4>\nNothing was done.""", "warning")
             return False
         taking_process = Process()
-        b = Booking()
-        b.number = -count
         db.session.add(taking_process)
-        db.session.add(b)
-        taking_process.bookings.append(b)
-        self.bookings.append(b)
+        containers = helper.recommend_containers(self, count)
+        for c, a in containers:
+            b = Booking()
+            b.number = -a
+            db.session.add(b)
+            taking_process.bookings.append(b)
+            c.book(b)
         db.session.commit()
-        return True
+        return taking_process
 
-    def stocktaking(self, count):
-        if self.out:
-            flash("""Part is out right now. It is impossible to take it.
-            The action will be cancelled.
-            Please use the place function to define a new storage Place
-            and if neccesary enter the new number of parts in stock.""",
-                  "danger")
-            return False
+    def stocktaking(self, container_id, count):
         for booking in self.bookings:
             if booking.floating:
                 booking.deprecated = True
@@ -762,32 +757,32 @@ class Part(db.Model):
         self.bookings.append(b)
         db.session.commit()
 
-    def place(self, place_id=None, count=None):
-        """Returns the place of the component. If a place id is given,
-        the place is changed to the new Place and then returned.
-        if Place was out due to booking, out will be set to False.
-        """
-        if place_id:
-            try:
-                self.place_rel = Place.query.get(int(place_id))
-                if self.out:
-                    self.out = False
-                    floating = list(filter(lambda k: k.floating is True, self.bookings))
-                    if len(floating) > 1:
-                        flash("""There were more open Bookings regarding this Part.
-                        Since this should be impossible, all open bookings are closed.
-                        Please Count the remainig pieces!""", "danger")
-                    for f in floating:
-                        f.floating = False
-                    db.session.commit()
-                db.session.commit()
-                # if e.g. a new part is stored, the initial amount can be set
-                if count:
-                    self.stocktaking(count)
-            except Exception as e:
-                flash("""An Error occured in part.place
-                    \nplace_id: {0}\n{1}""".format(place_id, e), "danger")
-        return self.place_rel
+    # def place(self, place_id=None, count=None):
+    #     """Returns the place of the component. If a place id is given,
+    #     the place is changed to the new Place and then returned.
+    #     if Place was out due to booking, out will be set to False.
+    #     """
+    #     if place_id:
+    #         try:
+    #             self.place_rel.append(Place.query.get(int(place_id)))
+    #             if self.out:
+    #                 self.out = False
+    #                 floating = list(filter(lambda k: k.floating is True, self.bookings))
+    #                 if len(floating) > 1:
+    #                     flash("""There were more open Bookings regarding this Part.
+    #                     Since this should be impossible, all open bookings are closed.
+    #                     Please Count the remainig pieces!""", "danger")
+    #                 for f in floating:
+    #                     f.floating = False
+    #                 db.session.commit()
+    #             db.session.commit()
+    #             # if e.g. a new part is stored, the initial amount can be set
+    #             if count:
+    #                 self.stocktaking(count)
+    #         except Exception as e:
+    #             flash("""An Error occured in part.place
+    #                 \nplace_id: {0}\n{1}""".format(place_id, e), "danger")
+    #     return self.place_rel
 
     def last_active_reservations(self):
         return sorted(list(filter(lambda k: k.deprecated is False, self.reservations)), key=lambda e: e.duedate)
@@ -796,16 +791,47 @@ class Part(db.Model):
         board_labels.print_part_label(self)
 
 
+class Container(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    part_ids = db.Column(db.Integer, db.ForeignKey('part.ids')) 
+    _place = db.relationship('Place', backref="container", uselist=False)
+    _bookings = db.relationship('Booking', backref='container', uselist=True)
+    out = db.Column(db.Boolean)
+
+    def __init__(self, out=False, number=0):
+        self.out = out
+        self._number = number
+
+    def place(self, place=None):
+        if place:
+            self._place = place
+
+        return self._place
+
+    def print_label(self):
+        self.part.print_label()
+        board_labels.print_container_label(self)
+
+    def in_stock(self):
+        r = 0
+        for booking in filter(lambda b:  b.deprecated is False, self._bookings):
+            r += booking.number
+        return r
+
+    def book(self, booking):
+        self._bookings.append(booking)
+
+
 class Place(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
-    part_ids = db.Column(db.Integer, db.ForeignKey('part.ids'))
+    container_id = db.Column(db.Integer, db.ForeignKey('container.id'))
 
     def print_label(self):
         board_labels.print_place_label(self)
     
     def clear(self):
-        self.part_ids = None
+        self.container_id = None
         db.session.commit()
     
     def link(self):
@@ -1052,7 +1078,7 @@ class Reservation(db.Model):
 class Booking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     process_id = db.Column(db.Integer, db.ForeignKey('process.id'))
-    part_ids = db.Column(db.Integer, db.ForeignKey('part.ids'))
+    container_id = db.Column(db.Integer, db.ForeignKey('container.id'))
     number = db.Column(db.Integer)
     deprecated = db.Column(db.Boolean)
 

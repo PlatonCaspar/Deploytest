@@ -6,19 +6,22 @@ from flask import flash, url_for
 # from data_Structure import app
 
 DATA_FOLDER = os.path.dirname(os.path.abspath(__file__))
-LABEL_PATH = os.path.join(DATA_FOLDER, 'static/label.txt')
+_LABEL_PATH = os.path.join(DATA_FOLDER, 'static/label.txt')
+LABEL_PATH = os.path.join(DATA_FOLDER, 'static/')
 
 
 def write_doc(text):
     """writes array "text" to file"""
     try:
-        with open(LABEL_PATH, 'w') as file:
+        with open(_LABEL_PATH, 'w') as file:
             file.writelines(text)
     except PermissionError:
         print('could not open File!')
     except:
         print("Unexpected error, exiting...")
         exit()
+
+
 def generate_code(code, number, text=None):
     """generates code for each line"""
     code_number = code+str(number)
@@ -31,6 +34,7 @@ def generate_code(code, number, text=None):
     text.append('B 0.5,0,0,QRCODE+MODEL2,0.5;'+code_number+'\r\n')
     text.append('A 2\r\n')
     return text
+
 
 def generate_label(code_number, code_url=None):
     """generates code for each line"""
@@ -45,25 +49,32 @@ def generate_label(code_number, code_url=None):
     
     return text
 
-def print_label(address, user='root', passwd="0000"):
+
+def print_label(address, text, user='root', passwd="0000"):
     #print(address+' '+user+" "+str(passwd))
     # if app.config["TESTING"]:
     #     return
     try:
         with FTP(address, user=user, passwd=passwd) as ftp:
             ftp.cwd('/execute')
-            with open(LABEL_PATH, 'rb') as file:
+            path = os.path.join(LABEL_PATH, "{}.txt".format(hash(text)))
+            with open(path, 'wrb') as file:
                 #print('Sending File')
+                file.writelines(text)
                 ftp.storbinary("STORE LABEL.txt", file, callback=None)
+                path = file.name
+            os.remove(path)
     except:
         flash("Label could not be printed", 'warning')
         return
         
     flash('check labelprinter for your label', "success")
     
+
 def callback_():
     print(".")
         
+
 def main():
     """creates Label and saves under label.txt"""
     name = input('Enter the short Board name (max 3 chars): ')
@@ -88,14 +99,26 @@ def main():
 
 def print_place_label(place):
     text = generate_label(str(place.id))
-    write_doc(text)
-    print_label("labelprinter01.internal.sdi.tools")
+    # write_doc(text)
+    print_label("labelprinter01.internal.sdi.tools", text)
+
+
+def print_container_label(container):
+    text = generate_label("""container{}""".format(container.id))
+    print_label("labelprinter01.internal.sdi.tools", text)
+  
+
+def print_part_label(part):
+    text = generate_label("""IDS{}""".format(part.ids))
+    # write_doc(text)
+    print_label("labelprinter01.internal.sdi.tools", text)
 
 
 def print_part_label(part):
     text = generate_label("""IDS{}""".format(part.ids))
-    write_doc(text)
-    print_label("labelprinter01.internal.sdi.tools")
+    # write_doc(text)
+    print_label("labelprinter01.internal.sdi.tools", text)
+
 
 def print_device_label(device):
     try:
@@ -104,7 +127,8 @@ def print_device_label(device):
         pass
     label = board_labels.generate_label(device.device_name, code_url=code_url)
     write_doc(label)
-    print_label("labelprinter01.internal.sdi.tools")
+    print_label("labelprinter01.internal.sdi.tools", text)
+
 
 if __name__=='__main__':
     config = []
@@ -120,4 +144,4 @@ if __name__=='__main__':
             config.append('0000\n')
             file.writelines(config)
     main() 
-    print_label(config[0].strip('\n'),config[1].strip('\n'),config[2].strip('\n'))   
+    # print_label(config[0].strip('\n'),config[1].strip('\n'),config[2].strip('\n'))   
