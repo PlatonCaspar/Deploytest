@@ -8,8 +8,8 @@
                     <div class="col-xs-8 col-md-8">
                         <h3>IDS: {{part.ids}}<br>
                             <small>EXB: {{"%06d" % part.exb_number or ""}} <span class="label label-info">
-                                    {{part.same_exb()|length}}
-                            </span>
+                                    {{part.same_exb()|length}} 
+                            </span> 
                                 {% if current_user.is_authenticated %}
                                     <button class="btn btn-default btn-sm" data-toggle="modal" data-target="#modalEXB">
                                         <span class="glyphicon glyphicon-pencil"></span>        
@@ -221,11 +221,13 @@
                                 {% for reservation in part.last_active_reservations() %}
                                     <tr>
                                         <td class="text-justify">{{reservation.number}}</td>
-                                        <td class="text-justify">{{reservation.project.project_name}}</td>
+                                        <td class="text-justify">{{reservation.process.project.project_name}}</td>
                                         <td class="text-justify">{{reservation.process.user.username}}</td>
                                         <td class="text-justify">{{reservation.duedate.strftime("%b\\%d\\%Y")}}</td>
                                         <td>
-                                        {% if reservation.user().uid == current_user.uid %}
+                                        
+                                        {% if (reservation.user().uid == current_user.uid)%}
+                                        {% if not reservation.process.project %}
                                         <div class="row">
                                             <form action="{{url_for('delete_part_reservation', id=reservation.id, part_ids=part.ids)}}" method="POST">
                                                 <div class="col-xs-6">
@@ -242,6 +244,7 @@
                                                 </div>
                                             </form>
                                         </div>
+                                        {% endif %}
                                         {% endif %}
                                         </td>
                                         <td></td>

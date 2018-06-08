@@ -129,3 +129,18 @@ def clean_exb_scan(exb_scan):
     expr = re.compile("EXB\d\d\d\d\d\d")
     res = expr.search(exb_scan)
     return res.group()
+
+
+def is_ids(word):
+    expr = re.compile("IDS\d*")
+    res = expr.search(word)
+    try:
+        if res:
+            ids = res.group().strip("IDS")
+            ids = int(ids)
+        else:
+            return None
+    except:
+        return None
+    return ids
+    

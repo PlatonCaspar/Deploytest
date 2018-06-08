@@ -1,45 +1,60 @@
 {%- extends 'base.html' %} {% block title %} {% if parttype %} {{parttype.name}} {% else %} select a parttype {% endif %}
 {% endblock %} {% block content %}
 <div class="row">
-    <div class="col-md-2 col-ld-8"></div>
-    <div class="container col-xs-12 col-md-8 col-ld-8">
+    <div class="col-md-3 col-ld-3"></div>
+    <div class="container col-xs-12 col-md-6 col-ld-6">
         {% if parttypes %}
         <div class="panel panel-default">
             <div class="panel-heading">
-                select a PartType
+                Select a PartType
             </div>
             <div class="panel-body">
                 <div id="select-form">
                     <form id="parttype-form" action="{{url_for('create_part')}}" method="GET">
-                        <select class="form-control" name="parttype_id" onchange="this.form.submit()">
-                            {% for pt in parttypes %}
-                                <option value="{{pt.id}}">{{pt.name}}</option>
-                            {% endfor %}
-                        </select>
+                        <div class="row">
+                            <div class="col-xs-12 col-md-11">
+                                <select class="form-control" name="parttype_id">
+                                    {% for pt in parttypes %}
+                                    <option value="{{pt.id}}">{{pt.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-xs-12 col-md-1">
+                                <button class="btn btn-primary btn-block" type="submit">Go</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
-        </div> <!-- end of select form-->
-        {% endif %}
-        {% if parttype %}
+        </div>
+        <!-- end of select form-->
+        {% endif %} {% if parttype %}
         <div class="panel panel-default">
             <div class="panel-heading">Create a {{parttype.name}}</div>
         </div>
         <div class="panel-body">
             <form action="{{url_for('create_part_do', parttype_id=parttype.id)}}" method="POST">
                 {% for arg in parttype.args() %}
-                    <div class="form-group">
-                        <div class="input-group">
-                            <span class="input-group-addon">{{arg}}</span>
-                            <input id="{{arg}}" type="text" class="form-control" 
-                            name="{{arg}}" placeholder="Enter the Value here...">
-                        </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon">{{arg}}</span>
+                        <input id="{{arg}}" type="text" class="form-control" name="{{arg}}" placeholder="Enter the Value here...">
                     </div>
+                </div>
                 {% endfor %}
                 <div class="form-group">
                     <button class="btn btn-success btn-block" type="submit">Submit</button>
                 </div>
             </form>
+        </div>
+        <div class="panel-footer">
+            <div class="row">
+                <div class="col-xs-4 col-md-2">
+                    <form action="{{url_for('create_part')}}" method="GET">
+                        <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-arrow-left"></span></button>
+                    </form>
+                </div>
+            </div>
         </div>
         {% endif %}
     </div>

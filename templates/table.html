@@ -65,7 +65,7 @@
                             </td>
                             
                             <td class="text-justify">
-                                {{ part.exb_number or "N/A" }}
+                                {{ part.exb() or "N/A" }}
                             </td>
                             <td class="text-justify">
                                 {{ part.part_type.name }}
@@ -208,7 +208,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for place in results_places %}
+                        {% for place in results_places if place %}
                         <tr class="table_links" onclick="window.document.location='{{ place.room.link() }}';">
                             <td class="text-justify">{{place.id}}</td>
                             <td class="text-justify">{{place.room.title}}</td>

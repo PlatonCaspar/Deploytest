@@ -16,7 +16,7 @@ import board_labels
 
 RELATIVE_PICTURE_PATH = 'static/Pictures'
 UPLOAD_FOLDER = path.join(path.dirname(path.abspath(__file__)),
-                             RELATIVE_PICTURE_PATH)
+                          RELATIVE_PICTURE_PATH)
 RESERVATION = 0
 BOOKING = 1
 ORDER = 2
@@ -592,7 +592,10 @@ class Part(db.Model):
             if "EXB" in exb_nr:
                 exb_nr = exb_nr.strip("EXB")
             try:
+                if len(exb_nr) != 6:
+                    raise Exception("The EXB Number was not of the correct format. It must consist of 6 digits!")
                 self.exb_number = int(exb_nr)
+
                 db.session.commit()
             except Exception as e:
                 flash("an error occured in //part.exb()//\n{}".format(e), "danger")
@@ -602,14 +605,12 @@ class Part(db.Model):
         if new:
             exb_numbers = [part.exb(number_only=True) for part in Part.query.all()]
             self.exb_number = helper.array_max_val(exb_numbers)+1
-            print(exb_numbers)
             db.session.commit()
 
         return "EXB%06d" % self.exb_number
 
     def same_exb(self):
         ret = Part.query.filter_by(exb_number=self.exb_number).all()
-        print(ret)
         return ret
 
     def link(self):  # required for use with "History" Table
@@ -789,7 +790,7 @@ class Part(db.Model):
         return self.place_rel
 
     def last_active_reservations(self):
-        return list(filter(lambda k: k.deprecated is False, self.reservations))[:5]
+        return sorted(list(filter(lambda k: k.deprecated is False, self.reservations)), key=lambda e: e.duedate)
 
     def print_label(self):
         board_labels.print_part_label(self)
@@ -861,29 +862,32 @@ class Process(db.Model):
     project_id = db.Column(db.Text, db.ForeignKey("project.project_name"))
 # end relationships
     datetime = db.Column(db.DateTime)
+    path = db.Column(db.Text)
 
     def __init__(self, project=None):
         self.user = current_user
         self.datetime = datetime.datetime.now()
+        self.path = ""
         if project:
             self.project = project
 
     def children(self):
-        if self.reservations:
+        if self.reservations.all():
             return self.reservations
-        elif self.orders:
+        elif self.orders.all():
             return self.orders
-        elif self.booking:
-            return self.booking
+        elif self.bookings.all():
+            return self.bookings
         else:
-            return None
+            return list()
     
     def ProcessType(self):
-        if self.reservations:
+        if self.reservations.all():
+            print(self.reservations.all())
             return "Reservation"
-        elif self.orders:
+        elif self.orders.all():
             return "Order"
-        elif self.booking:
+        elif self.bookings.all():
             return "Booking"
         else:
             return None
@@ -893,14 +897,14 @@ class Process(db.Model):
         val = None
         if not self.project:
             return None
-        for child in self.children()[::5]:
+        for child in self.children():
             bom = list(filter(lambda b: b.part_ids is child.part_ids and b.project_id == self.project_id, self.project.bom))
             if len(bom) is 1:
                 if not val:
                     val = child.number/bom[0].amount
-                else:
-                    if val is not child.number/bom.amount:
-                        raise Exception("Process.GetAmount(self):: multiple processes open for same project. That should not happen!")
+                # else:
+                #     if val is not child.number/bom[0].amount:
+                #         raise Exception("Process.GetAmount(self):: multiple processes open for same project. That should not happen! // 1 //")
             elif len(bom) > 1:
                 raise Exception("Process.GetAmount(self):: multiple processes open for same project. That should not happen!")
         return val
@@ -943,6 +947,12 @@ class Process(db.Model):
             db.session.delete(child)
         db.session.delete(self)
         db.session.commit()
+    
+    def all_available(self):
+        for child in self.children():
+            if child.part.out:
+                return False
+        return True
 
 
 class Order(db.Model):
@@ -1018,8 +1028,9 @@ class Reservation(db.Model):
         self.part.bookings.append(b)
         # add booking to connected process bookings list
         self.process.bookings.append(b)
+        self.process.reservations.remove(self)
         self.deprecated = True
-        if not single:
+        if not single:  # This shall not be used!  
             self.part.out = True
         db.session.commit()
 

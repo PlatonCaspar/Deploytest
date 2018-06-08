@@ -2,7 +2,7 @@ import os
 import time
 import markdown
 
-from flask import render_template, request, redirect, url_for, session, flash
+from flask import render_template, request, redirect, url_for, session, flash, send_from_directory, send_file
 from flask_bootstrap import Bootstrap
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_nav import register_renderer
@@ -255,8 +255,12 @@ def start():
     results_component = list()
     results_comments = list()
     results_devices = list()
+    results_rooms = list()
+    results_places = list()
+    
     users = data_Structure.db.session.query(data_Structure.User.username).all()
     if request.method == 'POST':
+        print("started search...")
         if request.form.get('submit_main') is None:
             search_word = request.form.get('search_field')
             search_area = request.form.get('selector')          
@@ -280,8 +284,8 @@ def start():
                 #                        parts=results_component)
         if search_area == "Part" or search_area == "All":
             try:
-                ids = search_word.strip("IDS")
-                part = list()
+                ids = helper.is_ids(search_word)
+                part = None
                 if helper.isNum(ids):
                     part = data_Structure.Part.query.get(int(ids))
                 if part:
@@ -320,21 +324,19 @@ def start():
             elif search_word is not "":
                 results_devices = search.search(search_word=search_word, items=data_Structure.Device.query.all())
         if search_area == "All" or search_area == "Place":
-            results_places = list()
             try:
-                results_places = [data_Structure.Place.query.get(int(search_word))]
+                results_places = data_Structure.Place.query.filter_by(id=int(search_word)).all()
             except:
                 pass
         
         if search_area == "All" or search_area == "Room":
-            results_rooms = list()
             if search_word is not "":
                 results_rooms = search.search(search_word=search_word, items=data_Structure.Room.query.all())
 
         if not results_board and not results_project and not results_component and not results_comments and not results_devices and not results_places and not results_rooms:
             flash('No results were found', 'warning')
             return render_template('base.html')
-        print(results_comments)
+        print("finished search...")
         return render_template('table.html', args=set(results_board), projects=set(results_project),
                                search_form=searchForm.SearchForm(), search_word=search_word, parts=set(results_component),
                                results_comments=set(results_comments), results_devices=set(results_devices), results_places=set(results_places),
@@ -1237,6 +1239,9 @@ def create_part_do(parttype_id):
         flash("oops an error occured within //create_part_do()//.\n\n{}".format(e), "danger")
         return redirect(url_for("show_part_type", parttype_id=parttype_id))
     part = data_Structure.Part(parttype.id)
+    if request.form.get("exb"):
+        part.exb(exb_nr=request.form.get("exb"))
+    
     for arg in parttype.args():
         part.args(attr=arg, val=request.form.get(arg))
     return redirect(url_for('show_part', ids=part.ids))
@@ -1799,6 +1804,10 @@ def reserve_bom(project_name):
         except Exception as e:
             flash("An error occured in //assign_place()//\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+        if not project.bom:
+            flash("You cannot reserve an empty BOM!\naborted!", "danger")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+            
         date = helper.parse_date(request.form.get("date"))
         amount = request.form.get("number")
         try:
@@ -1939,7 +1948,7 @@ def stocktaking_do():
         try:
             part = data_Structure.Part.query.get(request.form.get("ids"))
         except Exception as e:
-            flash("oops an error occured within //change_recommended()//_0_.\n\n{}".format(e), "danger")
+            flash("oops an error occured within //stocktaking_do()//_0_.\n\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_stocktaking"))
         try:
             number = request.form.get("number")
@@ -1953,6 +1962,91 @@ def stocktaking_do():
     else:
         flash("Wow, that should not happen. //stocktaking_do()//_2_", "danger")
         return redirect(request.referrer or url_for("show_stocktaking"))
+
+@app.route("/project/bom/reservation/book/<process_id>/", methods=["POST"])
+@login_required
+def book_process(process_id):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer)
+    elif current_user.is_authenticated:#
+        content = "IDS;EXB;Location;Place;Amount;\n"
+        try:
+            process = data_Structure.Process.query.get(process_id)
+        except Exception as e:
+            flash("An error occured within //book_process()//_0_.\n\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("my_profile"))
+        try:
+            if not process.all_available():
+                flash("some parts are already somewhere else, you cannot take them!")
+            for child in process.children():
+                content += "{ids};{exb};{loc};{place};{amount};\n".format(
+                    ids=child.part.ids,
+                    exb=child.part.exb(),
+                    loc=child.part.place().room.reduce().replace(";", " "),
+                    place=child.part.place().id,
+                    amount=child.number
+                )
+                child.book()
+            hash_value = hash(content)
+            path = os.path.join(UPLOAD_FOLDER, "{}.csv".format(hash_value))
+            with open(path,"w") as file:
+                file.write(content)
+            process.path = path
+            data_Structure.db.session.commit()
+            flash("Booking was successfully done.", "success")
+        except Exception as e:
+            flash("An error occured within //book_process()//_1_.\n\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("my_profile"))
+        return redirect(request.referrer or url_for("my_profile"))
+        
+
+@app.route("/project/bom/reservation/delete/<process_id>/", methods=["POST"])
+def delete_bom_reservation(process_id):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer)
+    elif current_user.is_authenticated:#
+        try:
+            process = data_Structure.Process.query.get(process_id)
+        except Exception as e:
+            flash("An error occured within //delete_bom_reservation()//_0_.\n\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("my_profile"))
+        try:
+            process.delete()
+            return redirect(request.referrer or url_for("my_profile"))
+        except Exception as e:
+            flash("An error occured within //delete_bom_reservation()//_1_.\n\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("my_profile"))
+
+@app.route("/personal/process/get/placement_information/<process_id>/", methods=["GET"])
+@login_required
+def get_process_doc(process_id):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer)
+    elif current_user.is_authenticated:#
+        try:
+            process = data_Structure.Process.query.get(process_id)
+        except Exception as e:
+            flash("An error occured within //get_process_doc()//_0_.\n\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("my_profile"))
+        try:
+            filename = """{id}_{project}_{date}.csv""".format(
+                id=process.id,
+                project=process.project.project_name,
+                date=process.datetime.strftime('%d-%m-%Y')
+            )
+            return send_file(process.path, as_attachment=True, attachment_filename=filename)
+        except Exception as e:
+            flash("An error occured within //get_process_doc()//_1_.\n\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("my_profile"))
+
+@app.route("/database/download/", methods=["GET"])
+@login_required
+def get_database():
+    return send_from_directory("./static/Database/", "data.sql", as_attachment=True, attachment_filename="database.sqlite")
+                        
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'
