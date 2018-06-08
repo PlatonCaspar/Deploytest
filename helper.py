@@ -184,6 +184,7 @@ def recommend_containers(part, amount):
                 else:
                     # print(ret, "third")
                     ret.append([c, c.in_stock()])
+                    c.place.clear()
                     amount = amount-c.in_stock()
     # print(ret)
     return ret
