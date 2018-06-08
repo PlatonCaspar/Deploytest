@@ -79,7 +79,7 @@ person.username+"'s Profile" }} {% endblock %} {% block content %}
                                                 Process {{process.id}} ::
                                                 <a class="btn btn-default" href="{{process.project.link()}}"
                                                     role="button" onclick="window.document.location='{{process.project.link()}}'">
-                                                    Project {{process.project.project_name}}</a> :: Type {{process.ProcessType()}} :: Created {{process.datetime.strftime('%d.%m.%Y')}}
+                                                    {{process.project.project_name}}</a> :: {{process.ProcessType()}} :: Created {{process.datetime.strftime('%d.%m.%Y')}}
                                                 <span class="glyphicon glyphicon-menu-down pull-right"></span>
                                             </h4>
                                         </div>
@@ -123,33 +123,41 @@ person.username+"'s Profile" }} {% endblock %} {% block content %}
                                                             <th>EXB</th>
                                                             <th>Amount</th>
                                                             <th>Date</th>
-                                                            <th>Out</th>
+                                                            <!-- <th>Out</th> -->
 
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {% for child in process.children() if child %}
+                                                        {% if process.ProcessType().lower() == "reservation" %}
                                                         <tr class="table_links" onclick="window.document.location='{{child.part.link()}}'">
                                                             <td>{{child.part_ids}}</td>
                                                             <td>{{child.part.exb()}}</td>
+                                                        {% elif process.ProcessType().lower() == "booking" %}
+                                                        <tr class="table_links" onclick="window.document.location='{{child.container.part.link()}}'">
+                                                            <td>{{child.container.part_ids}}</td>
+                                                            <td>{{child.container.part.exb()}}</td>
+                                                            
+                                                        {% endif %}
                                                             <td>{{child.number}}</td>
                                                             {% if child.duedate %}
                                                             <td>{{child.duedate.strftime('%d.%m.%Y')}}</td>
                                                             {% else %}
                                                             <td></td>
                                                             {% endif %}
-                                                            <td>
-                                                                {% if child.part.out and process.ProcessType().lower() == "reservation" %}
+                                                            <!-- <td> -->
+                                                                {#% if child.part.out and process.ProcessType().lower() == "reservation" %}
                                                                 <span class="label label-danger">True</span>
                                                                 {% elif process.ProcessType().lower() == "reservation" %}
                                                                 <span class="label label-success">False</span>
-                                                                {% endif %}
-                                                            </td>
+                                                                {% endif %#}
+                                                            <!-- </td> -->
                                                         </tr>
                                                         {% endfor %}
                                                     </tbody>
                                                 </table>
-                                                {% if process.ProcessType().lower() == "reservation" and process.all_available() %}
+                                                {% if process.ProcessType().lower() == "reservation"  %}
+                                                <!-- and process.all_available() -->
                                                     <div class="row">
                                                         <div class="col-xs-6 col-md-4">
                                                             <form action="{{url_for('book_process', process_id=process.id)}}" method="POST">

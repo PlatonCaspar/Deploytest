@@ -742,10 +742,11 @@ class Part(db.Model):
             taking_process.bookings.append(b)
             c._bookings.append(b)
         db.session.commit()
-        return taking_process
+        return containers
 
     def stocktaking(self, container_id, count):
-        for booking in self.bookings:
+        container = Container.query.get(container_id)
+        for booking in container._bookings:
             if booking.floating:
                 booking.deprecated = True
         stocktaking_process = Process()
@@ -754,7 +755,7 @@ class Part(db.Model):
         db.session.add(stocktaking_process)
         db.session.add(b)
         stocktaking_process.bookings.append(b)
-        self.bookings.append(b)
+        container._bookings.append(b)
         db.session.commit()
 
     # def place(self, place_id=None, count=None):
@@ -798,14 +799,15 @@ class Container(db.Model):
     _bookings = db.relationship('Booking', backref='container', uselist=True)
     out = db.Column(db.Boolean)
 
-    def __init__(self, out=False, number=0):
+    def __init__(self, out=True):
         self.out = out
-        self._number = number
 
     def place(self, place=None):
         if place:
             self._place = place
-
+            if self.out:
+                self.out = False
+            db.session.commit()
         return self._place
 
     def print_label(self):
@@ -817,7 +819,19 @@ class Container(db.Model):
         for booking in filter(lambda b:  b.deprecated is False, self._bookings):
             r += booking.number
         return r
-
+    
+    def stocktaking(self, number):
+        for b in self._bookings:
+            b.deprecated = True
+        stocktaking_process = Process()
+        b = Booking()
+        b.number = number
+        db.session.add(stocktaking_process)
+        db.session.add(b)
+        stocktaking_process.bookings.append(b)
+        self._bookings.append(b)
+        db.session.commit()
+        
 
 class Place(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -972,10 +986,8 @@ class Process(db.Model):
         db.session.commit()
     
     def all_available(self):
-        for child in self.children():
-            if child.part.out:
-                return False
-        return True
+        pass
+        # TODO: reimplement this!
 
 
 class Order(db.Model):
@@ -1036,18 +1048,21 @@ class Reservation(db.Model):
         return self.process.user
 
     def book(self, single=False):
-        b = Booking()
-        b.number = self.number * (-1)  # negative because of removal
-        db.session.add(b)
-        # add booking to connected part bookings list
-        self.part.bookings.append(b)
-        # add booking to connected process bookings list
-        self.process.bookings.append(b)
+        if self.part.available() < self.number:
+            flash("Not enough parts available. Please wait until delivery arrived.", "danger")
+            return
+        containers = helper.recommend_containers(self.part, self.number)
+        for c, a in containers:
+            b = Booking()
+            b.number = a * (-1)  # negative because of removal
+            db.session.add(b)
+            c._bookings.append(b)
+            # add booking to connected process bookings list
+            self.process.bookings.append(b)
         self.process.reservations.remove(self)
         self.deprecated = True
-        if not single:  # This shall not be used!  
-            self.part.out = True
         db.session.commit()
+        return containers
 
     def delete(self):
         process = self.process

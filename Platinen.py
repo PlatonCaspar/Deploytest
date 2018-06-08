@@ -260,7 +260,6 @@ def start():
     
     users = data_Structure.db.session.query(data_Structure.User.username).all()
     if request.method == 'POST':
-        print("started search...")
         if request.form.get('submit_main') is None:
             search_word = request.form.get('search_field')
             search_area = request.form.get('selector')          
@@ -269,9 +268,8 @@ def start():
             search_word = request.form.get('search_field_main')
             search_area = 'All'
         
-        if "EXB" in search_word:
-            if "Q" in search_word:
-                search_word = helper.clean_exb_scan(search_word)
+        if helper.is_exb(search_word):
+            search_word = helper.clean_exb_scan(search_word)
             components = data_Structure.Part.query.filter_by(exb_number=int(search_word.strip("EXB"))).all()
             if len(components) is 1:
                 component = components[0]
@@ -336,7 +334,6 @@ def start():
         if not results_board and not results_project and not results_component and not results_comments and not results_devices and not results_places and not results_rooms:
             flash('No results were found', 'warning')
             return render_template('base.html')
-        print("finished search...")
         return render_template('table.html', args=set(results_board), projects=set(results_project),
                                search_form=searchForm.SearchForm(), search_word=search_word, parts=set(results_component),
                                results_comments=set(results_comments), results_devices=set(results_devices), results_places=set(results_places),
@@ -1471,7 +1468,10 @@ def book_part_reservation(part_ids, id):
         except Exception as e:
             flash("oops an error occured within //book_part_reservation()//.\n\n{}".format(e), "danger")
             return redirect(url_for("show_part", ids=part.ids))
-        res.book(single=True)
+        containers = res.part.take(res.number)
+        if containers:
+            flash("The process was book successfully", "success")
+            return render_template("container_information.html", part=part, containers=containers, time=time.strftime("%d.%m.%Y"))
         return redirect(url_for("show_part", ids=part.ids))
 
 @app.route("/parts/part/take/<part_ids>/", methods=["POST"])
@@ -1485,9 +1485,13 @@ def take_part(part_ids):
         except Exception as e:
             flash("oops an error occured within //take_part()//.\n\n{}".format(e), "danger")
             return redirect(url_for("show_part"))
-        if part.take(int(request.form.get("amount"))):
+        containers = part.take(int(request.form.get("amount")))
+        if containers:
             flash("The process was book successfully", "success")
-        return redirect(url_for("show_part", ids=part.ids))
+            return render_template("container_information.html", part=part, containers=containers, time=time.strftime("%d.%m.%Y"))
+        else:
+            flash("An Error occured in //take_part()//__1__\nYou propably wanted to take more parts than available", "danger")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for('start'))
 
 @app.route("/parts/part/order/<part_ids>/", methods=["POST"])
 def order_part(part_ids):
@@ -1504,6 +1508,31 @@ def order_part(part_ids):
             flash("The process was book successfully", "success")
         return redirect(url_for("show_part", ids=part.ids))
 
+@app.route("/parts/part/container/add/<part_ids>/", methods=["POST"])
+def add_container(part_ids):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(part_ids))
+        except Exception as e:
+            flash("oops an error occured within //add_container()_0_//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+        try:
+            number = int(float(request.form.get("number")))
+        except Exception as e:
+            flash("oops an error occured within //add_container()_1_//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part", ids=part.ids))
+        new_container = data_Structure.Container()
+        data_Structure.db.session.add(new_container)
+        data_Structure.db.session.commit()
+        part.containers.append(new_container)
+        part.stocktaking(new_container.id, number)
+        return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+
+
+        
 @app.route("/parts/part/exb/edit/<part_ids>/", methods=["POST"])
 def edit_exb(part_ids):
     if not current_user.is_authenticated:
@@ -1761,18 +1790,20 @@ def add_place(room_id):
             flash("The Room Query returned nothing! //add_place()//", "danger")
             return redirect(request.referrer or url_for("show_room", room_id=room_id) or url_for("start"))
         
-@app.route("/part/place/assign/<part_ids>/", methods=["POST"])
-def assign_place(part_ids):
+@app.route("/part/container/place/assign/<part_ids>/<container_id>/", methods=["POST"])
+def assign_place(part_ids, container_id):
     if not current_user.is_authenticated:
         flash("Please log in to contribute!", "info")
         return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
     elif current_user.is_authenticated:
         try:
             part_ids = int(part_ids)
+            container_id = int(container_id)
         except Exception as e:
             flash("An error occured in //assign_place()//\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
         part = data_Structure.Part.query.get(part_ids)
+        container = data_Structure.Container.query.get(container_id)
         place_id = request.form.get("place_id")
         try:
             place_id = int(place_id)
@@ -1782,11 +1813,11 @@ def assign_place(part_ids):
         except Exception as e:
             flash("An error occured in //assign_place()//\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
-        if place.part:
+        if place.container and not place.container.out:
             flash("Place is already in use! Look for another one.", "danger")
             return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
             
-        if part.place(place_id).id is place_id:
+        if container.place(place).id is place_id:
             flash("Place was assigned successfull", "success")
             return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
         else:
@@ -1946,7 +1977,7 @@ def stocktaking_do():
         return redirect(request.referrer)
     elif current_user.is_authenticated:
         try:
-            part = data_Structure.Part.query.get(request.form.get("ids"))
+            container = data_Structure.Container.query.get(request.form.get("container_id"))
         except Exception as e:
             flash("oops an error occured within //stocktaking_do()//_0_.\n\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_stocktaking"))
@@ -1956,7 +1987,7 @@ def stocktaking_do():
         except Exception as e:
             flash("An error occured in //stocktaking_do()//_1_//\n{}\nPlease be sure to enter an Integer as number!".format(e), "danger")
             return redirect(request.referrer or url_for("show_stocktaking"))
-        part.stocktaking(number)
+        container.stocktaking(number)
         flash("Updating the amount was successful.", "success")
         return redirect(request.referrer or url_for("show_stocktaking"))
     else:
@@ -1970,7 +2001,7 @@ def book_process(process_id):
         flash("Please log in to contribute!", "info")
         return redirect(request.referrer)
     elif current_user.is_authenticated:#
-        content = "IDS;EXB;Location;Place;Amount;\n"
+        content = "IDS;EXB;container_id;Location;Place;Amount;\n"
         try:
             process = data_Structure.Process.query.get(process_id)
         except Exception as e:
@@ -1978,16 +2009,18 @@ def book_process(process_id):
             return redirect(request.referrer or url_for("my_profile"))
         try:
             if not process.all_available():
-                flash("some parts are already somewhere else, you cannot take them!")
+                flash("some parts are already somewhere else, you cannot take them!", "warning")
             for child in process.children():
-                content += "{ids};{exb};{loc};{place};{amount};\n".format(
-                    ids=child.part.ids,
-                    exb=child.part.exb(),
-                    loc=child.part.place().room.reduce().replace(";", " "),
-                    place=child.part.place().id,
-                    amount=child.number
+                containers = child.book()
+                for c, a in containers:
+                    content += "{ids};{exb};{c_id};{loc};{place};{amount};\n".format(
+                        ids=child.part.ids,
+                        exb=child.part.exb(),
+                        loc=c.place().room.reduce().replace(";", " "),
+                        place=c.place().id,
+                        amount=a,
+                        c_id=c.id
                 )
-                child.book()
             hash_value = hash(content)
             path = os.path.join(UPLOAD_FOLDER, "{}.csv".format(hash_value))
             with open(path,"w") as file:

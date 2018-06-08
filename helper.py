@@ -145,6 +145,12 @@ def is_ids(word):
     return ids
     
 
+def is_exb(word):
+    expr = re.compile("EXB\d\d\d\d\d\d")
+    res = expr.search(word)
+    return res
+
+
 def is_container(word):
     expr = re.compile("container\d*")
     res = expr.search(word)
@@ -163,16 +169,21 @@ def recommend_containers(part, amount):
     containers = sorted(part.containers, key=lambda c: c.in_stock())
     ret = []
     for c in containers:
+        if c.in_stock() <= 0:
+            continue
         if amount <= c.in_stock():
             ret.append([c, amount])
+            # print(ret, "first")
             return ret
         else:
             for c in containers:
                 if amount <= c.in_stock():
                     ret.append([c, amount])
+                    # print(ret, "second")
                     return ret
                 else:
-                    ret.append(c, c.in_stock())
+                    # print(ret, "third")
+                    ret.append([c, c.in_stock()])
                     amount = amount-c.in_stock()
-            
+    # print(ret)
     return ret

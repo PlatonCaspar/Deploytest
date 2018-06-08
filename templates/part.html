@@ -7,16 +7,29 @@
                 <div class="row">
                     <div class="col-xs-8 col-md-8">
                         <h3>IDS: {{part.ids}}<br>
-                            <small>EXB: {{"%06d" % part.exb_number or ""}} <span class="label label-info">
-                                    {{part.same_exb()|length}} 
-                            </span> 
+                            <div class="row">
+                                <div class="col-xs-4">
+                                    <small>
+                                    EXB: {{"%06d" % part.exb_number or ""}}
+                                    </small>
+                                </div>
+                                <div class="col-xs-1">
+                                    <form class="form-inline" action="{{url_for('start')}}" method="POST">
+                                        <input hidden value="EXB{{'%06d' % part.exb_number or ''}}" name="search_field">
+                                        <button class="btn btn-sm btn-info" type="submit">
+                                           {{part.same_exb()|length}} 
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class=" col-xs-1">
                                 {% if current_user.is_authenticated %}
                                     <button class="btn btn-default btn-sm" data-toggle="modal" data-target="#modalEXB">
                                         <span class="glyphicon glyphicon-pencil"></span>        
                                     </button>
                                 {% endif %}
-                                
-                            </small>
+                                </div>
+                            
+                            </div>
                         </h3>                
                     </div>
                     {% if current_user.is_authenticated %}
@@ -60,12 +73,12 @@
                                 <p><strong>Type:</strong> {{part.part_type.name}}</p>
                                 <div class="row">
                                     <p>
-                                        <div class="col-xs-6"><strong>Location:</strong> {% if part.place() and current_user.is_authenticated %}<strong>{{part.place().id}}</strong> :: {{part.place().room.title}}@{{part.place().room.address}}
+                                        <!-- <div class="col-xs-6"><strong>Location:</strong> {#% if part.place() and current_user.is_authenticated %}<strong>{{part.place().id}}</strong> :: {{part.place().room.title}}@{{part.place().room.address}}
                                             {% elif not current_user.is_authenticated %}
                                             Please log in to see the location.
-                                            {% endif %}</div>
+                                            {% endif %#}</div> -->
                                         
-                                        {% if current_user.is_authenticated %}
+                                        {#% if current_user.is_authenticated %}
                                         <form action="{{url_for('assign_place', part_ids=part.ids)}}" method="POST" class="form-inline">
                                             <div class="form-group">
                                                 <input class="form-control" placeholder="Assign Place... (Enter the ID)" required type="number" name="place_id">
@@ -76,7 +89,7 @@
                                                 </button>
                                             </div>
                                         </form>
-                                        {% endif %}
+                                        {% endif %#}
                                     </p>
                                 </div>
                             <table class="table table-bordered table-responsive">
@@ -110,6 +123,62 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
+                            <table class="table table-bordered table-responsive">
+                                <thead>
+                                    <th>
+                                        ID
+                                    </th>
+                                    <th>
+                                        Place
+                                    </th>
+                                    <th>
+                                        Action
+                                    </th>
+                                </thead>
+                                <tbody>
+                                    {% for container in part.containers %}
+                                        <tr>
+                                            <td>
+                                                {{container.id}}
+                                            </td>
+                                            <td>
+                                            {% if container.place() %}
+                                            <strong>{{container.place().id or "N/A"}}</strong> :: {{container.place().room.title or "N/A"}}@{{container.place().room.address or "N/A"}}
+                                            {% endif %}
+                                            </td>
+                                            <td>
+                                            {% if current_user.is_authenticated %}
+                                            <form class="form-inline" action="{{url_for('assign_place', container_id=container.id, part_ids=part.ids)}}" method="POST">
+                                                <input class="form-control" name="place_id" type="number" placeholder="Place ID ...">
+                                                <button class="btn btn-default btn-sm pull-right">
+                                                    <span class="glyphicon glyphicon-pencil"></span>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    {#% if not part.containers %}
+                                    <tr>
+                                        <td>
+                                        No Containers in Stock...
+                                        </td>
+                                    </tr>
+                                    {% endif %#}
+                                </tbody>
+                            </table>
+                            <div class="row" style="margin-bottom: 2rem">
+                                <form action="{{url_for('add_container', part_ids=part.ids)}}" method="POST">
+                                    <div class="col-xs-8">
+                                        <input class="form-control" type="number" name="number" placeholder="Enter the number of parts here...">
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <button type="submit" class="btn btn-primary btn-block">
+                                            <span class="glyphicon glyphicon-plus"></span> Add Container
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>

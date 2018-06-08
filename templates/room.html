@@ -88,15 +88,15 @@
                 <tbody>
                     {% for place in room.places %}
                     <tr class="table_links" 
-                        {% if place.part %}
-                        onclick="window.document.location='{{place.part.link()}}';"
+                        {% if place.container.part %}
+                        onclick="window.document.location='{{place.container.part.link()}}';"
                         {% endif %}
                         >
                         
                         <td>{{place.id}}</td>
-                        {% if place.part %}
-                            <td>{{place.part.ids}}</td>
-                            <td>{{place.part.in_stock()}}</td>
+                        {% if place.container.part %}
+                            <td>{{place.container.part.ids}}</td>
+                            <td>{{place.container.in_stock()}}</td>
                             <td>
                                 {% if current_user.is_authenticated %}
                                 <form action="{{url_for('clear_place', place_id=place.id)}}" method="POST">
