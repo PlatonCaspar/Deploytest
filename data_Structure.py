@@ -740,7 +740,7 @@ class Part(db.Model):
             b.number = -a
             db.session.add(b)
             taking_process.bookings.append(b)
-            c.book(b)
+            c._bookings.append(b)
         db.session.commit()
         return taking_process
 
@@ -817,9 +817,6 @@ class Container(db.Model):
         for booking in filter(lambda b:  b.deprecated is False, self._bookings):
             r += booking.number
         return r
-
-    def book(self, booking):
-        self._bookings.append(booking)
 
 
 class Place(db.Model):
@@ -999,19 +996,11 @@ class Order(db.Model):
         return self.process.user
 
     def book(self, number=None):
-        b = Booking()
         if not number or number is self.number or number == self.number:
-            b.number = self.number
             self.deprecated = True
         else:
-            b.number = number
             self.number = self.number-number  # so a few 
             # were delivered but not all
-        db.session.add(b)
-        # add booking to connected part bookings list
-        self.part.bookings.append(b)
-        # add booking to connected process bookings list
-        self.process.bookings.append(b)
         db.session.commit()
     
     def ordered(self, number=None):
