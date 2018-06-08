@@ -1,0 +1,82 @@
+{%- extends 'base.html' %} {% block title %} Container Information
+{% endblock %} {% block content %}
+<div class="container">
+    <div class="row">
+            <div class="col-xs-12 col-md-8 col-md-offset-2 ">
+                    <div class="page-header ">
+                        <h3>Container Information :: IDS{{part.ids}}</h3>
+                    </div>
+                    <div class="alert alert-info ">
+                        Please print or remember the following information. It will be "lost" 
+                        if you continue. 
+                        <br><br>
+                        You were assigned the following part Container(s). Please only take the given amount so 
+                        the data will stay correct.
+                    </div>
+                    <table class="table table-bordered table-striped">
+                        <thead class="">
+                            <th class="">IDS</th>
+                            <th class="">EXB</th>
+                            <th class="">Container ID</th>
+                            <th class="">Location</th>
+                            <th class="">Place ID</th>
+                            <th class="">Amount</th>                    
+                        </thead>
+                        <tbody class="">
+                            {% for c, a in containers %}
+                                <th class="">{{c.part.ids}}</th>
+                                <th class="">{{c.part.exb()}}</th>
+                                <th class="">{{c.id}}</th>
+                                <th class="">{{c.place().room.reduce().replace(";", " ")}}</th>
+                                <th class="">{{c.place().id}}</th>
+                                <th class="">{{a}}</th>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="col-xs-offset-2 col-xs-8 col-md-offset-4 col-md-4">
+                        <form action="{{url_for('show_part', ids=part.ids)}}" method="GET">
+                            <button class="btn btn-primary btn-block" type="submit">
+                                Continue
+                            </button>
+                        </form>
+                    </div>
+                </div>
+        <div class="col-xs-12 col-md-8 col-md-offset-2 print_website print_website_parent">
+            <div class="page-header print_website">
+                <h3 class="print_website">Container Information :: IDS{{part.ids}}</h3>
+            </div>
+            <div class="alert alert-info print_website">
+                Please print or remember the following information. It will be "lost" 
+                if you continue. 
+                <br>
+                You were assigned the following part Container(s). Please only take the given amount so 
+                the data will stay correct.
+            </div>
+            <table class="print_website table table-bordered table-striped">
+                <thead class="print_website">
+                    <th class="print_website">IDS</th>
+                    <th class="print_website">EXB</th>
+                    <th class="print_website">Container ID</th>
+                    <th class="print_website">Location</th>
+                    <th class="print_website">Place ID</th>
+                    <th class="print_website">Amount</th>                    
+                </thead>
+                <tbody class="print_website">
+                    {% for c, a in containers %}
+                        <th class="print_website">{{c.part.ids}}</th>
+                        <th class="print_website">{{c.part.exb()}}</th>
+                        <th class="print_website">{{c.id}}</th>
+                        <th class="print_website">{{c.place().room.reduce().replace(";", " ")}}</th>
+                        <th class="print_website">{{c.place().id}}</th>
+                        <th class="print_website">{{a}}</th>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="print_website">
+            {{current_user.username}} @ {{time}}
+        </p>
+    </div>
+</div>
+
+{% endblock %}

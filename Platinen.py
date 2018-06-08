@@ -1468,10 +1468,11 @@ def book_part_reservation(part_ids, id):
         except Exception as e:
             flash("oops an error occured within //book_part_reservation()//.\n\n{}".format(e), "danger")
             return redirect(url_for("show_part", ids=part.ids))
-        containers = res.part.take(res.number)
+        containers = res.book()
         if containers:
             flash("The process was book successfully", "success")
             return render_template("container_information.html", part=part, containers=containers, time=time.strftime("%d.%m.%Y"))
+
         return redirect(url_for("show_part", ids=part.ids))
 
 @app.route("/parts/part/take/<part_ids>/", methods=["POST"])
