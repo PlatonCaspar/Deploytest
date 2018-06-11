@@ -921,10 +921,10 @@ def add_device_do():
             except:
                 pass
             label = board_labels.generate_label(device_name, code_url=code_url)
-            board_labels.write_doc(label)
-            board_labels.print_label("labelprinter01.internal.sdi.tools")
-        except:
-            flash('An error occured while adding the device to the database', 'danger')
+            # board_labels.write_doc(label)
+            board_labels.print_label("labelprinter01.internal.sdi.tools", label)
+        except Exception as e:
+            flash('An error occured while adding the device to the database\n{}'.format(e), 'danger')
             return redirect(url_for('add_device'))
     
     
@@ -1253,6 +1253,8 @@ def show_part(ids=None):
     else:
         try:
             part = data_Structure.Part.query.get(int(ids))
+            for container in part.containers:
+                container.is_empty()
         except Exception as e:
             flash("oops an error occured within //show_part()//.\n\n{}".format(e), "danger")
             return redirect(url_for("show_part"))
@@ -1814,15 +1816,16 @@ def assign_place(part_ids, container_id):
         except Exception as e:
             flash("An error occured in //assign_place()//\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
-        if place.container and not place.container.out:
-            flash("Place is already in use! Look for another one.", "danger")
-            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+        # if place.container or not place.container.is_empty() and not place.container.out:
+        #     flash("Place is already in use! Look for another one.", "danger")
+        #     return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
             
-        if container.place(place).id is place_id:
+        try:
+            container.place(place)
             flash("Place was assigned successfull", "success")
             return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
-        else:
-            flash("Place could not be changed for some reason!", "danger")
+        except Exception as e:
+            flash("Place could not be changed for some reason!\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
 
 @app.route("/project/bom/reserve/<project_name>/", methods=["POST"])

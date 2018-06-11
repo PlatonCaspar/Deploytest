@@ -184,7 +184,19 @@ def recommend_containers(part, amount):
                 else:
                     # print(ret, "third")
                     ret.append([c, c.in_stock()])
-                    c.place.clear()
+                    # if c.place():
+                    #     c.place().clear()
                     amount = amount-c.in_stock()
     # print(ret)
     return ret
+
+
+def parse_board_abbr(code):
+    for c in code[::-1]:
+        last = 0
+        try:
+            c = int(c)
+        except:
+            last = code.index(c)
+            break
+    return code[:last+1]

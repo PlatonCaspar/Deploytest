@@ -136,7 +136,7 @@
                                     </th>
                                 </thead>
                                 <tbody>
-                                    {% for container in part.containers %}
+                                    {% for container in part.containers if not container.is_empty() %}
                                         <tr>
                                             <td>
                                                 {{container.id}}

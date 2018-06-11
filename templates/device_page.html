@@ -10,36 +10,9 @@
         <div class="">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title inline-block">
-                        {{device.device_brand+" "+device.device_name}}
-                        {% if current_user.is_authenticated %}
-                        <small>
-                        <button class="btn btn-warning btn-sm pull-right" type="button"
-                                    data-toggle="collapse" data-target="#delete_device"
-                                    aria-expanded="false"
-                                    aria-controls="delete_device"><span
-                                    class="glyphicon glyphicon-remove"></span></button>
-                        </small>
-                    <form class=""
-                      action="{{ url_for('delete_device', device_id=device.device_id) }}"
-                      method="post">
-                            
-                            
-                            
-                    <div class="collapse" id="delete_device">
-                        <div class="">
-                            <br><br>
-                            <button class="btn btn-danger btn-sm btn-block"
-                                    type="submit"><span
-                                    class="glyphicon glyphicon-ok pull-left"></span>
-                                <strong>Delete?</strong>
-                            </button>
-                        </div>
-                    </div>
-
-                </form>
-                {% endif %}
-                                    </h3>
+                    <h3 class="">
+                        {{device.device_brand+" "+device.device_name}} <small>ID {{device.device_id}}</small>
+                    </h3>
 
             </div>
             <div class="panel-body">

@@ -803,7 +803,11 @@ class Container(db.Model):
         self.out = out
 
     def place(self, place=None):
+        self.is_empty()
         if place:
+            if place.container:
+                if not place.container.is_empty():
+                    raise Exception("Place is already in use. Please look for another one or clear the place manually under the respective room page.")
             self._place = place
             if self.out:
                 self.out = False
@@ -811,16 +815,19 @@ class Container(db.Model):
         return self._place
 
     def print_label(self):
+        self.is_empty()
         self.part.print_label()
         board_labels.print_container_label(self)
 
     def in_stock(self):
+        # self.is_empty()
         r = 0
         for booking in filter(lambda b:  b.deprecated is False, self._bookings):
             r += booking.number
         return r
     
     def stocktaking(self, number):
+        self.is_empty()
         for b in self._bookings:
             b.deprecated = True
         stocktaking_process = Process()
@@ -831,6 +838,13 @@ class Container(db.Model):
         stocktaking_process.bookings.append(b)
         self._bookings.append(b)
         db.session.commit()
+    
+    def is_empty(self):
+        if self.in_stock() is 0:
+            self._place = None
+            return True
+        else:
+            return False
         
 
 class Place(db.Model):
@@ -1048,7 +1062,7 @@ class Reservation(db.Model):
         return self.process.user
 
     def book(self, single=False):
-        if self.part.available() < self.number:
+        if self.part.available()+self.number < self.number:
             flash("Not enough parts available. Please wait until delivery arrived.", "danger")
             return
         containers = helper.recommend_containers(self.part, self.number)
