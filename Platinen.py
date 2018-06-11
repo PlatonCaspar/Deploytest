@@ -406,8 +406,7 @@ def add__board():
             # if Board is now available
             flash('Board was successfully added!', 'success')
             label_file_cont = board_labels.generate_label(code_number=new_board.code, code_url=url_for('show_board_history', g_code=new_board.code, _external=True))
-            board_labels.write_doc(label_file_cont)
-            board_labels.print_label("labelprinter01.internal.sdi.tools", "root", "0000")
+            board_labels.print_label("labelprinter01.internal.sdi.tools", label_file_cont)
             return render_template('addPlatineForm.html', add_project_form=add_project_form, form=board_form,
                                    search_form=searchForm.SearchForm())
 
@@ -2084,6 +2083,34 @@ def get_process_doc(process_id):
 def get_database():
     return send_from_directory("./static/Database/", "data.sql", as_attachment=True, attachment_filename="database.sqlite")
                         
+@app.route("/project/<project_name>/boards/add/", methods=["POST"])
+def add_boards(project_name):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer)
+    elif current_user.is_authenticated:#
+        try:
+            project = data_Structure.Project.query.get(project_name)
+        except Exception as e:
+            flash("An error occured within //add_boards()//_0_.\n\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_project", project_name=project_name))
+        try:
+            number = request.form.get("numbers")
+            print(number, 0)
+            number = int(number)
+            print(number, 1)
+            if number < 1: 
+                flash("Please create as least 1 Board, Okay?", "info")
+                return redirect(request.referrer or url_for("show_project", project_name=project_name))            
+            print(number, 2)
+            project.create_boards(number)
+            print(number, 3)
+        except Exception as e:
+            flash("An error occured within //add_boards()//_1_.\n\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_project", project_name=project_name))
+        
+        return redirect(request.referrer or url_for("show_project", project_name=project_name))
+        
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'

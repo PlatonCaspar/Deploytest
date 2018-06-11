@@ -36,10 +36,11 @@ def generate_code(code, number, text=None):
     return text
 
 
-def generate_label(code_number, code_url=None):
+def generate_label(code_number, code_url=None, text=None):
     """generates code for each line"""
     #print(code_url or code_number)
-    text = ['m m\r\n']
+    if not text:
+        text = ['m m\r\n']
     text.append('J\r\n')
     text.append('S l1;0,0,15,18,15,18,2;Board_Label\r\n')
     text.append('O R\r\n')
@@ -50,7 +51,7 @@ def generate_label(code_number, code_url=None):
     return text
 
 
-def print_label(address, text, user='root', passwd="0000"):
+def print_label(address, text, user='root', passwd="0000", _flash=True):
     #print(address+' '+user+" "+str(passwd))
     # if app.config["TESTING"]:
     #     return
@@ -67,8 +68,8 @@ def print_label(address, text, user='root', passwd="0000"):
     except:
         flash("Label could not be printed", 'warning')
         return
-        
-    flash('check labelprinter for your label', "success")
+    if _flash:
+        flash('check labelprinter for your label', "success")
     
 
 def callback_():

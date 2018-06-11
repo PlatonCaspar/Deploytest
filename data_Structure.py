@@ -1,5 +1,5 @@
 import flask_sqlalchemy
-from flask import Flask
+from flask import Flask, url_for
 from werkzeug.utils import secure_filename
 from os import urandom, path, remove
 from flask import url_for, flash
@@ -110,6 +110,10 @@ class Board(db.Model):
 
         return out.strip(",")
 
+    def print_label(self, _flash=True):
+        label_file_cont = board_labels.generate_label(code_number=self.code, code_url=url_for('show_board_history', g_code=self.code, _external=True))
+        board_labels.print_label("labelprinter01.internal.sdi.tools", label_file_cont, _flash=_flash)
+        
 
 class User(db.Model):
     username = db.Column(db.String(), primary_key=False)
@@ -405,6 +409,48 @@ class Project(db.Model):
     
     def link(self):
         return url_for("show_project", project_name=self.project_name)
+
+    def get_board_abbr(self):
+        try:
+            abbr = helper.parse_board_abbr(self.project_boards[0].code)
+        except Exception as e:
+            raise Exception("An Error occured in //Project.get_board_abbr()// while trying to parse the project abbr.\n{}".format(e))
+        return abbr
+
+    def create_boards(self, number, version=0):
+        try:
+            abbr = self.get_board_abbr()
+        except Exception as e:
+            raise Exception("An Error occured in //Project.get_board_abbr()_0_//\n{}".format(e))
+        try:
+            nrs = [int(b.code.strip(self.get_board_abbr())) for b in self.project_boards]
+        except Exception as e:
+            raise Exception("Failed to get existing board numbers //Project.create_boards()//\n{}".format(e))
+        last = helper.array_max_val(nrs)
+        print(last, "last//project.create_boards")
+        if number is 1:
+            nr = last+1
+            board = Board(
+                "{abbr}{nr}".format(abbr=abbr, nr=nr),
+                self.project_name,
+                str(version))
+            board.print_label(_flash=False)
+            db.session.add(board)
+        else:    
+            text = []
+            for n in range(1, number):
+                nr = last+n
+                board = Board(
+                    "{abbr}{nr}".format(abbr=abbr, nr=nr),
+                    self.project_name,
+                    str(version))
+                print(board)
+                text.append(board_labels.generate_label(code_number=board.code, code_url=url_for('show_board_history', g_code=board.code, _external=True), text=text))        
+                db.session.add(board)
+            board_labels.print_label("labelprinter01.internal.sdi.tools", text, _flash=False)   
+            print("printed")     
+        db.session.commit()
+        flash("{} Boards were successfully added.".format(number), "success")
 
 
 class Patch(db.Model):

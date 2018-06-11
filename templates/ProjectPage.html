@@ -310,6 +310,17 @@
             <div class="panel-heading">
                 Boards
             </div>
+            {% if current_user.is_authenticated %}
+            <div class="panel-body">
+                <h4>Add Boards</h4>
+                <form class="form-inline" action="{{url_for('add_boards', project_name=project.project_name)}}" method="POST">
+                    <div class="form-group">
+                        <input class="form-control" name="numbers" type="number" placeholder="Enter the number of new boards...">
+                        <button class="btn btn-primary">Add</button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
             <div class="panel-body">
                 <table class="table table-striped table-hover table-responsive table-condensed ">
                     <thead class="">
