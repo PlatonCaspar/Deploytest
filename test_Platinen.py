@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_nav import register_renderer
 import unittest
 import os
+import datetime
 
 import Platinen
 import data_Structure
@@ -682,10 +683,20 @@ class test_platos(TestCase):
         response = self.client.post(url_for(fname, part_ids=part.ids), data=dict(newComment="TestComment"))
         assert302(response)
 
-
     # upload_comment_document_part - see above
 
-
+    def test_edit_comment(self):
+        fname = "edit_comment"
+        self.test_add_part_comment()
+        response = self.client.post(url_for(fname, comment_id="1"))
+        assertmsg("Comment was edited!", response)
+    
+    def test_part_reservation(self):
+        fname = "part_reservation"
+        self.test_show_part()
+        part = data_Structure.Part.query.all()[0]
+        data = dict(date=datetime.datetime.now().strftime("%d.%m.%Y"), amount="10")
+        response = self.client.post(url_for(fname, part_ids=part.ids), data=data)
 
 
 if __name__ == "__main__":
