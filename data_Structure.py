@@ -129,6 +129,7 @@ class User(db.Model):
     is_authenticated = db.Column(db.Boolean)
     avatar_path = db.Column(db.Text)
     messages = db.relationship("Message", uselist=True)
+    division = db.Column(db.Text)
 
     def __init__(self, username='Guest', password=None, email=None):
         self.username = username

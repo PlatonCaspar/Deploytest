@@ -58,15 +58,26 @@ def print_label(address, text, user='root', passwd="0000", _flash=True):
     try:
         with FTP(address, user=user, passwd=passwd) as ftp:
             ftp.cwd('/execute')
-            path = os.path.join(LABEL_PATH, "{}.txt".format(hash(text)))
-            with open(path, 'wrb') as file:
+            path = os.path.join(LABEL_PATH, "{}.txt".format(hash(frozenset(text)))) # https://stackoverflow.com/questions/7027199/hashing-arrays-in-python
+            try:
+                with open(path, 'w') as file:
                 #print('Sending File')
-                file.writelines(text)
-                ftp.storbinary("STORE LABEL.txt", file, callback=None)
-                path = file.name
+                    # pass
+                    file.writelines(text)
+            except Exception as e:
+                flash("An Error occured in //print_label()//_0_\n{}\n{}".format(e, text))
+                return
+            try:
+                with open(path, 'rb') as file:
+                    ftp.storbinary("STORE LABEL.txt", file, callback=None)
+                    path = file.name
+            except Exception as e:
+                flash("An Error occured in //print_label()//_1_\n{}".format(e))
+                return
+
             os.remove(path)
-    except:
-        flash("Label could not be printed", 'warning')
+    except Exception as e:
+        flash("Label could not be printed\n{}".format(e), 'warning')
         return
     if _flash:
         flash('check labelprinter for your label', "success")
@@ -115,20 +126,13 @@ def print_part_label(part):
     print_label("labelprinter01.internal.sdi.tools", text)
 
 
-def print_part_label(part):
-    text = generate_label("""IDS{}""".format(part.ids))
-    # write_doc(text)
-    print_label("labelprinter01.internal.sdi.tools", text)
-
-
 def print_device_label(device):
     try:
         code_url = url_for('show_device', device_id=device.device_id, _external=True)
     except:
         pass
     label = board_labels.generate_label(device.device_name, code_url=code_url)
-    write_doc(label)
-    print_label("labelprinter01.internal.sdi.tools", text)
+    print_label("labelprinter01.internal.sdi.tools", label)
 
 
 if __name__=='__main__':

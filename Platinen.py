@@ -2,7 +2,7 @@ import os
 import time
 import markdown
 
-from flask import render_template, request, redirect, url_for, session, flash, send_from_directory, send_file
+from flask import render_template, request, redirect, url_for, session, flash, send_from_directory, send_file, abort
 from flask_bootstrap import Bootstrap
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_nav import register_renderer
@@ -44,9 +44,6 @@ def test_queries():
     with app.app_context():
         migrate_database()
 
-def delete_project():
-    pass
-
 @app.errorhandler(500)
 def server_error(e):
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -63,10 +60,10 @@ def not_found_error(e):
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template("error.html",error=e, message=HTTPErrorTable.lookup(e)), 405
 
-@app.errorhandler(500)
-def not_found_error(e):
-    nav.nav.register_element("frontend_top", view.nav_bar())
-    return render_template("error.html",error=e, message=HTTPErrorTable.lookup(e)), 500
+# @app.errorhandler(500)
+# def not_found_error(e):
+#     nav.nav.register_element("frontend_top", view.nav_bar())
+#     return render_template("error.html",error=e, message=HTTPErrorTable.lookup(e)), 500
 
 # This function is called by the autocomplete jquery and returns the user available
 @app.route("/mentions/registered/users/score/", methods=['POST'])
@@ -192,6 +189,8 @@ def login():
             else:
                 login_user(login_to_user, remember=False)
             flash('Hi ' + login_to_user.username, 'success')
+            if not current_user.division:
+                return redirect(url_for("assign_division", next=next))
                     
         else:
             flash('Password was not correct', 'danger')
@@ -1030,8 +1029,8 @@ def print_label():
         code_url = url_for('show_board_history', g_code=text, _external=True)
     
     label = board_labels.generate_label(text, code_url=code_url)
-    board_labels.write_doc(label)
-    board_labels.print_label(address="labelprinter01.internal.sdi.tools")
+    # board_labels.write_doc(label)
+    board_labels.print_label(address="labelprinter01.internal.sdi.tools", text=label)
     return redirect(url_for('show_new_label'))
 
 @app.route('/project/patch/new/do/', methods=['POST'])
@@ -2128,6 +2127,24 @@ def print_board_label():
         return redirect(request.referrer or url_for("show_board_history", g_code=board.code))
     return redirect(request.referrer or url_for("show_board_history", g_code=board.code))
         
+@app.route("/user/assign/division/", methods=["GET", "POST"])
+@login_required
+def assign_division():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    next = request.values.get("next") or request.args.get("next")
+    print(next)
+    print(request)
+    if request.method == "GET":
+        return render_template("select_division.html", next=next)
+    elif request.method == "POST":
+        division = request.form.get("division")
+        current_user.division = division
+        data_Structure.db.session.commit()
+        return redirect(next or url_for('start'))
+    else:
+        abort(400)    
+        
+
 
 
 if __name__ == '__main__':

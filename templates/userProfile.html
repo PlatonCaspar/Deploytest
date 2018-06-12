@@ -52,7 +52,20 @@ person.username+"'s Profile" }} {% endblock %} {% block content %}
                             </div>
                         </div>
                     </div>
-
+                    <!-- division -->
+                    <div class="row">
+                        <div class="col-xs-5">
+                            Division
+                        </div>
+                        <div class="col-xs-7">
+                            <form class="form-inline" action="{{url_for('assign_division', next=url_for('my_profile'))}}" method="GET">
+                                <input class="form-control" value="{{current_user.division}}" disabled>
+                                <button class="btn btn-default" type="submit">
+                                        <span class="glyphicon glyphicon-pencil"></span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-xs-12 col-md-7 col-lg-7 col-ld-7">
                     {# Processes #}
