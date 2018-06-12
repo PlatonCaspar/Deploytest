@@ -19,8 +19,8 @@
 
 
 <div class="container-fluid">
-    <div class="well">
-        <div class="media">
+    <div class="well row">
+        <div class="media col-xs-11">
             <div class="media-left">
                 {% if g_board.project.project_default_image_path is none %}
                 <img
@@ -43,6 +43,11 @@
                 {{ g_board.project.project_description }}
             </div>
 
+        </div>
+        <div class="col-xs-1">
+            <form action="{{url_for('print_board_label', board_code=g_board.code)}}" method="POST">
+                <button class="btn btn-warning btn-sm">Print label <span class="glyphicon glyphicon-printer"></span></button>
+            </form>
         </div>
     </div>
     {% if g_board %}

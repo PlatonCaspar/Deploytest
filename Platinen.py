@@ -2111,6 +2111,21 @@ def add_boards(project_name):
         
         return redirect(request.referrer or url_for("show_project", project_name=project_name))
         
+@app.route("/board/print/label/", methods=["POST"])
+def print_board_label():
+    try:
+        board = data_Structure.Board.query.get(request.args.get("board_code"))
+    except Exception as e:
+        flash("An error occured within //print_board_label()//_0_.\n\n{}".format(e), "danger")
+        return redirect(request.referrer or url_for("show_board_history", g_code=board.code))
+    try:
+        board.print_label()
+    except Exception as e:
+        flash("An error occured within //print_board_label()//_1_.\n\n{}".format(e), "danger")
+        return redirect(request.referrer or url_for("show_board_history", g_code=board.code))
+    return redirect(request.referrer or url_for("show_board_history", g_code=board.code))
+        
+
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'
