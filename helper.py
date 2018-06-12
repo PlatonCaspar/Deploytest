@@ -200,3 +200,12 @@ def parse_board_abbr(code):
             last = code.index(c)
             break
     return code[:last+1]
+
+
+def parse_code(word):
+    expr = re.compile("[a-zA-Z0-9]*.\d+")
+    res = expr.search(word)
+    if res:
+        retur res.group()
+    else:
+        return None

@@ -65,15 +65,15 @@ def print_label(address, text, user='root', passwd="0000", _flash=True):
                     # pass
                     file.writelines(text)
             except Exception as e:
-                flash("An Error occured in //print_label()//_0_\n{}\n{}".format(e, text))
-                return
+                raise Exception("An Error occured in //print_label()//_0_\n{}\n{}".format(e, text))
+                
             try:
                 with open(path, 'rb') as file:
                     ftp.storbinary("STORE LABEL.txt", file, callback=None)
                     path = file.name
             except Exception as e:
-                flash("An Error occured in //print_label()//_1_\n{}".format(e))
-                return
+                raise Exception("An Error occured in //print_label()//_1_\n{}".format(e))
+                
 
             os.remove(path)
     except Exception as e:
