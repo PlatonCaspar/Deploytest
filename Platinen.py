@@ -194,7 +194,7 @@ def login():
                     
         else:
             flash('Password was not correct', 'danger')
-            return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm(), next=next)
+            return render_template('loginUser.html', next=next)
 
             
         return redirect(next or url_for('start'))

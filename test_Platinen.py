@@ -91,7 +91,7 @@ class test_platos(TestCase):
         l_dict = dict(password="123", username='test_user_static')
         response = self.client.post('/login/', data=l_dict,
                                     follow_redirects=True)
-        assert "Your Login was succesfull" in str(response.data)
+        assert "Hi test_user_static" in str(response.data)
         l_dict = dict(password="123", username='not_exists')
         response = self.client.post('/login/', data=l_dict,
                                     follow_redirects=True)
@@ -130,7 +130,7 @@ class test_platos(TestCase):
         l_dict = dict(password="123", username='test_user_static')
         response = self.client.post('/login/', data=l_dict,
                                     follow_redirects=True)
-        assert "Your Login was succesfull" in str(response.data)
+        assert "Hi test_user_static" in str(response.data)
         user = data_Structure.User.query.filter_by(username="test_user").first()
         guest = data_Structure.User.query.filter_by(username="Guest").first()
         response = self.client.get('/deleteuser/')
@@ -149,7 +149,7 @@ class test_platos(TestCase):
         l_dict = dict(password="123", username='test_user_static')
         response = self.client.post('/login/', data=l_dict,
                                     follow_redirects=True)
-        assert "Your Login was succesfull" in str(response.data)
+        assert "Hi test_user_static" in str(response.data)
         response = self.client.get('/registeredusers/')
         assert "200" in response.status
 
@@ -655,7 +655,7 @@ class test_platos(TestCase):
         self.assert200(response)
     
     def test_edit_part_value(self):
-        fname="edit_part_value"
+        fname = "edit_part_value"
         response = self.client.post(url_for(fname))
         assert302(response)
         self.test_login()
@@ -668,6 +668,22 @@ class test_platos(TestCase):
         assert302(response)
         assert data["arg1"] == part.args()["arg1"]
 
+    # upload_part_document - I do not know how to test part documents
+
+    # delete_part_document - if there is no i cannot delete one (see above)
+
+    def test_add_part_comment(self):
+        fname = "add_part_comment"
+        response = self.client.get(url_for(fname))
+        self.assert405(response)
+        self.test_login()
+        self.test_show_part() #Test_PartType and a Test part was created
+        part = data_Structure.Part.query.all()[0]                
+        response = self.client.post(url_for(fname, part_ids=part.ids), data=dict(newComment="TestComment"))
+        assert302(response)
+
+
+    # upload_comment_document_part - see above
 
 
 
