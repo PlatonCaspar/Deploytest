@@ -11,8 +11,11 @@ import datetime
 import time
 import markdown
 import re
+import collections
+
 import helper
 import board_labels
+
 
 RELATIVE_PICTURE_PATH = 'static/Pictures'
 UPLOAD_FOLDER = path.join(path.dirname(path.abspath(__file__)),
@@ -96,7 +99,7 @@ class Board(db.Model):
                 self.arguments = json.dumps(val)
 
         elif self.arguments:
-            return json.loads(self.arguments)
+            return collections.OrderedDict(sorted(json.loads(self.arguments).items()))
         else:
             return {}
 

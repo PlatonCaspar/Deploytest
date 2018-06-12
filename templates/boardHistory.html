@@ -73,26 +73,6 @@
                         <span style="opacity: 0.5">Patch: {{ g_board.patch|string }}</span>
                     </small>
                 </h2>
-                <h3>
-                    <small>
-                        {% if g_board.args() is not none %}
-                        {% for arg in g_board.args() %}
-                        {{arg|string+": "+g_board.args()[arg]|string}}
-                        {% if current_user.username != 'Guest' %}
-                        <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
-                                data-target="#args_modal" onclick="set_args_name_modal('{{arg}}')"><span class="glyphicon glyphicon-pencil"></span>
-                        </button>
-                        {% endif %}
-                        {% endfor %}
-                        
-                        {% if current_user.username != 'Guest' %}
-                        <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
-                                data-target="#args_modal" onclick="set_args_name_modal('')"><span class="glyphicon glyphicon-plus"></span>
-                        </button>
-                        {% endif %}
-                        {% endif %}
-                    </small>
-                </h3>
                 </div>
                     <!-- patches -->
                     <div class="col-xs-12 col-md-6 col-ld-6">
@@ -134,7 +114,57 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="row"><!--args-->
+                    <div class="col-xs-8 col-xs-offset-2">
+                        <table class="table table-bordered table-striped table-responsive">
+                            <thead>
+                                <tr>
+                                    <th class="text-info">Argument</th>
+                                    <th class="text-info">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if g_board.args() is not none %}
+                                {% for key, val in g_board.args().items() %}
+                                {#{arg|string+": "+g_board.args()[arg]|string}#}
+                                <tr>
+                                    <td>{{key|string}}</td>
+                                    <td>
+                                        {{val|string}}
+                                    </td>
+                                    <td>
+                                        {% if current_user.username != 'Guest' %}
+                                        <button class="btn btn-default btn-sm pull-right" type="button" data-toggle="modal"
+                                            data-target="#args_modal" onclick="set_args_name_modal('{{key}}')"><span class="glyphicon glyphicon-pencil"></span>
+                                        </button>
+                                        {% endif %}
+                                
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if current_user.username != 'Guest' %}                                
+                                <tr>
+                                    <td>
+                                        <button class="btn btn-default btn-sm" type="button" data-toggle="modal"
+                                            data-target="#args_modal" onclick="set_args_name_modal('')"><span class="glyphicon glyphicon-plus"></span>
+                                        </button>
+                                        {% endif %}
+                                
+                                    </td>
+                                    <td>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                        
+                                
+                                
+                                
+                            </small>
+                        </h3>
+                    </div>
+                </div><!--end args-->
             </div>
 
          <!--   <h3>

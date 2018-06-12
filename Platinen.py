@@ -169,27 +169,30 @@ def logout():
 def login():
     next = request.values.get('next')
     nav.nav.register_element("frontend_top", view.nav_bar())
-    user_form = registerUserForm.LoginUser(request.form)
-
+    # user_form = registerUserForm.LoginUser(request.form)
     if request.method == 'POST':
+
         if 'register_button' in request.form:
                 if next:
                     return redirect(url_for('register_user', next=next))
                 else:
                     return redirect(url_for('register_user'))
-        if user_form.username.data and data_Structure.User.query.filter_by(
-                username=user_form.username.data).scalar() is None:  # check if User exists
+        
+        username = request.form.get("username")
+        password = request.form.get("password")
+        if username and data_Structure.User.query.filter_by(
+                username=username).scalar() is None:  # check if User exists
             flash('User does not exist!', 'danger')
-            return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
-        login_to_user = data_Structure.User.query.filter_by(username=user_form.username.data).first()
-        if user_form.username.data and pbkdf2_sha256.verify(user_form.password.data, login_to_user.password_hashed_and_salted):
-            if request.form.get('rememberMe') is True:
+            return render_template('loginUser.html')
+        login_to_user = data_Structure.User.query.filter_by(username=username).first()
+        if username and pbkdf2_sha256.verify(password, login_to_user.password_hashed_and_salted):
+            if request.form.get('rememberMe'):
                 login_user(login_to_user, remember=True)
-                flash('Hi ' + login_to_user.username + ' - Your Login was succesfull', 'success')
+                flash("I will try to remember you!", "info")
             else:
                 login_user(login_to_user, remember=False)
-                flash('Hi ' + login_to_user.username + ' - Your Login was succesfull', 'success')
-        
+            flash('Hi ' + login_to_user.username, 'success')
+                    
         else:
             flash('Password was not correct', 'danger')
             return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm(), next=next)
@@ -197,7 +200,7 @@ def login():
             
         return redirect(next or url_for('start'))
        
-    return render_template('loginUser.html', form=user_form, search_form=searchForm.SearchForm())
+    return render_template('loginUser.html')
 
 
 nav.login_manager.login_view = '/login/'  # //TODO I have to define where to redirect when login_required is not okay
