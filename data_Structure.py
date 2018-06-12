@@ -427,7 +427,12 @@ class Project(db.Model):
         except Exception as e:
             raise Exception("An Error occured in //Project.get_board_abbr()_0_//\n{}".format(e))
         try:
-            nrs = [int(b.code.strip(self.get_board_abbr())) for b in self.project_boards]
+            print(abbr)
+            nrs = []
+            for b in self.project_boards:
+                print("++++\n",b.code[len(abbr):], "b.code.strip\n", b.code, "b.code\n++++")
+                nrs.append(int(b.code[len(abbr):]))
+            # nrs = [int(b.code.strip(abbr)) for b in self.project_boards]
         except Exception as e:
             raise Exception("Failed to get existing board numbers //Project.create_boards()//\n{}".format(e))
         last = helper.array_max_val(nrs)
@@ -441,7 +446,7 @@ class Project(db.Model):
             board.print_label(_flash=False)
             db.session.add(board)
         else:    
-            text = []
+            text = None
             for n in range(1, number):
                 nr = last+n
                 board = Board(
@@ -449,7 +454,7 @@ class Project(db.Model):
                     self.project_name,
                     str(version))
                 print(board)
-                text.append(board_labels.generate_label(code_number=board.code, code_url=url_for('show_board_history', g_code=board.code, _external=True), text=text))        
+                text = board_labels.generate_label(code_number=board.code, code_url=url_for('show_board_history', g_code=board.code, _external=True), text=text)        
                 db.session.add(board)
             board_labels.print_label("labelprinter01.internal.sdi.tools", text, _flash=False)   
             print("printed")     

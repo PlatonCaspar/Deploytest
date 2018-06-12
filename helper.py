@@ -75,7 +75,7 @@ def parse_date(date_str):
     return False
 
 
-def array_max_val(arr, division):
+def array_max_val(arr, division="None"):
     val = 0
     if division.lower() == "sdi":
         arr = filter(lambda v: v >= 10000, arr)

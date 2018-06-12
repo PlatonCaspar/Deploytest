@@ -58,7 +58,7 @@ def print_label(address, text, user='root', passwd="0000", _flash=True):
     try:
         with FTP(address, user=user, passwd=passwd) as ftp:
             ftp.cwd('/execute')
-            path = os.path.join(LABEL_PATH, "{}.txt".format(hash(frozenset(text)))) # https://stackoverflow.com/questions/7027199/hashing-arrays-in-python
+            path = os.path.join(LABEL_PATH, "{}.txt".format(hash(str(text)))) # https://stackoverflow.com/questions/7027199/hashing-arrays-in-python
             try:
                 with open(path, 'w') as file:
                 #print('Sending File')
