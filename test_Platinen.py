@@ -790,10 +790,79 @@ class test_platos(TestCase):
         part = data_Structure.Part.query.all()[0]
         response = self.client.post(url_for(fname, part_ids=part.ids), data=dict(amount="100"))
         assert len(part.orders.all()) > 0        
-        
-        
 
+    def test_edit_exb(self):
+        fname = "edit_exb"
+        self.test_assign_division()
+        self.test_show_part()
+        part = data_Structure.Part.query.all()[0]
+        data = dict(new_exb="true")
+        response = self.client.post(url_for(fname, part_ids=part.ids), data=data, follow_redirects=True)
+        self.assert200(response)
+        assertmsg("success", response)        
+        
+    def test_show_orders(self):
+        fname = "show_orders"
+        self.test_login()
+        self.test_order_part()
+        response = self.client.get(url_for(fname))
+        self.assert200(response)
+        
+    def test_order_delivered(self):
+        fname = "order_delivered"
+        self.test_order_part()
+        order = data_Structure.Order.query.all()[0]
+        response = self.client.post(url_for(fname, order_id=order.id), data=dict(number=order.number))
+        assert order.deprecated is True
+        assert302(response)
+    
+    def test_cancel_order(self):
+        fname = "cancel_order"
+        self.test_order_part()
+        order = data_Structure.Order.query.all()[0]
+        response = self.client.post(url_for(fname, order_id=order.id))
+        assert data_Structure.Order.query.get(order.id) is None
+        assert302(response)
+        
+    def test_order_ordered(self):
+        fname = "order_ordered"
+        self.test_order_part()
+        order = data_Structure.Order.query.all()[0]
+        response = self.client.post(url_for(fname, order_id=order.id), data=dict(number=order.number))
+        assert order.floating is False
+        assert302(response)
+    
+    # all the tests for bom stuff are not implemented because of the file uploading thing
 
+    def test_clear_place(self):
+        fname = "clear_place"
+        self.test_assign_place()
+        place = data_Structure.Place.query.all()[0]
+        response = self.client.post(url_for(fname, place_id=place.id))
+        assert place.container is None
+
+    def test_change_recommended(self):
+        fname = "change_recommended"
+        self.test_show_part()
+        part = data_Structure.Part.query.all()[0]
+        assert part.recommended == 0
+        response = self.client.post(url_for(fname, part_ids=part.ids), data=dict(recommended=10))
+        assert part.recommended == 10
+    
+    def test_show_stocktaking(self):
+        fname = "show_stocktaking"
+        self.test_login()
+        response = self.client.get(url_for(fname))
+        self.assert200(response)
+
+    def test_stocktaking_do(self):
+        fname = "stocktaking_do"
+        self.test_assign_place()
+        container = data_Structure.Container.query.all()[0]
+        assert container.in_stock() != 10000
+        data = dict(container_id=container.id, number=10000)
+        response = self.client.post(url_for(fname), data=data)
+        assert container.in_stock() == 10000
         
 if __name__ == "__main__":
     unittest.main()

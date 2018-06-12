@@ -1595,7 +1595,7 @@ def order_delivered(order_id):
         if number > order.number:
             flash("you cannot check in more parts than you ordered. Please create another order if that really happened!", "info")
             return(redirect(request.referrer))
-        if number is order.number:
+        if number == order.number:
             order.book()
         else:
             order.book(number)
@@ -1925,7 +1925,7 @@ def edit_process_date(process_id):
 def clear_place(place_id):
     if not current_user.is_authenticated:
         flash("Please log in to contribute!", "info")
-        return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
+        return redirect(request.referrer or url_for("start"))
     elif current_user.is_authenticated:
         try:
             place_id = int(place_id)
@@ -1934,7 +1934,7 @@ def clear_place(place_id):
                 raise Exception("The place with the ID {} does not exist!".format(place_id))
         except Exception as e:
             flash("An error occured in //clear_place()//\n{}".format(e), "danger")
-            return redirect(request.referrer or url_for("show_room", ids=part.ids) or url_for("start"))
+            return redirect(request.referrer or url_for("show_room", room_id=place.room.id) or url_for("start"))
         if place:
             place.clear()
         else:
@@ -1942,7 +1942,7 @@ def clear_place(place_id):
             flash("An error occured in //clear_place()//\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_room", ids=part.ids) or url_for("start"))
 
-    return redirect(request.referrer or url_for("show_room", ids=part.ids) or url_for("start"))
+    return redirect(request.referrer or url_for("show_room", room_id=place.room.id) or url_for("start"))
          
 @app.route("/part/change/recommended/<part_ids>/", methods=["POST"])
 def change_recommended(part_ids):
@@ -1962,7 +1962,7 @@ def change_recommended(part_ids):
                 flash("That makes absolutely no sense. Please enter a Number bigger or equal to zero (0)", "warning")
                 return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
             else:
-                part.recommended=recommended
+                part.recommended = recommended
                 data_Structure.db.session.commit()
         except Exception as e:
             flash("oops an error occured within //change_recommended() - 2 -//.\n\n{}".format(e), "danger")
