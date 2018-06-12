@@ -75,8 +75,12 @@ def parse_date(date_str):
     return False
 
 
-def array_max_val(arr):
+def array_max_val(arr, division):
     val = 0
+    if division.lower() == "sdi":
+        arr = filter(lambda v: v >= 10000, arr)
+    elif division.lower() == "ipe":
+        arr = filter(lambda v: v < 10000, arr)
     for v in arr:
         if int(v) > val:
             val = int(v)
@@ -206,6 +210,6 @@ def parse_code(word):
     expr = re.compile("[a-zA-Z0-9]*.\d+")
     res = expr.search(word)
     if res:
-        retur res.group()
+        return res.group()
     else:
         return None

@@ -134,7 +134,7 @@ def register_user():
             if data_Structure.User.query.filter_by(username=new_user.username).all() != []:
                 # check if user already exists
                 flash('User does already exist!', 'danger')
-                return redirect(url_for('register_user', redir=next))
+                return redirect(url_for('register_user', next=next))
             if data_Structure.User.query.filter_by(email=new_user.email).all() != []:
                 flash('There is already somone registered with the same Email adress!', 'danger')
                 return redirect(url_for('register_user', next=next))
@@ -2126,14 +2126,12 @@ def print_board_label():
         flash("An error occured within //print_board_label()//_1_.\n\n{}".format(e), "danger")
         return redirect(request.referrer or url_for("show_board_history", g_code=board.code))
     return redirect(request.referrer or url_for("show_board_history", g_code=board.code))
-        
-@app.route("/user/assign/division/", methods=["GET", "POST"])
+
+@app.route("/user/assign/division/", methods=["GET", "POST"])        
 @login_required
 def assign_division():
     nav.nav.register_element("frontend_top", view.nav_bar())
     next = request.values.get("next") or request.args.get("next")
-    print(next)
-    print(request)
     if request.method == "GET":
         return render_template("select_division.html", next=next)
     elif request.method == "POST":
@@ -2144,9 +2142,7 @@ def assign_division():
     else:
         abort(400)    
         
-
-
-
+        
 if __name__ == '__main__':
     # app.secret_key = 'Test'
     test_queries()

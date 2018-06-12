@@ -58,12 +58,13 @@ person.username+"'s Profile" }} {% endblock %} {% block content %}
                             Division
                         </div>
                         <div class="col-xs-7">
-                            <form class="form-inline" action="{{url_for('assign_division', next=url_for('my_profile'))}}" method="GET">
+                            <div class="form-inline" action="{{url_for('assign_division', next=url_for('my_profile'))}}" method="GET">
                                 <input class="form-control" value="{{current_user.division}}" disabled>
-                                <button class="btn btn-default" type="submit">
+                                {% set this_url = url_for('assign_division', next=url_for('my_profile')) %}
+                                <button class="btn btn-default" type="button" onclick="window.document.location = '{{this_url}}'">
                                         <span class="glyphicon glyphicon-pencil"></span>
                                 </button>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </div>

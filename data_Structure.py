@@ -654,7 +654,7 @@ class Part(db.Model):
             return self.exb_number
         if new:
             exb_numbers = [part.exb(number_only=True) for part in Part.query.all()]
-            self.exb_number = helper.array_max_val(exb_numbers)+1
+            self.exb_number = helper.array_max_val(exb_numbers, current_user.division)+1
             db.session.commit()
 
         return "EXB%06d" % self.exb_number
