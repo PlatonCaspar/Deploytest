@@ -102,6 +102,14 @@ class test_platos(TestCase):
                                     follow_redirects=True)
         assert "Password was not correct" in str(response.data)
 
+    def test_assign_division(self):
+        fname = "assign_division"
+        self.test_login()
+        response = self.client.get(url_for(fname))
+        self.assert200(response)
+        data = dict(division="SDI")
+        response = self.client.post(url_for(fname), data=data)
+
     def test_logout(self):
         response = self.client.get('/logout/')
         assert "/login/" in str(response.data)
@@ -688,7 +696,7 @@ class test_platos(TestCase):
     def test_edit_comment(self):
         fname = "edit_comment"
         self.test_add_part_comment()
-        response = self.client.post(url_for(fname, comment_id="1"))
+        response = self.client.post(url_for(fname, comment_id="1"), data=dict(edit="edited"), follow_redirects=True)
         assertmsg("Comment was edited!", response)
     
     def test_part_reservation(self):
@@ -697,7 +705,95 @@ class test_platos(TestCase):
         part = data_Structure.Part.query.all()[0]
         data = dict(date=datetime.datetime.now().strftime("%d.%m.%Y"), amount="10")
         response = self.client.post(url_for(fname, part_ids=part.ids), data=data)
+        assert302(response)
+
+    def test_delete_part_reservation(self):
+        fname = "delete_part_reservation"
+        self.test_part_reservation()
+        part = data_Structure.Part.query.all()[0]
+        data = dict()
+        res = part.reservations[0]
+        response = self.client.post(url_for(fname, part_ids=part.ids, id=res.id))
+        assert302(response)
+        assert len(part.reservations.all()) is 0
+
+    def test_add_container(self):
+        fname = "add_container"
+        self.test_show_part()
+        part = data_Structure.Part.query.all()[0]
+        data = dict(number=1000)
+        response = self.client.post(url_for(fname, part_ids=part.ids), data=data)
+        assert302(response)
+        assert len(part.containers) > 0
+
+    def test_create_room(self):
+        fname = "create_room"
+        self.test_login()
+        response = self.client.get(url_for(fname))
+        self.assert200(response)
+        
+        data = dict(title="test_room", address="test_address")
+        response = self.client.post(url_for(fname), data=data)
+        assert len(data_Structure.Room.query.filter_by(title=data["title"]).all()) > 0
+        assert302(response)
+
+    def test_show_all_rooms(self):
+        fname = "show_all_rooms"
+        response = self.client.get(url_for(fname))
+        self.assert200(response)
+    
+    def test_show_room(self):
+        fname = "show_room"
+        self.test_create_room()
+        response = self.client.get(url_for(fname, room_id=1))
+        self.assert200(response)
+
+    # TODO: def test_edit_room_property
+
+    def test_add_place(self):
+        fname = "add_place"
+        self.test_create_room()
+        room = data_Structure.Room.query.get(1)
+        response = self.client.post(url_for(fname, room_id=room.id))
+        assert len(room.places.all()) > 0
+        assert302(response)
+    
+    def test_assign_place(self):
+        fname = "assign_place"
+        self.test_add_place()
+        self.test_add_container()
+        part = data_Structure.Part.query.get(1)
+        container = data_Structure.Container.query.get(1)
+        response = self.client.post(url_for(fname, part_ids=part.ids, container_id=container.id), data=dict(place_id=1), follow_redirects=True)
+        assertmsg("Place was assigned", response)
 
 
+    def test_book_part_reservation(self):
+        fname = "book_part_reservation"
+        self.test_assign_place()
+        self.test_part_reservation()
+        part = data_Structure.Part.query.all()[0]
+        res = part.reservations[0]
+        response = self.client.post(url_for(fname, part_ids=part.ids, id=res.id))
+        self.assert200(response)
+
+    def test_take_part(self):
+        fname = "take_part"
+        self.test_assign_place()
+        part = data_Structure.Part.query.all()[0]
+        response = self.client.post(url_for(fname, part_ids=part.ids), data=dict(amount="100"))
+        self.assert200(response)
+
+    def test_order_part(self):
+        fname = "order_part"
+        self.test_show_part()
+        part = data_Structure.Part.query.all()[0]
+        response = self.client.post(url_for(fname, part_ids=part.ids), data=dict(amount="100"))
+        assert len(part.orders.all()) > 0        
+        
+        
+
+
+        
 if __name__ == "__main__":
     unittest.main()

@@ -1410,6 +1410,8 @@ def edit_comment():
             flash("Comment was deleted!", "success")
             return redirect(part.link())
         comment.history = request.form.get('edit')
+        if not comment.history:
+            comment.history = ""
         data_Structure.db.session.commit()
         flash("Comment was edited!", "success")
         return redirect(comment.link())
@@ -1473,7 +1475,7 @@ def book_part_reservation(part_ids, id):
             return redirect(url_for("show_part", ids=part.ids))
         containers = res.book()
         if containers:
-            flash("The process was book successfully", "success")
+            flash("The process was booked successfully", "success")
             return render_template("container_information.html", part=part, containers=containers, time=time.strftime("%d.%m.%Y"))
 
         return redirect(url_for("show_part", ids=part.ids))
@@ -1481,7 +1483,7 @@ def book_part_reservation(part_ids, id):
 @app.route("/parts/part/take/<part_ids>/", methods=["POST"])
 def take_part(part_ids):
     if not current_user.is_authenticated:
-        flash("Please log in to change reservations!", "info")
+        flash("Please log in to take Parts!", "info")
         return redirect(request.referrer)
     if current_user.is_authenticated:
         try:
@@ -1491,7 +1493,7 @@ def take_part(part_ids):
             return redirect(url_for("show_part"))
         containers = part.take(int(request.form.get("amount")))
         if containers:
-            flash("The process was book successfully", "success")
+            flash("The process was booked successfully", "success")
             return render_template("container_information.html", part=part, containers=containers, time=time.strftime("%d.%m.%Y"))
         else:
             flash("An Error occured in //take_part()//__1__\nYou propably wanted to take more parts than available", "danger")
@@ -1500,7 +1502,7 @@ def take_part(part_ids):
 @app.route("/parts/part/order/<part_ids>/", methods=["POST"])
 def order_part(part_ids):
     if not current_user.is_authenticated:
-        flash("Please log in to change reservations!", "info")
+        flash("Please log in to order Parts!", "info")
         return redirect(request.referrer)
     if current_user.is_authenticated:
         try:
@@ -1509,7 +1511,7 @@ def order_part(part_ids):
             flash("oops an error occured within //take_part()//.\n\n{}".format(e), "danger")
             return redirect(url_for("show_part"))
         if part.order(int(request.form.get("amount"))):
-            flash("The process was book successfully", "success")
+            flash("The process was booked successfully", "success")
         return redirect(url_for("show_part", ids=part.ids))
 
 @app.route("/parts/part/container/add/<part_ids>/", methods=["POST"])
