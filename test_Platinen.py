@@ -864,5 +864,7 @@ class test_platos(TestCase):
         response = self.client.post(url_for(fname), data=data)
         assert container.in_stock() == 10000
         
+    # TODO missing test for adding multiple boards!
+
 if __name__ == "__main__":
     unittest.main()

@@ -202,8 +202,9 @@ def parse_board_abbr(code):
             c = int(c)
         except:
             last = len(code)-i
+            print(code[last])
             break
-    return code[:last+1]
+    return code[:last]
 
 
 def parse_code(word):
