@@ -196,12 +196,12 @@ def recommend_containers(part, amount):
 
 
 def parse_board_abbr(code):
-    for c in code[::-1]:
+    for i, c in enumerate(code[::-1]):
         last = 0
         try:
             c = int(c)
         except:
-            last = code.index(c)
+            last = len(code)-i
             break
     return code[:last+1]
 
