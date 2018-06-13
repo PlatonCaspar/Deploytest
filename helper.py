@@ -78,13 +78,16 @@ def parse_date(date_str):
 def array_max_val(arr, division="None"):
     val = 0
     if division.lower() == "sdi":
-        arr = filter(lambda v: v >= 10000, arr)
+        arr = list(filter(lambda v: v >= 10000, arr))
+        if not arr:
+            arr = [10000]
     elif division.lower() == "ipe":
-        arr = filter(lambda v: v < 10000, arr)
+        arr = list(filter(lambda v: v < 10000, arr))
+        if not arr:
+            arr = [0]
     for v in arr:
         if int(v) > val:
             val = int(v)
-
     return val
 
 
