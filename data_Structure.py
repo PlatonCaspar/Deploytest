@@ -427,16 +427,13 @@ class Project(db.Model):
         except Exception as e:
             raise Exception("An Error occured in //Project.get_board_abbr()_0_//\n{}".format(e))
         try:
-            print(abbr)
             nrs = []
             for b in self.project_boards:
-                print("++++\n",b.code[len(abbr):], "b.code.strip\n", b.code, "b.code\n++++")
                 nrs.append(int(b.code[len(abbr):]))
             # nrs = [int(b.code.strip(abbr)) for b in self.project_boards]
         except Exception as e:
             raise Exception("Failed to get existing board numbers //Project.create_boards()//\n{}".format(e))
         last = helper.array_max_val(nrs)
-        print(last, "last//project.create_boards")
         if number is 1:
             nr = last+1
             board = Board(
@@ -447,17 +444,15 @@ class Project(db.Model):
             db.session.add(board)
         else:    
             text = None
-            for n in range(1, number):
+            for n in range(1, number+1):
                 nr = last+n
                 board = Board(
                     "{abbr}{nr}".format(abbr=abbr, nr=nr),
                     self.project_name,
                     str(version))
-                print(board)
                 text = board_labels.generate_label(code_number=board.code, code_url=url_for('show_board_history', g_code=board.code, _external=True), text=text)        
                 db.session.add(board)
             board_labels.print_label("labelprinter01.internal.sdi.tools", text, _flash=False)   
-            print("printed")     
         db.session.commit()
         flash("{} Boards were successfully added.".format(number), "success")
 
@@ -502,7 +497,7 @@ class PatchDocument(db.Model):
 
     def delete(self):
         db.session.delete(self)
-        print(path.join(UPLOAD_FOLDER, self.name()))
+        # print(path.join(UPLOAD_FOLDER, self.name()))
         remove(path.join(UPLOAD_FOLDER, self.name()))
         db.session.commit()
 
@@ -989,7 +984,7 @@ class Process(db.Model):
     
     def ProcessType(self):
         if self.reservations.all():
-            print(self.reservations.all())
+            # print(self.reservations.all())
             return "Reservation"
         elif self.orders.all():
             return "Order"

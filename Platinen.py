@@ -2100,15 +2100,11 @@ def add_boards(project_name):
             return redirect(request.referrer or url_for("show_project", project_name=project_name))
         try:
             number = request.form.get("numbers")
-            print(number, 0)
             number = int(number)
-            print(number, 1)
             if number < 1: 
                 flash("Please create as least 1 Board, Okay?", "info")
                 return redirect(request.referrer or url_for("show_project", project_name=project_name))            
-            print(number, 2)
             project.create_boards(number)
-            print(number, 3)
         except Exception as e:
             flash("An error occured within //add_boards()//_1_.\n\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_project", project_name=project_name))

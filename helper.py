@@ -202,7 +202,7 @@ def parse_board_abbr(code):
             c = int(c)
         except:
             last = len(code)-i
-            print(code[last])
+            # print(code[last])
             break
     return code[:last]
 

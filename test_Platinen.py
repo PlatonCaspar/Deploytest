@@ -865,6 +865,21 @@ class test_platos(TestCase):
         assert container.in_stock() == 10000
         
     # TODO missing test for adding multiple boards!
+    def test_add_boards(self):
+        fname = "add_boards"
+        self.test_login()
+        self.test_add__board()
+        project = data_Structure.Project.query.all()[0]
+        data = dict(numbers=1)
+        assert len(project.project_boards) is 1
+        response = self.client.post(url_for(fname, project_name=project.project_name), data=data)
+        assert len(project.project_boards) is 2
+        data = dict(numbers=10)
+        response = self.client.post(url_for(fname, project_name=project.project_name), data=data)
+        assert len(project.project_boards) is 12
+
+                
+        
 
 if __name__ == "__main__":
     unittest.main()
