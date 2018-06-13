@@ -1,10 +1,10 @@
 from flask_wtf import FlaskForm as Form 
 from flask_wtf.file import FileField
 from data_Structure import Project
-from wtforms import validators, StringField, HiddenField, SubmitField, TextField, TextAreaField, SelectField
+from wtforms import validators, StringField, HiddenField, SubmitField, StringField, TextAreaField, SelectField
 
 
-class CKTextAreaWidget(TextField):
+class CKTextAreaWidget(StringField):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('class_', 'ckeditor')
         return super(CKTextAreaWidget, self).__call__(field, **kwargs)

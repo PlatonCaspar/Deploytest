@@ -1,6 +1,7 @@
 import os
 import time
 import markdown
+import logging
 
 from flask import render_template, request, redirect, url_for, session, flash, send_from_directory, send_file, abort
 from flask_bootstrap import Bootstrap
@@ -28,6 +29,8 @@ import HTTPErrorTable
 import helper
 from data_Structure import app
 from historyForm import HistoryForm, EditHistoryForm
+
+logging.basicConfig(level=logging.DEBUG)
 
 nav.login_manager.anonymous_user = data_Structure.User
 
