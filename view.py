@@ -99,7 +99,7 @@ def nav_bar():
             items=(View('Start', 'start'),
                    Subgroup('Label',
                             View('Print Label', 'show_new_label')),
-                   Subgroup('Create',
+                   Subgroup('New',
                             View('New Board', 'add__board')),
                    View('Projects', 'show_project_all'),
                    View("Parts", 'show_part', ids=None),

@@ -129,10 +129,10 @@
                                         ID
                                     </th>
                                     <th>
-                                        Place
+                                        Add Pieces
                                     </th>
                                     <th>
-                                        Action
+                                        Place
                                     </th>
                                 </thead>
                                 <tbody>
@@ -142,18 +142,25 @@
                                                 {{container.id}}
                                             </td>
                                             <td>
-                                            {% if container.place() %}
-                                            <strong>{{container.place().id or "N/A"}}</strong> :: {{container.place().room.title or "N/A"}}@{{container.place().room.address or "N/A"}}
-                                            {% endif %}
-                                            </td>
-                                            <td>
                                             {% if current_user.is_authenticated %}
-                                            <form class="form-inline" action="{{url_for('assign_place', container_id=container.id, part_ids=part.ids)}}" method="POST">
-                                                <input class="form-control" name="place_id" type="number" placeholder="Place ID ...">
+                                            <form class="form-inline" action="{{url_for('add_pieces', container_id=container.id, part_ids=part.ids)}}" method="POST">
+                                                <input class="form-control" name="number" type="number" placeholder="Add Pcs." required>
                                                 <button class="btn btn-default btn-sm pull-right">
                                                     <span class="glyphicon glyphicon-pencil"></span>
                                                 </button>
                                             </form>
+                                            {% endif %}
+                                            </td>
+                                            <td>
+                                            {% if current_user.is_authenticated and not container.place()%}
+                                            <form class="form-inline" action="{{url_for('assign_place', container_id=container.id, part_ids=part.ids)}}" method="POST">
+                                                <input class="form-control" name="place_id" type="number" placeholder="Place ID ..." required>
+                                                <button class="btn btn-default btn-sm pull-right">
+                                                    <span class="glyphicon glyphicon-pencil"></span>
+                                                </button>
+                                            </form>
+                                            {% elif current_user.is_authenticated and container.place() %}
+                                                <strong>{{container.id}}</strong> :: {{container.place().room.title or "N/A"}} @ {{container.place().room.address or "N/A"}}
                                             {% endif %}
                                             </td>
                                         </tr>
@@ -167,6 +174,32 @@
                                     {% endif %#}
                                 </tbody>
                             </table>
+                            {% if current_user.is_authenticated %}
+                                <div class="alert alert-info">
+                                    <h4>Required container not listed? (will happen if it is completely empty)</h4>
+                                    <div class="form-group">
+                                        <button class="btn btn-primary" data-toggle="collapse" data-target="#add_pcs_container">Select Container by ID</button>
+                                        
+                                    </div>
+
+                                    <div id="add_pcs_container" class="collapse">
+                                        <form action="{{url_for('add_pieces', part_ids=part.ids)    }}" method="POST">
+                                            <div class="form-group">
+                                                <input class="form-control" type="number" name="container_id" placeholder="Enter the containers ID here..." required>
+                                            </div>
+                                            <div class="form-group">
+                                                <input class="form-control" type="number" name="number" placeholder="Enter the amount of pieces here..." required>
+                                            </div>
+                                            <div class="form-group">
+                                                <button class="btn btn-success">
+                                                    <span class="glyphicon glyphicon-plus"></span> Add Pieces                                            
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div> 
+                                </div>
+                                
+                            {% endif %}
                             {% if current_user.is_authenticated %}
                             <div class="row" style="margin-bottom: 2rem">
                                 <form action="{{url_for('add_container', part_ids=part.ids)}}" method="POST">

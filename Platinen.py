@@ -2030,7 +2030,9 @@ def book_process(process_id):
                         place=c.place().id,
                         amount=a,
                         c_id=c.id
-                )
+                    )
+                    c.place().container_id = None
+
             hash_value = hash(content)
             path = os.path.join(UPLOAD_FOLDER, "{}.csv".format(hash_value))
             with open(path,"w") as file:
@@ -2143,6 +2145,37 @@ def assign_division():
     else:
         abort(400)    
         
+@app.route("/part/<part_ids>/container/add/pieces/", methods=["POST"])
+@app.route("/part/<part_ids>/container/add/pieces/<container_id>/", methods=["POST"])
+def add_pieces(part_ids, container_id=None):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
+    elif current_user.is_authenticated:
+        try:
+            part_ids = int(part_ids)
+            if not container_id:
+                if "container_id" in request.form:
+                    container_id = request.form.get("container_id")
+            container_id = int(container_id)
+        except Exception as e:
+            flash("An error occured in //add_pieces()//\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+        part = data_Structure.Part.query.get(part_ids)
+        container = data_Structure.Container.query.get(container_id)
+        number = request.form.get("number")
+        try:
+            number = int(number)
+            if number <= 0:
+                flash("PLease enter a number bigger than Zero!", "warning")
+                return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+            container.add_pieces(number)
+            flash("{} pieces were added!".format(number), "success")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+        except Exception as e:
+            flash("Place could not be changed for some reason!\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+
         
 if __name__ == '__main__':
     # app.secret_key = 'Test'

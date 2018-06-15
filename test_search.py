@@ -17,7 +17,7 @@ class TestSearchMethods(unittest.TestCase):
         value = "Patch:1,5,6,3"#;Project:Gridlink"
         search_word = "Patch:1,3,5"
         score = search.check_property(search_word, value)
-        print(score)
+        # print(score)
         assert score is 3
 
     def test_value_search(self):

@@ -178,6 +178,8 @@ def recommend_containers(part, amount):
     for c in containers:
         if c.in_stock() <= 0:
             continue
+        if not c.place():
+            continue
         if amount <= c.in_stock():
             ret.append([c, amount])
             # print(ret, "first")

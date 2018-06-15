@@ -869,6 +869,16 @@ class Container(db.Model):
         self.part.print_label()
         board_labels.print_container_label(self)
 
+    def add_pieces(self, number):
+        adding_process = Process()
+        b = Booking()
+        b.number = number
+        db.session.add(adding_process)
+        db.session.add(b)
+        adding_process.bookings.append(b)
+        self._bookings.append(b)
+        db.session.commit()
+
     def in_stock(self):
         # self.is_empty()
         r = 0
@@ -891,7 +901,7 @@ class Container(db.Model):
     
     def is_empty(self):
         if self.in_stock() is 0:
-            self._place = None
+            # self._place = None
             return True
         else:
             return False
@@ -1050,8 +1060,8 @@ class Process(db.Model):
         db.session.commit()
     
     def all_available(self):
-        pass
-        # TODO: reimplement this!
+        return True
+        # TODO: May be useful in the future
 
 
 class Order(db.Model):
