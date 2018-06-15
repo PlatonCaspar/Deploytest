@@ -1240,6 +1240,7 @@ def create_part_do(parttype_id):
         flash("oops an error occured within //create_part_do()//.\n\n{}".format(e), "danger")
         return redirect(url_for("show_part_type", parttype_id=parttype_id))
     part = data_Structure.Part(parttype.id)
+    part.print_label()
     if request.form.get("exb"):
         part.exb(exb_nr=request.form.get("exb"))
     
@@ -1536,6 +1537,7 @@ def add_container(part_ids):
         new_container = data_Structure.Container()
         data_Structure.db.session.add(new_container)
         data_Structure.db.session.commit()
+        new_container.print_label()
         part.containers.append(new_container)
         part.stocktaking(new_container.id, number)
         return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
