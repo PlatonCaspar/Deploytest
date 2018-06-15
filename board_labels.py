@@ -2,8 +2,10 @@
 import os
 from ftplib import FTP
 from flask import flash, url_for
+import data_Structure
 
 # from data_Structure import app
+# TESTING = False
 
 DATA_FOLDER = os.path.dirname(os.path.abspath(__file__))
 _LABEL_PATH = os.path.join(DATA_FOLDER, 'static/label.txt')
@@ -53,7 +55,10 @@ def generate_label(code_number, code_url=None, text=None):
 
 def print_label(address, text, user='root', passwd="0000", _flash=True):
     #print(address+' '+user+" "+str(passwd))
-    # if app.config["TESTING"]:
+    if data_Structure.app.config["TESTING"]:
+        return
+    # if TESTING:
+    #     print("TESTING")
     #     return
     try:
         with FTP(address, user=user, passwd=passwd) as ftp:
