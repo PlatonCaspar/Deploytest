@@ -304,8 +304,10 @@ class History(db.Model):
         start_ind = 0
         try:
             start_ind = self.history.lower().index(search_word.lower())
-        except:
-            flash('some error occured in \"short_result\"', "danger")
+        except ValueError:
+            pass
+        except Exception as e:
+            flash('some error occured in \"short_result\"\n{}'.format(e), "danger")
             #print(search_word.lower()+" "+self.history.lower())
         if start_ind > 6:
             start_ind = start_ind-6
