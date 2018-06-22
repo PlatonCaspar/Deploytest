@@ -77,6 +77,7 @@ def check_property(search_word, value):
     if value_property != search_property:
         return 0
     values = value.split(":")[1]
+    f_val = False
     try:
         if "," in values:
             # print(values)
@@ -87,12 +88,16 @@ def check_property(search_word, value):
         else:
             values = [float(values)]
             # print(values)
+        f_val = True
+    
     except Exception as e:
         # print(e)
         pass
     for s_val in search_values.split(","):
+        # print("+++++++++++++++++++++++++++", s_val, values, "+++++++++++++++++++++++++++++")
         try:
-            s_val = float(s_val)
+            if f_val:
+                s_val = float(s_val)
             # print(s_val)
             # print(values)
         except Exception as e:
@@ -101,12 +106,12 @@ def check_property(search_word, value):
             if s_val in values:
                 score += 1
             else:
-                return 0
+                continue
         except TypeError:
-            if str(s_val) in values:
+            if str(s_val) in str(values):
                 score += 1
             else:
-                return 0
+                continue
         except Exception as e:
             print(e)
 

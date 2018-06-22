@@ -14,10 +14,9 @@ class TestSearchMethods(unittest.TestCase):
         search_word = "PartType:Resistor"
         score = search.check_property(search_word, value)
         assert score is 0
-        value = "Patch:1,5,6,3"#;Project:Gridlink"
+        value = "Patch:1,5,6,3,a"#;Project:Gridlink"
         search_word = "Patch:1,3,5"
         score = search.check_property(search_word, value)
-        # print(score)
         assert score is 3
 
     def test_value_search(self):

@@ -1537,9 +1537,10 @@ def add_container(part_ids):
         new_container = data_Structure.Container()
         data_Structure.db.session.add(new_container)
         data_Structure.db.session.commit()
-        new_container.print_label()
         part.containers.append(new_container)
         part.stocktaking(new_container.id, number)
+        new_container.print_label()
+        
         return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
 
 

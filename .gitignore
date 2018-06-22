@@ -10,3 +10,5 @@ DHW_Database_Converter.py
 migrations/
 .temp
 temp/
+Pipfile
+Pipfile.lock
