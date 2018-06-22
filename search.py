@@ -1,5 +1,4 @@
 def value_search(search_word: str, value: str):  # returns a score for each given string
-
     score = 0
     search_word = search_word.lower()
     value = value.lower()
@@ -98,9 +97,17 @@ def check_property(search_word, value):
             # print(values)
         except Exception as e:
             pass
-        if s_val in values:
-            score += 1
-        else:
-            return 0
+        try:
+            if s_val in values:
+                score += 1
+            else:
+                return 0
+        except TypeError:
+            if str(s_val) in values:
+                score += 1
+            else:
+                return 0
+        except Exception as e:
+            print(e)
 
     return score
