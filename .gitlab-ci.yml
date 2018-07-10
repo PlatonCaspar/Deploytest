@@ -23,7 +23,7 @@ stages:
     - docker:dind
   image:
     name: ${CONTAINER_IMAGE_FULLNAME}
-    entrypoint: ["/bin/sh"]
+    entrypoint: ["/bin/bash"]
 
 # ---------------------------------
 
