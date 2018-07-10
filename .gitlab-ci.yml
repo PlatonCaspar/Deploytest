@@ -1,0 +1,52 @@
+variables:
+  DOCKER_DRIVER: overlay2
+  GIT_STRATEGY: fetch
+  CONTAINER_IMAGE_FULLNAME: ${DOCKER_REGISTRY_SERVER}/${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}
+  CONTAINER_IMAGE_BRANCH:   ${DOCKER_REGISTRY_SERVER}/${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}
+  CONTAINER_IMAGE_LAST:     ${DOCKER_REGISTRY_SERVER}/${CI_PROJECT_NAME}:latest
+
+stages:
+  - build_container
+  - test
+
+.job_template: &build_container
+  tags:
+    - dind
+  services:
+    - docker:dind
+  image: docker:stable
+
+.job_template: &test
+  tags:
+    - dind
+  services:
+    - docker:dind
+  image: ${CONTAINER_IMAGE_FULLNAME}
+
+# ---------------------------------
+
+build_container:
+  <<: *build_container
+  stage: build_container
+  retry: 2
+  script:
+      - echo -e "docker pull ${CONTAINER_IMAGE_FULLNAME} docker pull ${CONTAINER_IMAGE_LAST}"
+      - docker pull ${CONTAINER_IMAGE_FULLNAME} || docker pull ${CONTAINER_IMAGE_BRANCH} || docker pull ${CONTAINER_IMAGE_LAST}
+      - docker build . -t ${CONTAINER_IMAGE_FULLNAME} --cache-from ${CONTAINER_IMAGE_FULLNAME} --cache-from ${CONTAINER_IMAGE_BRANCH} --cache-from ${CONTAINER_IMAGE_LAST}
+      - docker push ${CONTAINER_IMAGE_FULLNAME}
+      - >
+        if [ -z "$CI_COMMIT_TAG" ]; then
+          docker tag ${CONTAINER_IMAGE_FULLNAME} ${CONTAINER_IMAGE_BRANCH}
+          docker push ${CONTAINER_IMAGE_BRANCH}
+        fi
+      - >
+        if [ "$CI_COMMIT_REF_NAME" == "master" ]; then
+          docker tag ${CONTAINER_IMAGE_FULLNAME} ${CONTAINER_IMAGE_LAST}
+          docker push ${CONTAINER_IMAGE_LAST}
+        fi
+
+test:pytest:
+  <<: *test
+  stage: test
+  script:
+    pytest .
