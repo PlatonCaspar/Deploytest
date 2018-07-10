@@ -30,8 +30,7 @@ build_container:
   stage: build_container
   retry: 2
   script:
-      - echo -e "docker pull ${CONTAINER_IMAGE_FULLNAME} docker pull ${CONTAINER_IMAGE_LAST}"
-      - docker pull ${CONTAINER_IMAGE_FULLNAME} || docker pull ${CONTAINER_IMAGE_BRANCH} || docker pull ${CONTAINER_IMAGE_LAST}
+      - docker pull ${CONTAINER_IMAGE_FULLNAME} || docker pull ${CONTAINER_IMAGE_BRANCH} || docker pull ${CONTAINER_IMAGE_LAST} || true
       - docker build . -t ${CONTAINER_IMAGE_FULLNAME} --cache-from ${CONTAINER_IMAGE_FULLNAME} --cache-from ${CONTAINER_IMAGE_BRANCH} --cache-from ${CONTAINER_IMAGE_LAST}
       - docker push ${CONTAINER_IMAGE_FULLNAME}
       - >
