@@ -48,4 +48,4 @@ test:pytest:
   <<: *test
   stage: test
   script:
-    pytest .
+    - pytest .
