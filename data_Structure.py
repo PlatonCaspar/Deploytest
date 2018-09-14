@@ -847,9 +847,10 @@ class Part(db.Model):
 class Container(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     part_ids = db.Column(db.Integer, db.ForeignKey('part.ids')) 
-    _place = db.relationship('Place', backref="container", uselist=False)
+    __place = db.relationship('Place', uselist=False)
     _bookings = db.relationship('Booking', backref='container', uselist=True)
     out = db.Column(db.Boolean)
+    fk_place = db.Column(db.Integer, db.ForeignKey("place.id"))
 
     def __init__(self, out=True):
         self.out = out
@@ -857,14 +858,19 @@ class Container(db.Model):
     def place(self, place=None):
         self.is_empty()
         if place:
-            if place.container:
-                if not place.container.is_empty():
-                    raise Exception("Place is already in use. Please look for another one or clear the place manually under the respective room page.")
-            self._place = place
+            # if place.container:
+                # if not place.container.is_empty():
+                    # raise Exception("Place is already in use. Please look for another one or clear the place manually under the respective room page.")
+            # self._place = place
+            try:
+                self.fk_place = place.id
+                print("Place was appended")
+            except Exception as e:
+                print(e)
             if self.out:
                 self.out = False
             db.session.commit()
-        return self._place
+        return self.__place
 
     def print_label(self):
         self.is_empty()
@@ -912,8 +918,9 @@ class Container(db.Model):
 class Place(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
-    container_id = db.Column(db.Integer, db.ForeignKey('container.id'))
-
+    container_id = db.Column(db.Integer)
+    container = db.relationship("Container", backref="_place", lazy="dynamic", uselist=True)
+    
     def print_label(self):
         board_labels.print_place_label(self)
     

@@ -126,7 +126,7 @@
                             <table class="table table-bordered table-responsive">
                                 <thead>
                                     <th>
-                                        ID
+                                        Container ID
                                     </th>
                                     <th>
                                         Add Pieces
@@ -160,7 +160,7 @@
                                                 </button>
                                             </form>
                                             {% elif current_user.is_authenticated and container.place() %}
-                                                <strong>{{container.id}}</strong> :: {{container.place().room.title or "N/A"}} @ {{container.place().room.address or "N/A"}}
+                                                <strong>{{container.place().id}}</strong> :: {{container.place().room.title or "N/A"}} @ {{container.place().room.address or "N/A"}}
                                             {% endif %}
                                             </td>
                                         </tr>

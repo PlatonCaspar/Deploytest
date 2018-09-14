@@ -12,3 +12,4 @@ migrations/
 temp/
 Pipfile
 Pipfile.lock
+.pytest_cache
