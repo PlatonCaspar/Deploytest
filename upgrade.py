@@ -33,10 +33,10 @@ def check_special_commands():
             instr = file.readlines()
             res = db.session.execute("SELECT version_num from alembic_version")
             for row in res:
-                print(row)
                 ver = row["version_num"]
             for line in instr:
                 if str(ver) in line:
+                    print("Found special migrate command. Executing...")
                     db.session.execute(loads(line)["action"])
                     db.session.commit() 
     except Exception as e:
