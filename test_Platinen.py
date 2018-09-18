@@ -839,7 +839,7 @@ class test_platos(TestCase):
         self.test_assign_place()
         place = data_Structure.Place.query.all()[0]
         response = self.client.post(url_for(fname, place_id=place.id))
-        assert place.container is None
+        assert len(place.container.all()) is 0
 
     def test_change_recommended(self):
         fname = "change_recommended"

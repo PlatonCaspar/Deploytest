@@ -571,19 +571,21 @@ class Device(db.Model):
             return {}
 
     def print_label(self):
+        if app.config["TESTING"]:
+            return
         code_url = url_for('show_device', device_id=self.device_id, _external=True)
         data = dict(
             QR=code_url,
             HEAD="Device {}".format(self.device_id),
             SUBHEAD="{mf}::{}".format(self.device_brand, self.device_name)
         )
-        r = request.post("labelprinter02.internal.sdi.tools/print/label/38mm/", data=data)
+        r = requests.post("http://10.11.20.5/print/label/38mm/", data=json.dumps(data))
         if "OK" in r.text:
             flash("Check labelprinter for your label!", "success")
         if "OK" in r.text:
             flash("Check labelprinter for your label!", "success")
         if "FAIL" in r.text:
-            flash("Something may be wrong, check labelprinter for label. You may try again!", "warning")
+            flash("Something may be wrong, check labelprinter for label. You may try again!\n{}".format(r.text), "warning")
 
 
 # Components from now on
@@ -853,17 +855,19 @@ class Part(db.Model):
         return sorted(list(filter(lambda k: k.deprecated is False, self.reservations)), key=lambda e: e.duedate)
 
     def print_label(self):
+        if app.config["TESTING"]:
+            return
         data = dict(
             QR="IDS{}".format(self.ids),
             HEAD="IDS{}".format(self.ids),
-            SUBHEAD="{}".format(self.exb())
-            ARGS=json.dumps(self.args())
+            SUBHEAD="{}".format(self.exb()),
+            ARGS=self.args()
         )
-        r = request.post("labelprinter02.internal.sdi.tools/print/label/38mm/", data=data)
+        r = requests.post("http://10.11.20.5/print/label/38mm/", data=json.dumps(data))
         if "OK" in r.text:
             flash("Check labelprinter for your label!", "success")
         if "FAIL" in r.text:
-            flash("Something may be wrong, check labelprinter for label. You may try again!", "warning")
+            flash("Something may be wrong, check labelprinter for label. You may try again!\n{}".format(r.text), "warning")
 
 
 class Container(db.Model):
@@ -877,7 +881,7 @@ class Container(db.Model):
     def __init__(self, out=True):
         self.out = out
 
-    def place(self, place=None):
+    def place(self, place=None, remove=False):
         self.is_empty()
         if place:
             # if place.container:
@@ -892,21 +896,26 @@ class Container(db.Model):
             if self.out:
                 self.out = False
             db.session.commit()
+        if remove:
+            self.fk_place = None
+            db.session.commit()
         return self.__place
 
     def print_label(self):
         self.is_empty()
+        if app.config["TESTING"]:
+            return
         data = dict(
             QR="IDS{}".format(self.part_ids),
             HEAD="IDS{} @ Container {}".format(self.part_ids,self.id),
-            SUBHEAD="{}".format(self.part.exb())
-            ARGS=json.dumps(self.part.args())
+            SUBHEAD="{}".format(self.part.exb()),
+            ARGS=self.part.args()
         )
-        r = request.post("labelprinter02.internal.sdi.tools/print/label/38mm/", data=data)
+        r = requests.post("http://10.11.20.5/print/label/38mm/", data=json.dumps(data))
         if "OK" in r.text:
             flash("Check labelprinter for your label!", "success")
         if "FAIL" in r.text:
-            flash("Something may be wrong, check labelprinter for label. You may try again!", "warning")
+            flash("Something may be wrong, check labelprinter for label. You may try again!\n{}".format(r.text), "warning")
 
         
 
@@ -951,25 +960,29 @@ class Container(db.Model):
 class Place(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
-    container_id = db.Column(db.Integer)
+    # container_id = db.Column(db.Integer)
     container = db.relationship("Container", backref="_place", lazy="dynamic", uselist=True)
     
     def print_label(self):
-         data = dict(
+        if app.config["TESTING"]:
+            return
+        data = dict(
             QR="PLACE{}".format(self.id),
             HEAD="Place {}".format(self.id),
-            SUBHEAD="Location: {} @ {}".format(self.room.title, self.room.address)
-            ARGS=json.dumps(dict())
+            SUBHEAD="Location: {} @ {}".format(self.room.title, self.room.address),
+            ARGS=dict()
         )
-        r = request.post("labelprinter02.internal.sdi.tools/print/label/38mm/", data=data)
+        r = requests.post("http://10.11.20.5/print/label/38mm/", data=json.dumps(data))
         if "OK" in r.text:
             flash("Check labelprinter for your label!", "success")
         if "FAIL" in r.text:
-            flash("Something may be wrong, check labelprinter for label. You may try again!", "warning")
+            flash("Something may be wrong, check labelprinter for label. You may try again!\n{}".format(r.text), "warning")
 
     
     def clear(self):
-        self.container_id = None
+        for container in self.container:
+            container.fk_place = None
+
         db.session.commit()
     
     def link(self):

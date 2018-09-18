@@ -160,7 +160,16 @@
                                                 </button>
                                             </form>
                                             {% elif current_user.is_authenticated and container.place() %}
-                                                <strong>{{container.place().id}}</strong> :: {{container.place().room.title or "N/A"}} @ {{container.place().room.address or "N/A"}}
+                                                <div class="row">
+                                                    <div class="col-xs-10">
+                                                        <strong>{{container.place().id}}</strong> :: {{container.place().room.title or "N/A"}} @ {{container.place().room.address or "N/A"}}
+                                                    </div>
+                                                    <div class="col-xs-2">
+                                                        <form action="{{url_for('remove_container_from_place', part_ids=part.ids, container_id=container.id)}}" method="POST">
+                                                            <button class="btn btn-danger btn-sm" type="submit"><span class="glyphicon glyphicon-remove"></span></button>
+                                                        </form>
+                                                    </div>
+                                                </div>
                                             {% endif %}
                                             </td>
                                         </tr>

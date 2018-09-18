@@ -2179,7 +2179,31 @@ def add_pieces(part_ids, container_id=None):
             flash("Place could not be changed for some reason!\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
 
-        
+@app.route("/part/<part_ids>/container/<container_id>/place/remove/", methods=["POST"])
+def remove_container_from_place(part_ids, container_id):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
+    elif current_user.is_authenticated:
+        try:
+            part_ids = int(part_ids)
+            if not container_id:
+                if "container_id" in request.form:
+                    container_id = request.form.get("container_id")
+            container_id = int(container_id)
+        except Exception as e:
+            flash("An error occured in //remove_container_from_place()//\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+        part = data_Structure.Part.query.get(part_ids)
+        container = data_Structure.Container.query.get(container_id)
+        try:
+            container.place(remove=True)
+            flash("Container was removed from place!", "success")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+        except Exception as e:
+            flash("An error occured in //remove_container_from_place()//\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
+            
 if __name__ == '__main__':
     # app.secret_key = 'Test'
     test_queries()
@@ -2195,7 +2219,7 @@ if __name__ == '__main__':
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
     
-    app.run(debug=True, port=8080, host='0.0.0.0')
+    app.run(debug=False, port=80 host='0.0.0.0')
     
 
     

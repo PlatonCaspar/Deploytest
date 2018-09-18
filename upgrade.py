@@ -18,7 +18,10 @@ def migrate_database():
     check_special_commands()
     if not os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), MIGRATIONS_FOLDER)):
         init(directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), MIGRATIONS_FOLDER))
-    stamp(directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), MIGRATIONS_FOLDER), revision='head')
+    try:
+        stamp(directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), MIGRATIONS_FOLDER))
+    except Exception as e:
+        print("//ERROR: STAMP: //{}".format(e))
     try:
         migrate(directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), MIGRATIONS_FOLDER))
     except:
