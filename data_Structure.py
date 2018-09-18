@@ -12,10 +12,10 @@ import time
 import markdown
 import re
 import collections
+import requests
 
 import helper
 import board_labels
-
 
 RELATIVE_PICTURE_PATH = 'static/Pictures'
 UPLOAD_FOLDER = path.join(path.dirname(path.abspath(__file__)),
@@ -571,7 +571,19 @@ class Device(db.Model):
             return {}
 
     def print_label(self):
-        board_labels.print_device_label(self)
+        code_url = url_for('show_device', device_id=self.device_id, _external=True)
+        data = dict(
+            QR=code_url,
+            HEAD="Device {}".format(self.device_id),
+            SUBHEAD="{mf}::{}".format(self.device_brand, self.device_name)
+        )
+        r = request.post("labelprinter02.internal.sdi.tools/print/label/38mm/", data=data)
+        if "OK" in r.text:
+            flash("Check labelprinter for your label!", "success")
+        if "OK" in r.text:
+            flash("Check labelprinter for your label!", "success")
+        if "FAIL" in r.text:
+            flash("Something may be wrong, check labelprinter for label. You may try again!", "warning")
 
 
 # Components from now on
@@ -841,7 +853,17 @@ class Part(db.Model):
         return sorted(list(filter(lambda k: k.deprecated is False, self.reservations)), key=lambda e: e.duedate)
 
     def print_label(self):
-        board_labels.print_part_label(self)
+        data = dict(
+            QR="IDS{}".format(self.ids),
+            HEAD="IDS{}".format(self.ids),
+            SUBHEAD="{}".format(self.exb())
+            ARGS=json.dumps(self.args())
+        )
+        r = request.post("labelprinter02.internal.sdi.tools/print/label/38mm/", data=data)
+        if "OK" in r.text:
+            flash("Check labelprinter for your label!", "success")
+        if "FAIL" in r.text:
+            flash("Something may be wrong, check labelprinter for label. You may try again!", "warning")
 
 
 class Container(db.Model):
@@ -874,8 +896,19 @@ class Container(db.Model):
 
     def print_label(self):
         self.is_empty()
-        self.part.print_label()
-        board_labels.print_container_label(self)
+        data = dict(
+            QR="IDS{}".format(self.part_ids),
+            HEAD="IDS{} @ Container {}".format(self.part_ids,self.id),
+            SUBHEAD="{}".format(self.part.exb())
+            ARGS=json.dumps(self.part.args())
+        )
+        r = request.post("labelprinter02.internal.sdi.tools/print/label/38mm/", data=data)
+        if "OK" in r.text:
+            flash("Check labelprinter for your label!", "success")
+        if "FAIL" in r.text:
+            flash("Something may be wrong, check labelprinter for label. You may try again!", "warning")
+
+        
 
     def add_pieces(self, number):
         adding_process = Process()
@@ -922,7 +955,18 @@ class Place(db.Model):
     container = db.relationship("Container", backref="_place", lazy="dynamic", uselist=True)
     
     def print_label(self):
-        board_labels.print_place_label(self)
+         data = dict(
+            QR="PLACE{}".format(self.id),
+            HEAD="Place {}".format(self.id),
+            SUBHEAD="Location: {} @ {}".format(self.room.title, self.room.address)
+            ARGS=json.dumps(dict())
+        )
+        r = request.post("labelprinter02.internal.sdi.tools/print/label/38mm/", data=data)
+        if "OK" in r.text:
+            flash("Check labelprinter for your label!", "success")
+        if "FAIL" in r.text:
+            flash("Something may be wrong, check labelprinter for label. You may try again!", "warning")
+
     
     def clear(self):
         self.container_id = None
