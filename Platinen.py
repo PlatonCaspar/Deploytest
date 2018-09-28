@@ -2,6 +2,7 @@ import os
 import time
 import markdown
 import logging
+import requests
 
 from flask import render_template, request, redirect, url_for, session, flash, send_from_directory, send_file, abort
 from flask_bootstrap import Bootstrap
@@ -1130,10 +1131,28 @@ def check_patch():
     data_Structure.db.session.commit()
     return redirect(url_for('show_board_history', g_code=board_code))
 
-@app.route('/label/print/new/', methods=['GET'])
+@app.route('/label/board/print/new/', methods=['GET'])
 def show_new_label():
     nav.nav.register_element("frontend_top", view.nav_bar())
-    return render_template('new_label.html')
+    return render_template('new_board_label.html')
+
+@app.route('/label/38mm/print/new/', methods=['GET'])
+def show_new_38mm_label():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    return render_template('new_38_mm_label.html')
+
+@app.route("/label/38mm/print/do/", methods=["POST"])
+def print_new_38mm_label():
+    nav.nav.register_element("frontend_top", view.nav_bar())
+    data = request.form
+    # print(data)
+    r = requests.post("http://localhost:8081/print/label/38mm/", data=dumps(data))
+    if "OK" in r.text:
+        flash("Check labelprinter for your label!", "success")
+    if "FAIL" in r.text:
+        flash("Something may be wrong, check labelprinter for label. You may try again!\n{}".format(r.text), "warning")    
+    return redirect(url_for("show_new_38mm_label"))
+
 
 def delete_document_func(document):
     try:
@@ -2219,7 +2238,7 @@ if __name__ == '__main__':
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
     
-    app.run(debug=False, port=80, host='0.0.0.0')
+    app.run(debug=False, port=8080, host='0.0.0.0')
     
 
     
