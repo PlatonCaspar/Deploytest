@@ -1085,11 +1085,7 @@ def show_new_38mm_label():
 def print_new_38mm_label():
     nav.nav.register_element("frontend_top", view.nav_bar())
     data = request.form
-<<<<<<< HEAD
-    r = requests.post("http://printer02.internal.sdi.tools/print/label/38mm/", data=dumps(data))
-=======
     r = requests.post("http://localhost:8081/print/label/38mm/", data=dumps(data))
->>>>>>> made code a little more beautiful and added a few comments
     if "OK" in r.text:
         flash("Check labelprinter for your label!", "success")
     if "FAIL" in r.text:

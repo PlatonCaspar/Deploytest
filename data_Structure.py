@@ -49,7 +49,6 @@ class Board(db.Model):
     code = db.Column(db.String(500), primary_key=True)
     project_name = db.Column(db.Text, db.ForeignKey('project.project_name'))
     project = db.relationship('Project', backref=db.backref('project_boards_backref', lazy='dynamic'))
-    #link = db.Column(db.String(500))
     version = db.Column(db.String(20))
     id = db.Column(db.Integer, primary_key=False)
     dateAdded = db.Column(db.String(10))
@@ -62,12 +61,10 @@ class Board(db.Model):
     patches = db.relationship('Patch', secondary=patch_board)
 
     def __init__(self, code: str, project_name: str, ver: str, stat="init", patch="None"):  # , history):
-
         self.project_name = project_name
         self.code = code
         self.id = id(code)
         self.version = ver
-        # self.link = str(url_for('show_board_history', g_code=self.code))
         self.dateAdded = time.strftime("%d.%m.%Y %H:%M:%S")
         self.addedBy = current_user
         self.stat = stat
@@ -88,16 +85,13 @@ class Board(db.Model):
             deleted = arguments.pop(to_add, None)
             self.arguments = json.dumps(arguments)
             return deleted
-
         if to_add:
             if not self.arguments:
                 self.arguments = json.dumps({to_add[0]: to_add[1]})
             else:
                 val = json.loads(self.arguments)
                 val[to_add[0]] = to_add[1]
-
                 self.arguments = json.dumps(val)
-
         elif self.arguments:
             return collections.OrderedDict(sorted(json.loads(self.arguments).items()))
         else:
@@ -110,7 +104,6 @@ class Board(db.Model):
         out = ""
         for patch in self.patches:
             out += ("""{}""".format(patch.patch_number)+",")
-
         return out.strip(",")
 
     def print_label(self, _flash=True):
@@ -136,13 +129,10 @@ class User(db.Model):
         if password and email:
             self.email = email
             self.password_hashed_and_salted = pbkdf2_sha256.hash(password)
-
         if db.session.query(User).all() is None:  # First user logged in must be active!
             self.is_active = True
-
         else:
             self.is_active = True  # for now every User is active
-
         if username == 'Guest':
             self.is_authenticated = False
         else:
@@ -154,16 +144,6 @@ class User(db.Model):
             return True
         else:
             return False
-
-    # def is_authenticated(self):
-    #     print('okay, is_authenticated is called')
-    #     if User.query.filter_by(username=self.username).first().scalar() is None:
-    #         return False
-    #     elif self.username != 'Guest':
-    #         print(self.username)
-    #         return True
-    #     else:
-    #         return False
 
     def user_is_active(self):
         if self.is_active is not None:
@@ -194,13 +174,9 @@ class User(db.Model):
             self.avatar_path = path.join(RELATIVE_PICTURE_PATH, new_name)
             db.session.commit()
         else:
-
             if self.avatar_path:
-
                 return "/"+self.avatar_path
-
             else:
-
                 return "/static/staticPictures/general_user.png"
 
     def registered_users(self):
@@ -219,7 +195,6 @@ class User(db.Model):
         db.session.commit()
 
     def get_messages(self, all=False):
-        #print(list(filter(lambda msg: msg.read is False, self.messages)))
         return list(filter(lambda msg: msg.read is False, self.messages))
     
     def get_messages_count(self):
@@ -240,7 +215,6 @@ class History(db.Model):
     edited_by_id = db.Column(db.Text, db.ForeignKey('user.uid'))
     added_by = db.relationship('User', backref=db.backref('added_by_backref', 
                                                           lazy='dynamic'))
-
     edited_by = db.relationship('User', backref=db.backref('edited_by_backref',
                                                            lazy='dynamic'))
     time_and_date = db.Column(db.String(10))
@@ -274,13 +248,11 @@ class History(db.Model):
         self.answers.append(answer)
         db.session.commit()
 
-
     def time_date_datetime(self):
         return datetime.datetime.strptime(self.time_and_date, 
                                           "%d.%m.%Y %H:%M:%S")
 
     def link(self):
-
         if self.board_code:
             return url_for('show_board_history', g_code=self.board_code)+'#comment_id'+str(self.id)
         elif self.part:
@@ -300,7 +272,6 @@ class History(db.Model):
             return None
 
     def short_result(self, search_word, max_length=30):
-        # print(self.history+ " "+search_word)
         start_ind = 0
         try:
             start_ind = self.history.lower().index(search_word.lower())
@@ -308,7 +279,6 @@ class History(db.Model):
             pass
         except Exception as e:
             flash('some error occured in \"short_result\"\n{}'.format(e), "danger")
-            #print(search_word.lower()+" "+self.history.lower())
         if start_ind > 6:
             start_ind = start_ind-6
 
@@ -432,7 +402,6 @@ class Project(db.Model):
             nrs = []
             for b in self.project_boards:
                 nrs.append(int(b.code[len(abbr):]))
-            # nrs = [int(b.code.strip(abbr)) for b in self.project_boards]
         except Exception as e:
             raise Exception("Failed to get existing board numbers //Project.create_boards()//\n{}".format(e))
         last = helper.array_max_val(nrs)
@@ -541,7 +510,6 @@ class Device(db.Model):
             self.device_description = device_description
 
     def link(self):
-
         return url_for('show_device', device_id=self.device_id)
 
     def reduce(self):
@@ -556,7 +524,6 @@ class Device(db.Model):
             deleted = arguments.pop(to_add, None)
             self.device_arguments = json.dumps(arguments)
             return deleted
-
         if to_add:
             if not self.device_arguments:
                 self.device_arguments = json.dumps({to_add[0]: to_add[1]})
@@ -564,7 +531,6 @@ class Device(db.Model):
                 val = json.loads(self.device_arguments)
                 val[to_add[0]] = to_add[1]
                 self.device_arguments = json.dumps(val)
-
         elif self.device_arguments:
             return json.loads(self.device_arguments)
         else:
@@ -630,11 +596,6 @@ class Part(db.Model):
     json_attributes = db.Column(db.Text)
     out = db.Column(db.Boolean)
     recommended = db.Column(db.Integer)
-
-    # bookings = db.relationship('Booking',
-    #                            backref='part',
-    #                            lazy='dynamic',
-    #                            uselist=True)
     orders = db.relationship('Order',
                              backref='part',
                              lazy='dynamic',
@@ -646,7 +607,6 @@ class Part(db.Model):
     comments = db.relationship('History', backref='part', lazy='dynamic',
                                uselist=True)
     containers = db.relationship('Container', backref='part', uselist=True)
-    # project
 
     def __init__(self, part_type_id: int):
         self.json_attributes = json.dumps({})
@@ -662,7 +622,6 @@ class Part(db.Model):
                 if len(exb_nr) != 6:
                     raise Exception("The EXB Number was not of the correct format. It must consist of 6 digits!")
                 self.exb_number = int(exb_nr)
-
                 db.session.commit()
             except Exception as e:
                 flash("an error occured in //part.exb()//\n{}".format(e), "danger")
@@ -674,27 +633,7 @@ class Part(db.Model):
             exb_numbers = [part.exb(number_only=True) for part in Part.query.all()]
             self.exb_number = helper.array_max_val(exb_numbers, current_user.division)+1
             db.session.commit()
-        if self.exb_number:
-            return "EXB%06d" % self.exb_number
-        else:
-            return None
-
-    def a5e(self, a5e=None, number_only=None):
-        if a5e:
-            if "A5E".lower() in a5e.lower():
-                a5e = a5e.lower().strip("A5E".lower())
-            try:
-                self.a5e_number = int(a5e)
-                db.session.commit()
-            except Exception as e:
-                flash("an error occured in //part.a5e()//\n{}".format(e), "danger")
-                return
-        if number_only:
-            return self.a5e_number
-        if self.a5e_number:
-            return "A5E%08d" % self.a5e_number
-        else:
-            return None
+        return "EXB%06d" % self.exb_number
 
     def same_a5e(self):
         if self.a5e_number:
@@ -879,33 +818,6 @@ class Part(db.Model):
         container._bookings.append(b)
         db.session.commit()
 
-    # def place(self, place_id=None, count=None):
-    #     """Returns the place of the component. If a place id is given,
-    #     the place is changed to the new Place and then returned.
-    #     if Place was out due to booking, out will be set to False.
-    #     """
-    #     if place_id:
-    #         try:
-    #             self.place_rel.append(Place.query.get(int(place_id)))
-    #             if self.out:
-    #                 self.out = False
-    #                 floating = list(filter(lambda k: k.floating is True, self.bookings))
-    #                 if len(floating) > 1:
-    #                     flash("""There were more open Bookings regarding this Part.
-    #                     Since this should be impossible, all open bookings are closed.
-    #                     Please Count the remainig pieces!""", "danger")
-    #                 for f in floating:
-    #                     f.floating = False
-    #                 db.session.commit()
-    #             db.session.commit()
-    #             # if e.g. a new part is stored, the initial amount can be set
-    #             if count:
-    #                 self.stocktaking(count)
-    #         except Exception as e:
-    #             flash("""An Error occured in part.place
-    #                 \nplace_id: {0}\n{1}""".format(place_id, e), "danger")
-    #     return self.place_rel
-
     def last_active_reservations(self):
         return sorted(list(filter(lambda k: k.deprecated is False, self.reservations)), key=lambda e: e.duedate)
 
@@ -918,7 +830,7 @@ class Part(db.Model):
             SUBHEAD="{}".format(self.exb() or self.a5e() or None),
             ARGS=self.args()
         )
-        r = requests.post("http://10.11.20.5/print/label/38mm/", data=json.dumps(data))
+        r = requests.post("http://printer_ip_address/print/label/38mm/", data=json.dumps(data))
         if "OK" in r.text:
             flash("Check labelprinter for your label!", "success")
         if "FAIL" in r.text:
@@ -939,15 +851,10 @@ class Container(db.Model):
     def place(self, place=None, remove=False):
         self.is_empty()
         if place:
-            # if place.container:
-                # if not place.container.is_empty():
-                    # raise Exception("Place is already in use. Please look for another one or clear the place manually under the respective room page.")
-            # self._place = place
             try:
                 self.fk_place = place.id
-                print("Place was appended")
             except Exception as e:
-                print(e)
+                flash("an error occured in //Container.place()//\n{}".format(e), "danger")
             if self.out:
                 self.out = False
             db.session.commit()
@@ -966,7 +873,7 @@ class Container(db.Model):
             SUBHEAD="{}".format(self.part.exb()),
             ARGS=self.part.args()
         )
-        r = requests.post("http://10.11.20.5/print/label/38mm/", data=json.dumps(data))
+        r = requests.post("http://printer_ip_address/print/label/38mm/", data=json.dumps(data))
         if "OK" in r.text:
             flash("Check labelprinter for your label!", "success")
         if "FAIL" in r.text:
@@ -1015,7 +922,6 @@ class Container(db.Model):
 class Place(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
-    # container_id = db.Column(db.Integer)
     container = db.relationship("Container", backref="_place", lazy="dynamic", uselist=True)
     
     def print_label(self):
@@ -1027,17 +933,15 @@ class Place(db.Model):
             SUBHEAD="Location: {} @ {}".format(self.room.title, self.room.address),
             ARGS=dict()
         )
-        r = requests.post("http://10.11.20.5/print/label/38mm/", data=json.dumps(data))
+        r = requests.post("http://printer_ip_address/print/label/38mm/", data=json.dumps(data))
         if "OK" in r.text:
             flash("Check labelprinter for your label!", "success")
         if "FAIL" in r.text:
             flash("Something may be wrong, check labelprinter for label. You may try again!\n{}".format(r.text), "warning")
-
     
     def clear(self):
         for container in self.container:
             container.fk_place = None
-
         db.session.commit()
     
     def link(self):
@@ -1115,7 +1019,6 @@ class Process(db.Model):
     
     def ProcessType(self):
         if self.reservations.all():
-            # print(self.reservations.all())
             return "Reservation"
         elif self.orders.all():
             return "Order"
@@ -1134,9 +1037,6 @@ class Process(db.Model):
             if len(bom) is 1:
                 if not val:
                     val = child.number/bom[0].amount
-                # else:
-                #     if val is not child.number/bom[0].amount:
-                #         raise Exception("Process.GetAmount(self):: multiple processes open for same project. That should not happen! // 1 //")
             elif len(bom) > 1:
                 raise Exception("Process.GetAmount(self):: multiple processes open for same project. That should not happen!")
         return val
@@ -1144,7 +1044,6 @@ class Process(db.Model):
     def GetChildDate(self):
         val = None
         if not self.project or self.ProcessType().lower() != "reservation":
-            # print("not self.project or self.ProcessType().lower() is 'reservation'")
             return None
         for child in self.children():
             bom = list(filter(lambda b: b.part_ids is child.part_ids and b.project_id == self.project_id, self.project.bom))
@@ -1155,11 +1054,8 @@ class Process(db.Model):
                     raise Exception("Process.GetChildDate(self):: multiple processes open for same project. That should not happen!")
                 else:
                     val = child.duedate
-                # print("val",val)
-                # print(child.id, "IDIDID")
                 return val
             elif len(bom) > 1:
-                # print("Exception")
                 raise Exception("Process.GetChildDate(self):: multiple processes open for same project. That should not happen!")
         return val
     
@@ -1229,10 +1125,8 @@ class Reservation(db.Model):
     part_ids = db.Column(db.Integer, db.ForeignKey('part.ids'))
     number = db.Column(db.Integer)
     deprecated = db.Column(db.Boolean)
-
     project = db.relationship('Project', backref="reservations", uselist=False)
     project_id = db.Column(db.Text, db.ForeignKey('project.project_name'))
-
     duedate = db.Column(db.DateTime)
 
     def __init__(self, duedate):
@@ -1280,7 +1174,6 @@ class Booking(db.Model):
     container_id = db.Column(db.Integer, db.ForeignKey('container.id'))
     number = db.Column(db.Integer)
     deprecated = db.Column(db.Boolean)
-
     floating = db.Column(db.Boolean)
 
     def __init__(self):
@@ -1363,5 +1256,3 @@ def create_database(test=False):
     else:
         SQLALCHEMY_DATABASE_URI = 'sqlite:///static/Database/test_data.sql'
         app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
-
-# session = db.sessionmaker(bind=eng)
