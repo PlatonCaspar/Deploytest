@@ -33,7 +33,7 @@ from historyForm import HistoryForm, EditHistoryForm
 
 logging.basicConfig(level=logging.DEBUG)
 
-nav.login_manager.anonymous_user = data_Structure.User
+nav.login_manager.anonymous_user = data_Structure.User  # set anonymous user data type
 
 RELATIVE_PICTURE_PATH = 'static/Pictures'
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), RELATIVE_PICTURE_PATH)
@@ -41,10 +41,7 @@ DATA_FOLDER = os.path.dirname(os.path.abspath(__file__))
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 
-# def set_logged_user(state):
-#    logged_user = state
-
-def test_queries():
+def test_queries(): # within this func, the database is updated if changes in the datastructure are found!
     with app.app_context():
         migrate_database()
 
@@ -63,12 +60,7 @@ def not_found_error(e):
     nav.nav.register_element("frontend_top", view.nav_bar())
     return render_template("error.html",error=e, message=HTTPErrorTable.lookup(e)), 405
 
-# @app.errorhandler(500)
-# def not_found_error(e):
-#     nav.nav.register_element("frontend_top", view.nav_bar())
-#     return render_template("error.html",error=e, message=HTTPErrorTable.lookup(e)), 500
-
-# This function is called by the autocomplete jquery and returns the user available
+# This function is called by the autocomplete jquery and returns the user available for the mentions function
 @app.route("/mentions/registered/users/score/", methods=['POST'])
 @login_required
 def get_registered_users():
@@ -91,7 +83,7 @@ def get_registered_users():
     return dumps({"query": "Users", "suggestions": response_values})
 
 
-@app.route('/notifications/clicked/', methods=['POST'])
+@app.route('/notifications/clicked/', methods=['POST'])  # This function is called if a notofication is cliced from the notification center
 @login_required
 def msg_read():
     msg_id = request.values.get('msg_id')
@@ -104,16 +96,14 @@ def msg_read():
     return "200"
 
 
-@nav.login_manager.user_loader
+@nav.login_manager.user_loader # this function is necesary for the flask-login lib
 def load_user(user_id):
     return data_Structure.User.get(user_id)
 
 
-@app.route('/help/', methods=['GET'])
+@app.route('/help/', methods=['GET']) 
 def help():
     nav.nav.register_element("frontend_top", view.nav_bar())
-    # glyphicon glyphicon-question-sign
-
     input_file = open("readme.md", mode="r", encoding="utf-8")
     text = input_file.read()
     html = "<div class=container>"
@@ -169,15 +159,12 @@ def logout():
 def login():
     next = request.values.get('next')
     nav.nav.register_element("frontend_top", view.nav_bar())
-    # user_form = registerUserForm.LoginUser(request.form)
     if request.method == 'POST':
-
         if 'register_button' in request.form:
                 if next:
                     return redirect(url_for('register_user', next=next))
                 else:
                     return redirect(url_for('register_user'))
-        
         username = request.form.get("username")
         password = request.form.get("password")
         if username and data_Structure.User.query.filter_by(
@@ -238,7 +225,7 @@ def delete_user():
         #                          messages=messages.Messages(True, 'Board was not deleted!'))
         if data_Structure.User.query.get(int(user_form.uid.data)) is None:  # check if User exists
             flash('User was deleted successfully!', 'success')
-            return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
+            return redirect(url_for("delete_user"))
     return render_template('deleteUserForm.html', form=user_form, search_form=searchForm.SearchForm())
 
 
@@ -250,7 +237,7 @@ def show_registered_users():
     return render_template('userTable.html', args=data_Structure.User.query.all(), search_form=searchForm.SearchForm())
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])  # the search is implemented within this function!
 def start():
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -262,7 +249,6 @@ def start():
     results_devices = list()
     results_rooms = list()
     results_places = list()
-    
     users = data_Structure.db.session.query(data_Structure.User.username).all()
     if request.method == 'POST':
         if request.form.get('submit_main') is None:
@@ -338,7 +324,7 @@ def start():
 
         if not results_board and not results_project and not results_component and not results_comments and not results_devices and not results_places and not results_rooms:
             flash('No results were found', 'warning')
-            return render_template('base.html')
+            return redirect(request.referrer or url_for("start"))
         return render_template('table.html', args=set(results_board), projects=set(results_project),
                                search_form=searchForm.SearchForm(), search_word=search_word, parts=set(results_component),
                                results_comments=set(results_comments), results_devices=set(results_devices), results_places=set(results_places),
@@ -346,7 +332,7 @@ def start():
     return render_template('start.html', search_form=search_form)
 
 
-@app.route('/addboard/scripted/test/', methods=['POST'])
+@app.route('/addboard/scripted/test/', methods=['POST'])  # this function implements adding boards via an extra script e.g for inline testing after production...
 def add_board_scripted():
     if not request.args:
         request.args = request.form
@@ -421,7 +407,7 @@ def add__board():
                            search_form=searchForm.SearchForm())
 
 
-@app.route('/projects/boardsbelongingto/<project_name>/', methods=['POST', 'GET'])
+@app.route('/projects/boardsbelongingto/<project_name>/', methods=['POST', 'GET']) # this should be obsolete... TODO: Remove in coming release
 def show_boards_of_project(project_name):
     view.logged_user = view.get_logged_user()
     nav.nav.register_element("frontend_top", view.nav_bar())
@@ -475,14 +461,14 @@ def add_project():
     return render_template('add_project.html', add_project_form=add_project_form)
 
 
-def delete_history_all(history):
+def delete_history_all(history):  # this was once implemented here and due to lazyness it keeps its name.
     history.delete()
 
 
 @app.route('/deleteboard/', methods=['GET', 'POST'])
 @login_required
 def del_board(board_delete=None):
-    view.logged_user = view.get_logged_user()
+    view.logged_user = view.get_logged_user()  # TODO: This should not be doing anything... might be removed
     nav.nav.register_element("frontend_top", view.nav_bar())
     board_form = delPlatineForm.delBoardForm(request.form)
     if request.method == 'POST':
@@ -548,7 +534,7 @@ def getSortKeyHistory(h):
 
 @app.route('/board/show/<g_code>/', methods=['POST', 'GET'])  # shows board History
 def show_board_history(g_code):
-    view.logged_user = view.get_logged_user()
+    view.logged_user = view.get_logged_user()  # TODO: This is also to be removed after checking...
     nav.nav.register_element("frontend_top", view.nav_bar())
     tg_board = data_Structure.Board.query.get(g_code)
     if not tg_board:
@@ -594,7 +580,7 @@ def answer_board_comment():
         parent = data_Structure.History.query.get(int(parent_id))
         parent.add_answer(text)
     except:
-        flash('some error occured in //answer_board_comment()//', 'danger')
+        flash('some error occured in //answer_board_comment()//', 'danger')  # mostly for debugging
     finally:
         if parent:
             return redirect(request.referrer or parent.link())
@@ -610,8 +596,7 @@ def show_project(project_name):
     if project is None:
         flash('Project "' + project_name + '" was not found!', 'danger')
         return render_template('start.html')
-    # boards_of_project = data_Structure.Board.query.filter_by(project_name=project_name)
-    return render_template('ProjectPage.html', project=project, boards=project.project_boards)  # boards_of_project)
+    return render_template('ProjectPage.html', project=project, boards=project.project_boards)
 
 @app.route('/project/show/all/', methods=['GET'])
 def show_project_all():
@@ -623,10 +608,8 @@ def show_project_all():
 @login_required
 def delete_project_image(project_name):
     view.logged_user = view.get_logged_user()
-    # image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
     project = data_Structure.db.session.query(data_Structure.Project).get(project_name)
     img_id = project.project_default_image_path
-    # img_id = None
     project.project_default_image_path = None
     if img_id is not None:
         os.remove(os.path.join(UPLOAD_FOLDER, img_id.replace('_', '\\')))
@@ -681,13 +664,10 @@ def upload_avatar():
 @login_required
 def delete_history_image(img_id, board_id=None):
     image_to_delete = data_Structure.db.session.query(data_Structure.Files).get(int(img_id))
-    # board = data_Structure.db.session.query(data_Structure.board).get(int(board_id))
     comment = image_to_delete.belongs_to_history
     os.remove(os.path.join(UPLOAD_FOLDER, image_to_delete.file_path))
-    # os.remove(str(DATA_FOLDER + image_to_delete.file_path.replace('/', '\\')))
     data_Structure.db.session.delete(image_to_delete)
     data_Structure.db.session.commit()
-
     return redirect(comment.link())
 
 
@@ -713,13 +693,11 @@ def board_history_add_file(history_id, board_id):
 def delete_project(project_name):
     view.logged_user = view.get_logged_user()
     project_to_delete = data_Structure.db.session.query(data_Structure.Project).get(project_name)
-
     for board in project_to_delete.project_boards:
         for history in board.history:
             for file in history.data_objects:
                 os.remove(os.path.join(UPLOAD_FOLDER, file.file_path))
                 data_Structure.db.session.delete(file)
-
             data_Structure.db.session.delete(history)
         data_Structure.db.session.delete(board)
     data_Structure.db.session.commit()
@@ -734,14 +712,12 @@ def delete_project(project_name):
 @login_required
 def my_profile():
     view.logged_user = view.get_logged_user()
-    if current_user.username is 'Guest':
-        return redirect(url_for('start'))
     nav.nav.register_element("frontend_top", view.nav_bar())
 
     return render_template('userProfile.html')
 
 
-@app.route('/myprofile/change/username/<uid>/', methods=['POST'])
+@app.route('/myprofile/change/username/<uid>/', methods=['POST']) 
 @login_required
 def change_username(uid):
     user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
@@ -774,7 +750,6 @@ def change_email(uid):
 @login_required
 def change_password(uid):
     user_to_change = data_Structure.db.session.query(data_Structure.User).filter_by(uid=uid).first()
-
     if pbkdf2_sha256.verify(request.form.get('old_password'), user_to_change.password_hashed_and_salted):
         new_password_hash = pbkdf2_sha256.hash(request.form.get('new_password_1'))
         if pbkdf2_sha256.verify(request.form.get('new_password_2'), new_password_hash):
@@ -810,8 +785,6 @@ def delete_myself():
 @login_required
 def user_forgot_password():
     nav.nav.register_element("frontend_top", view.nav_bar())
-    flash('Please enter the uid, you can find it if you look for the user at ' + '<a href="' + url_for(
-        'show_registered_users') + '">Registered Users</a>', 'info')
     return render_template('forgot_password.html')
 
 
@@ -848,9 +821,6 @@ def user_forgot_change_password():
 def change_board_version(board_id):
     board = data_Structure.Board.query.get(board_id)
     new_version = request.form.get('version_form')
-    comment_string = "Version was changed from " + board.version + " to " + new_version
-    change_comment = data_Structure.History(comment_string, board.code)
-    data_Structure.db.session.add(change_comment)
     board.version = new_version
     data_Structure.db.session.commit()
     return redirect(url_for('show_board_history', g_code=board_id))
@@ -882,12 +852,6 @@ def change_board_patch(board_id):
     return redirect(url_for('show_board_history', g_code=board_id))
 ##########################################################################
 
-@app.route('/upgrade/') # TODO find a way to test flask migrate
-@login_required
-def upgrade_within_app():
-    migrate_database()
-    return redirect(url_for("start"))
-
 @app.route('/board/edit_args/', methods=['POST'])
 def edit_args():
     arg_name = request.form.get('name')
@@ -899,25 +863,19 @@ def edit_args():
         if res:
             flash(res+" was deleted", 'success')
         return redirect(url_for('show_board_history', g_code=board_id))
-
     arg_value = request.form.get('value')
-
-    
     board.args([arg_name,arg_value])
     data_Structure.db.session.commit()
-
     return redirect(url_for('show_board_history', g_code=board_id))
 
 @app.route('/device/add/do/', methods=['POST'])
 def add_device_do():
     device_name = request.form.get('device_name')
     device_brand = request.form.get('device_brand')
-    
     if device_brand and device_name:
         device = data_Structure.Device(device_name, device_brand)
         try:
             data_Structure.db.session.add(device)
-
             data_Structure.db.session.commit()
             code_url=None
             try:
@@ -925,8 +883,7 @@ def add_device_do():
             except:
                 pass
             label = board_labels.generate_label(device_name, code_url=code_url)
-            # board_labels.write_doc(label)
-            board_labels.print_label("labelprinter01.internal.sdi.tools", label)
+            board_labels.print_label("ip_address_of_printer", label)
         except Exception as e:
             flash('An error occured while adding the device to the database\n{}'.format(e), 'danger')
             return redirect(url_for('add_device'))
@@ -981,8 +938,6 @@ def upload_device_document():
     if file:
         file_id = id(file.filename)
         filename = secure_filename('devdoc_'+str(file_id) + file.filename)
-        
-
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(file_path)
         file_to_add = data_Structure.DeviceDocument(os.path.join(RELATIVE_PICTURE_PATH, filename), device)
@@ -1000,10 +955,8 @@ def delete_device():
     except:
         flash('An error Occured //delete_device()//', 'danger')
         return redirect(url_for('start'))
-    
     for doc in device.device_documents:
         delete_document_func(doc)
-
     data_Structure.db.session.delete(device)
     data_Structure.db.session.commit()
     return redirect(url_for('start'))
@@ -1020,8 +973,7 @@ def delete_document():
     if delete_document_func(document):
         flash('document was deleted successful', 'success')
     else:
-        flash('An error occured //delete_document_func()', 'danger')
-    
+        flash('An error occured //delete_document()//', 'danger')
     return redirect(url_for('show_device', device_id=device_id))
 
 @app.route('/label/print/do/', methods=['POST'])
@@ -1030,10 +982,8 @@ def print_label():
     code_url = None
     if data_Structure.Board.query.get(text):
         code_url = url_for('show_board_history', g_code=text, _external=True)
-    
     label = board_labels.generate_label(text, code_url=code_url)
-    # board_labels.write_doc(label)
-    board_labels.print_label(address="labelprinter01.internal.sdi.tools", text=label)
+    board_labels.print_label(address="ip_address_of_labelprinter", text=label)
     return redirect(url_for('show_new_label'))
 
 @app.route('/project/patch/new/do/', methods=['POST'])
@@ -1057,16 +1007,13 @@ def edit_patch():
     except:
         flash('An error occured //edit_patch()//', 'danger')
         return redirect(url_for('start'))
-
     patch.description = patch_description
     data_Structure.db.session.commit()
     flash("Description was changed!", 'success')
-    
     return redirect(url_for('show_project', project_name=patch.project_id))
 
 @app.route('/project/patch/file/upload/', methods=['POST'])
 def patch_add_file():
-    
     try:
         patch = request.args.get('patch_id')
         patch = data_Structure.Patch.query.get(int(patch))
@@ -1077,8 +1024,6 @@ def patch_add_file():
     if file:
         file_id = id(file.filename)
         filename = secure_filename('patchdoc_'+str(file_id) + file.filename)
-        
-
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(file_path)
         file_to_add = data_Structure.PatchDocument(os.path.join(RELATIVE_PICTURE_PATH, filename))
@@ -1088,7 +1033,6 @@ def patch_add_file():
         flash('file was uploaded successful.', 'success')
     else:
         flash('some error occured //patch_add_file()// (no file was sent)', 'warning')
-
     return redirect(url_for('show_project', project_name=patch.project_id))
 
 @app.route('/project/patch/file/delete/do/', methods=['POST'])
@@ -1108,7 +1052,6 @@ def delete_patch_file():
 def check_patch():
     patch_id = request.args.get('patch_id')
     board_code = request.args.get('board_code')
-    
     try:
         patch = data_Structure.Patch.query.get(int(patch_id))
         board = data_Structure.Board.query.get(board_code)
@@ -1125,8 +1068,6 @@ def check_patch():
             board.patches.remove(patch)
         except:
             flash("Could not remove //check_patch()//")      
-        
-            
     data_Structure.db.session.commit()
     return redirect(url_for('show_board_history', g_code=board_code))
 
@@ -1144,13 +1085,16 @@ def show_new_38mm_label():
 def print_new_38mm_label():
     nav.nav.register_element("frontend_top", view.nav_bar())
     data = request.form
+<<<<<<< HEAD
     r = requests.post("http://printer02.internal.sdi.tools/print/label/38mm/", data=dumps(data))
+=======
+    r = requests.post("http://localhost:8081/print/label/38mm/", data=dumps(data))
+>>>>>>> made code a little more beautiful and added a few comments
     if "OK" in r.text:
         flash("Check labelprinter for your label!", "success")
     if "FAIL" in r.text:
         flash("Something may be wrong, check labelprinter for label. You may try again!\n{}".format(r.text), "warning")    
     return redirect(url_for("show_new_38mm_label"))
-
 
 def delete_document_func(document):
     try:
@@ -1162,6 +1106,7 @@ def delete_document_func(document):
     return True
 
 @app.route('/parts/parttype/create/', methods=['GET', 'POST'])
+@login_required
 def create_part_type():
     nav.nav.register_element("frontend_top", view.nav_bar())
     if request.method == "GET":
@@ -1313,7 +1258,6 @@ def upload_part_document():
     if not current_user.is_authenticated:
         flash("Please log in to edit the component!", "info")
         return redirect(request.referrer)
-    
     file = request.files['file']
     if current_user.is_authenticated:
         try:
@@ -1321,12 +1265,9 @@ def upload_part_document():
         except Exception as e:
             flash("oops an error occured within //upload_part_document()//.\n\n{}".format(e), "danger")
             return redirect(url_for("show_part"))
-            
         if file:
             file_id = id(file.filename)
             filename = secure_filename('partdoc_'+str(file_id) +"_"+ file.filename)
-        
-
             file_path = os.path.join(UPLOAD_FOLDER, filename)
             file.save(file_path)
             file_to_add = data_Structure.PartDocument(os.path.join(RELATIVE_PICTURE_PATH, filename), part)
@@ -1336,7 +1277,6 @@ def upload_part_document():
         else:
             flash('some error occured //upload_part_document()// (no file was sent)', 'warning')
         return redirect(url_for("show_part", ids=part.ids))
-
 
 @app.route("/parts/part/delete/document/", methods=["POST"])
 def delete_part_document():
@@ -1350,8 +1290,7 @@ def delete_part_document():
             part_doc.delete()
         except Exception as e:
             flash("oops an error occured within //delete_part_document()//.\n\n{}".format(e), "danger")
-            return redirect(url_for("show_part"))
-        
+            return redirect(url_for("show_part"))        
         return redirect(url_for("show_part", ids=part.ids))
     
 @app.route("/parts/part/add/comment/", methods=["POST"])
@@ -1365,7 +1304,6 @@ def add_part_comment():
         except Exception as e:
             flash("oops an error occured within //add_part_comment()//.\n\n{}".format(e), "danger")
             return redirect(url_for("show_part"))
-        
         try:
             text = request.form.get("newComment")
             comment = data_Structure.History(text, part=part)
@@ -1374,8 +1312,6 @@ def add_part_comment():
         except Exception as e:
             flash("oops an error occured within //add_part_comment()//.\n\n{}".format(e), "danger")
             return redirect(url_for("show_part", ids=part.ids))
-        
-        
         return redirect(url_for("show_part", ids=part.ids))
         
 @app.route("/parts/part/add/comment/file/<part_ids>/", methods=["POST"])
@@ -1398,8 +1334,6 @@ def upload_comment_document_part(part_ids=None):
         if file:
             file_id = id(file.filename)
             filename = secure_filename(str(file_id) +"_"+ file.filename)
-        
-
             file_path = os.path.join(UPLOAD_FOLDER, filename)
             file.save(file_path)
             file_to_add = data_Structure.Files(comment, filename)
@@ -1408,9 +1342,6 @@ def upload_comment_document_part(part_ids=None):
             flash('file was uploaded successful.', 'success')
         else:
             flash('some error occured //upload_part_document()// (no file was sent)', 'warning')
-        return redirect(url_for("show_part", ids=part.ids))
-        
-        
         return redirect(url_for("show_part", ids=part.ids))
 
 @app.route('/comment/edit/', methods=["POST"])
@@ -1497,7 +1428,6 @@ def book_part_reservation(part_ids, id):
         if containers:
             flash("The process was booked successfully", "success")
             return render_template("container_information.html", part=part, containers=containers, time=time.strftime("%d.%m.%Y"))
-
         return redirect(url_for("show_part", ids=part.ids))
 
 @app.route("/parts/part/take/<part_ids>/", methods=["POST"])
@@ -1556,10 +1486,7 @@ def add_container(part_ids):
         part.containers.append(new_container)
         part.stocktaking(new_container.id, number)
         new_container.print_label()
-        
         return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
-
-
         
 @app.route("/parts/part/exb/edit/<part_ids>/", methods=["POST"])
 def edit_exb(part_ids):
@@ -1679,14 +1606,17 @@ def order_ordered(order_id):
             order.ordered()
         else:
             order.ordered(number)
-            # flash("The remaining order stays open!")
         return(redirect(request.referrer))
 
 @app.route('/poject/<project_id>/add/bom/do/', methods=['POST'])
 def bom_upload_do(project_id):
     try:
         bom_file = request.files['bom_upload']
+<<<<<<< HEAD
         exb, a5e, gwe, failed = helper.read_bom(str(bom_file.read()).replace("\"", "").replace("\'", ''))
+=======
+        exb, a5e, gwe, failed = helper.read_bom(str(bom_file.read()))
+>>>>>>> made code a little more beautiful and added a few comments
     except Exception as e:
         flash("""An error occured in //bom_upload_do()//__1__\n{}""".format(e), "danger")
         return redirect(request.referrer or url_for("start"))
@@ -1714,7 +1644,6 @@ def bom_upload_do(project_id):
         elif len(part) is 1:
             bom = data_Structure.BOM(project, part[0], qty)
             data_Structure.db.session.add(bom)    
-            
         elif len(part) > 1:
             flash("Multiple Parts found for \"{exb}\" Please check the BOM on the Project Page and remove the doubles!".format(exb=exb_nr), "warning")
             for p in part:
@@ -1790,7 +1719,6 @@ def create_room():
     else:
         flash("An Error occured in //create_room()//", "danger")
         return redirect(request.referrer or url_for("start"))
-
 
 @app.route("/room/show/", methods=["GET"])
 def show_all_rooms():
@@ -1883,11 +1811,7 @@ def assign_place(part_ids, container_id):
                 raise Exception("The place with the ID {} does not exist!".format(place_id))
         except Exception as e:
             flash("An error occured in //assign_place()//\n{}".format(e), "danger")
-            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
-        # if place.container or not place.container.is_empty() and not place.container.out:
-        #     flash("Place is already in use! Look for another one.", "danger")
-        #     return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
-            
+            return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))            
         try:
             container.place(place)
             flash("Place was assigned successfull", "success")
@@ -1985,7 +1909,6 @@ def edit_process_date(process_id):
                     data_Structure.db.session.commit()
                 return redirect(request.referrer or url_for("my_profile") or url_for("start"))
 
-
 @app.route("/room/place/clear/<place_id>/", methods=["POST"])
 def clear_place(place_id):
     if not current_user.is_authenticated:
@@ -2006,7 +1929,6 @@ def clear_place(place_id):
             e = "the place Variable is not set."
             flash("An error occured in //clear_place()//\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_room", ids=part.ids) or url_for("start"))
-
     return redirect(request.referrer or url_for("show_room", room_id=place.room.id) or url_for("start"))
          
 @app.route("/part/change/recommended/<part_ids>/", methods=["POST"])
@@ -2032,7 +1954,6 @@ def change_recommended(part_ids):
         except Exception as e:
             flash("oops an error occured within //change_recommended() - 2 -//.\n\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
-            
         return redirect(request.referrer or url_for("show_part", ids=part_ids) or url_for("start"))
 
 @app.route("/parts/stocktaking/")
@@ -2094,7 +2015,6 @@ def book_process(process_id):
                         c_id=c.id
                     )
                     c.place().container_id = None
-
             hash_value = hash(content)
             path = os.path.join(UPLOAD_FOLDER, "{}.csv".format(hash_value))
             with open(path,"w") as file:
@@ -2149,7 +2069,7 @@ def get_process_doc(process_id):
             flash("An error occured within //get_process_doc()//_1_.\n\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("my_profile"))
 
-@app.route("/database/download/", methods=["GET"])
+@app.route("/database/download/", methods=["GET"])  # implemented for migrations debugging. I did not have direct access to the actually used database - quick'n'dirty
 @login_required
 def get_database():
     return send_from_directory("./static/Database/", "data.sql", as_attachment=True, attachment_filename="database.sqlite")
@@ -2175,7 +2095,6 @@ def add_boards(project_name):
         except Exception as e:
             flash("An error occured within //add_boards()//_1_.\n\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_project", project_name=project_name))
-        
         return redirect(request.referrer or url_for("show_project", project_name=project_name))
         
 @app.route("/board/print/label/", methods=["POST"])
@@ -2305,11 +2224,9 @@ def export_bom(project_name):
 
 
 if __name__ == '__main__':
-    # app.secret_key = 'Test'
     test_queries()
     Bootstrap(app)
     SQLAlchemy(app)
-    # nav.nav_logged_in.init_app(app)
     data_Structure.create_database()
     nav.nav.init_app(app)
 
