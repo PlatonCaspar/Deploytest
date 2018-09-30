@@ -116,19 +116,17 @@ def main():
 
 def print_place_label(place):
     text = generate_label(str(place.id))
-    # write_doc(text)
-    print_label("labelprinter01.internal.sdi.tools", text)
+    print_label("printer_ip_address", text)
 
 
 def print_container_label(container):
     text = generate_label("""container{}""".format(container.id))
-    print_label("labelprinter01.internal.sdi.tools", text)
+    print_label("printer_ip_address", text)
   
 
 def print_part_label(part):
     text = generate_label("""IDS{}""".format(part.ids))
-    # write_doc(text)
-    print_label("labelprinter01.internal.sdi.tools", text)
+    print_label("printer_ip_address", text)
 
 
 def print_device_label(device):
@@ -137,7 +135,7 @@ def print_device_label(device):
     except:
         pass
     label = board_labels.generate_label(device.device_name, code_url=code_url)
-    print_label("labelprinter01.internal.sdi.tools", label)
+    print_label("printer_ip_address", label)
 
 
 if __name__=='__main__':
@@ -149,7 +147,7 @@ if __name__=='__main__':
         print('init needed.')
     if not config:
         with open('./config.ini', 'w') as file:
-            config = ['labelprinter01.internal.sdi.tools\n']
+            config = ['printer_ip_address\n']
             config.append('root\n')
             config.append('0000\n')
             file.writelines(config)
