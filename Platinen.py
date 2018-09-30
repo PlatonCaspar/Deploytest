@@ -820,19 +820,19 @@ def user_forgot_password():
 @login_required
 def user_forgot_change_password():
     logged_user = data_Structure.db.session.query(data_Structure.User).get(current_user.uid)
-    dumb_user_username = request.form.get('username')
-    dumb_user = None
-    if dumb_user_username:
-        dumb_user = data_Structure.User.query.filter_by(username=dumb_user_username).first()
-    if not dumb_user:
-        flash('User does not exist! (Username: ' + str(dumb_user_username) + ')', 'danger')
+    fg_username = request.form.get('username')
+    fg = None
+    if fg_username:
+        fg = data_Structure.User.query.filter_by(username=fg_username).first()
+    if not fg:
+        flash('User does not exist! (Username: ' + str(fg_username) + ')', 'danger')
         return redirect(url_for("user_forgot_password"))
     if pbkdf2_sha256.verify(request.form.get('current_user_password'), logged_user.password_hashed_and_salted):
         new_password = pbkdf2_sha256.hash(request.form.get('new_password_1'))
         if pbkdf2_sha256.verify(request.form.get('new_password_2'), new_password):
-            dumb_user.password_hashed_and_salted = new_password
+            fg.password_hashed_and_salted = new_password
             data_Structure.db.session.commit()
-            flash('password of ' + dumb_user.username + ' was changed successfully', 'success')
+            flash('password of ' + fg.username + ' was changed successfully', 'success')
             logout_user()
             return redirect(url_for('start'))
         else:
