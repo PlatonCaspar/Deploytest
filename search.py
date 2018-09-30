@@ -51,7 +51,6 @@ def value_search(search_word: str, value: str):  # returns a score for each give
 
 
 def sort_results(result):
-    # sorted(result, reverse=True)
     return sorted(result, key=lambda r: r[1], reverse=True)
 
 
@@ -70,36 +69,25 @@ def check_property(search_word, value):
         return 0
     search_property = search_word.split(":")[0]
     search_values = search_word.split(":")[1]
-    # if search_property not in value:
-    #     return 0
     value_property = value.split(":")[0]
-    # print(value.split(":")[1])
     if value_property != search_property:
         return 0
     values = value.split(":")[1]
     f_val = False
     try:
         if "," in values:
-            # print(values)
             values = values.split(",")
-            # print(values)
             values = [float(v) for v in values]
-            # print(values)
         else:
             values = [float(values)]
-            # print(values)
         f_val = True
     
     except Exception as e:
-        # print(e)
         pass
     for s_val in search_values.split(","):
-        # print("+++++++++++++++++++++++++++", s_val, values, "+++++++++++++++++++++++++++++")
         try:
             if f_val:
                 s_val = float(s_val)
-            # print(s_val)
-            # print(values)
         except Exception as e:
             pass
         try:
