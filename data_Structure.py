@@ -727,7 +727,7 @@ class Part(db.Model):
             return ret
                     
         else:
-            if self.exb_number is not 0 and self.a5e_number is 0:
+            if self.exb_number and not self.a5e_number:
                 return """PartType:{part_type};{json_attributes};EXB:{exb_number};
                       EXB:{exb_nr_no};
                       out:{out};recommended:{recommended};IDS:{ids}""".format(
@@ -739,7 +739,7 @@ class Part(db.Model):
                           ids=self.ids,
                           exb_nr_no=self.exb(number_only=True)
                       )
-            elif self.exb_number is 0 and self.a5e_number is not 0:
+            elif not self.exb_number and self.a5e_number:
                 return """PartType:{part_type};{json_attributes};EXB:{exb_number};
                       A5E:{exb_nr_no};
                       out:{out};recommended:{recommended};IDS:{ids}""".format(
@@ -753,7 +753,7 @@ class Part(db.Model):
                       )
             else:
                 return """PartType:{part_type};{json_attributes};EXB:{exb_number};
-                          {exbora5e}:{exb_nr_no};
+                          EXB:{exb_nr_no};
                           out:{out};recommended:{recommended};IDS:{ids}""".format(
                               part_type=self.part_type.name,
                             json_attributes=self.ref_json(),
