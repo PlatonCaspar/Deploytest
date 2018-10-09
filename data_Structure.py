@@ -626,6 +626,7 @@ class Part(db.Model):
     ids = db.Column(db.Integer, primary_key=True)
     part_type_id = db.Column(db.Integer, db.ForeignKey('part_type.id'))
     exb_number = db.Column(db.Integer)
+    a5e_number = db.Column(db.Integer)
     json_attributes = db.Column(db.Text)
     out = db.Column(db.Boolean)
     recommended = db.Column(db.Integer)
@@ -668,17 +669,47 @@ class Part(db.Model):
                 return
         if number_only:
             return self.exb_number
+
         if new:
             exb_numbers = [part.exb(number_only=True) for part in Part.query.all()]
             self.exb_number = helper.array_max_val(exb_numbers, current_user.division)+1
             db.session.commit()
+        if self.exb_number:
+            return "EXB%06d" % self.exb_number
+        else:
+            return None
 
-        return "EXB%06d" % self.exb_number
+    def a5e(self, a5e=None, number_only=None):
+        if a5e:
+            if "A5E".lower() in a5e.lower():
+                a5e = a5e.lower().strip("A5E".lower())
+            try:
+                self.a5e_number = int(a5e)
+                db.session.commit()
+            except Exception as e:
+                flash("an error occured in //part.a5e()//\n{}".format(e), "danger")
+                return
+            if number_only:
+                return self.a5e_number
+            elif self.a5e_number:
+                return "A5E%08d" % self.a5e_number
+            else:
+                print("HERE")
+                return None
+
+    def same_a5e(self):
+        if self.a5e_number:
+            ret = Part.query.filter_by(a5e_number=self.a5e_number).all()
+            return ret
+        else:
+            return []
 
     def same_exb(self):
-        ret = Part.query.filter_by(exb_number=self.exb_number).all()
-        return ret
-
+        if self.exb_number:
+            ret = Part.query.filter_by(exb_number=self.exb_number).all()
+            return ret
+        else:
+            return []
     def link(self):  # required for use with "History" Table
         return url_for('show_part', ids=self.ids)
 
@@ -696,7 +727,8 @@ class Part(db.Model):
             return ret
                     
         else:
-            return """PartType:{part_type};{json_attributes};EXB:{exb_number};
+            if self.exb_number is not 0 and self.a5e_number is 0:
+                return """PartType:{part_type};{json_attributes};EXB:{exb_number};
                       EXB:{exb_nr_no};
                       out:{out};recommended:{recommended};IDS:{ids}""".format(
                           part_type=self.part_type.name,
@@ -707,6 +739,30 @@ class Part(db.Model):
                           ids=self.ids,
                           exb_nr_no=self.exb(number_only=True)
                       )
+            elif self.exb_number is 0 and self.a5e_number is not 0:
+                return """PartType:{part_type};{json_attributes};EXB:{exb_number};
+                      A5E:{exb_nr_no};
+                      out:{out};recommended:{recommended};IDS:{ids}""".format(
+                          part_type=self.part_type.name,
+                          json_attributes=self.ref_json(),
+                          exb_number=self.a5e(),
+                          out=self.out or False,
+                          recommended=self.recommended,
+                          ids=self.ids,
+                          exb_nr_no=self.exb(number_only=True)
+                      )
+            else:
+                return """PartType:{part_type};{json_attributes};EXB:{exb_number};
+                          {exbora5e}:{exb_nr_no};
+                          out:{out};recommended:{recommended};IDS:{ids}""".format(
+                              part_type=self.part_type.name,
+                            json_attributes=self.ref_json(),
+                            exb_number=self.exb(),
+                            out=self.out or False,
+                            recommended=self.recommended,
+                            ids=self.ids,
+                            exb_nr_no=self.exb(number_only=True)
+                        )
 
     def reduce(self):
         return self.description()
@@ -860,7 +916,7 @@ class Part(db.Model):
         data = dict(
             QR="IDS{}".format(self.ids),
             HEAD="IDS{}".format(self.ids),
-            SUBHEAD="{}".format(self.exb()),
+            SUBHEAD="{}".format(self.exb() or self.a5e() or None),
             ARGS=self.args()
         )
         r = requests.post("http://10.11.20.5/print/label/38mm/", data=json.dumps(data))

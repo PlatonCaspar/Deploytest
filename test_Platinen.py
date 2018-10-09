@@ -799,7 +799,17 @@ class test_platos(TestCase):
         data = dict(new_exb="true")
         response = self.client.post(url_for(fname, part_ids=part.ids), data=data, follow_redirects=True)
         self.assert200(response)
-        assertmsg("success", response)        
+        assertmsg("success", response)
+
+    def test_edit_a5e(self):
+        fname = "edit_a5e"
+        self.test_assign_division()
+        self.test_show_part()
+        part = data_Structure.Part.query.all()[0]
+        data = dict(a5e="A5E00325430")
+        response = self.client.post(url_for(fname, part_ids=part.ids), data=data, follow_redirects=True)
+        self.assert200(response)
+        assertmsg("success", response)            
         
     def test_show_orders(self):
         fname = "show_orders"

@@ -1259,7 +1259,6 @@ def create_part_do(parttype_id):
         flash("oops an error occured within //create_part_do()//.\n\n{}".format(e), "danger")
         return redirect(url_for("show_part_type", parttype_id=parttype_id))
     part = data_Structure.Part(parttype.id)
-    part.print_label()
     if request.form.get("exb"):
         part.exb(exb_nr=request.form.get("exb"))
     
@@ -1587,6 +1586,22 @@ def edit_exb(part_ids):
         flash("EXB Number was changed successfully!", "success")
     return redirect(url_for('show_part', ids=part.ids))
 
+@app.route("/parts/part/a5e/edit/<part_ids>/", methods=["POST"])
+def edit_a5e(part_ids):
+    if not current_user.is_authenticated:
+        flash("Please log in to change reservations!", "info")
+        return redirect(request.referrer)
+    if current_user.is_authenticated:
+        try:
+            part = data_Structure.Part.query.get(int(part_ids))
+        except Exception as e:
+            flash("oops an error occured within //edit_a5e()//.\n\n{}".format(e), "danger")
+            return redirect(url_for("show_part"))
+    new_a5e = request.form.get("a5e")
+    part.a5e(a5e=new_a5e)
+    flash("A5E Number was changed successfully!", "success")
+    return redirect(url_for('show_part', ids=part.ids))
+
 @app.route("/parts/orders/open/", methods=["GET"])
 @login_required
 def show_orders():
@@ -1675,6 +1690,7 @@ def bom_upload_do(project_id):
         bom_file = request.files['bom_upload']
         # print(bom_file.stream.read())
         exb, a5e, gwe, failed = helper.read_bom(str(bom_file.read()))
+        print(exb, a5e, failed)
     except Exception as e:
         flash("""An error occured in //bom_upload_do()//__1__\n{}""".format(e), "danger")
         return redirect(request.referrer or url_for("start"))
@@ -1708,10 +1724,38 @@ def bom_upload_do(project_id):
             for p in part:
                 bom = data_Structure.BOM(project, p, qty)                    
                 data_Structure.db.session.add(bom)    
-        else:
-            flash("Part was not found in the database! Please add Part to the database and try again. Operation was cancelled!\n\n{}\n\n".format(e["EXB"]), "danger")
-            data_Structure.db.session.rollback()
-            return redirect(request.referrer or url_for("show_project", project_name=project_id))
+        # else:
+        #     flash("Part was not found in the database! Please add Part to the database and try again. Operation was cancelled!\n\n{}\n\n".format(e["EXB"]), "danger")
+        #     data_Structure.db.session.rollback()
+        #     return redirect(request.referrer or url_for("show_project", project_name=project_id))
+    for a in a5e:
+        try:
+            a5e_nr = int(a["EXB"].strip("A5E"))
+            qty = int(a["Qty"])
+        except Exception as e:
+            flash("""An error occured in //bom_upload_do()__4__//\n{}""".format(e), "danger")
+            return redirect(request.referrer or url_for("start"))
+        part = data_Structure.Part.query.filter_by(a5e_number=a5e_nr).all()
+        boms = []
+        for p in part:
+            boms.extend(list(filter(lambda b: b.part_ids == p.ids, project.bom)))
+        if boms:
+            for b in boms:
+                b.amount = qty
+                data_Structure.db.session.commit()
+        elif len(part) is 1:
+            bom = data_Structure.BOM(project, part[0], qty)
+            data_Structure.db.session.add(bom)    
+            
+        elif len(part) > 1:
+            flash("Multiple Parts found for \"{a5e}\" Please check the BOM on the Project Page and remove the doubles!".format(a5e=a5e_nr), "warning")
+            for p in part:
+                bom = data_Structure.BOM(project, p, qty)
+                data_Structure.db.session.add(bom)    
+        # else:
+        #     flash("Part was not found in the database! Please add Part to the database and try again. Operation was cancelled!\n\n{}\n\n".format(a["EXB"]), "danger")
+        #     data_Structure.db.session.rollback()
+        #     return redirect(request.referrer or url_for("show_project", project_name=project_id))
     for f in failed:
         flash("Part with the following information could not be identified as EXB or A5E or GWE Part\n***************\n{}\n**********************".format(f), "danger")
     data_Structure.db.session.commit()
