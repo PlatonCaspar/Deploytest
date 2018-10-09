@@ -689,12 +689,12 @@ class Part(db.Model):
             except Exception as e:
                 flash("an error occured in //part.a5e()//\n{}".format(e), "danger")
                 return
-            if number_only:
-                return self.a5e_number
-            elif self.a5e_number:
-                return "A5E%08d" % self.a5e_number
-            else:
-                return None
+        if number_only:
+            return self.a5e_number
+        if self.a5e_number:
+            return "A5E%08d" % self.a5e_number
+        else:
+            return None
 
     def same_a5e(self):
         if self.a5e_number:
@@ -739,7 +739,7 @@ class Part(db.Model):
                           exb_nr_no=self.exb(number_only=True)
                       )
             elif not self.exb_number and self.a5e_number:
-                return """PartType:{part_type};{json_attributes};EXB:{exb_number};
+                return """PartType:{part_type};{json_attributes};A5E:{exb_number};
                       A5E:{exb_nr_no};
                       out:{out};recommended:{recommended};IDS:{ids}""".format(
                           part_type=self.part_type.name,
@@ -748,7 +748,7 @@ class Part(db.Model):
                           out=self.out or False,
                           recommended=self.recommended,
                           ids=self.ids,
-                          exb_nr_no=self.exb(number_only=True)
+                          exb_nr_no=self.a5e(number_only=True)
                       )
             else:
                 return """PartType:{part_type};{json_attributes};EXB:{exb_number};
