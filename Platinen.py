@@ -1724,10 +1724,10 @@ def bom_upload_do(project_id):
             for p in part:
                 bom = data_Structure.BOM(project, p, qty)                    
                 data_Structure.db.session.add(bom)    
-        # else:
-        #     flash("Part was not found in the database! Please add Part to the database and try again. Operation was cancelled!\n\n{}\n\n".format(e["EXB"]), "danger")
-        #     data_Structure.db.session.rollback()
-        #     return redirect(request.referrer or url_for("show_project", project_name=project_id))
+        else:
+            flash("Part was not found in the database! Please add Part to the database and try again. Operation was cancelled!\n\n{}\n\n".format(e["EXB"]), "danger")
+            data_Structure.db.session.rollback()
+            return redirect(request.referrer or url_for("show_project", project_name=project_id))
     for a in a5e:
         try:
             a5e_nr = int(a["EXB"].strip("A5E"))
@@ -1752,10 +1752,10 @@ def bom_upload_do(project_id):
             for p in part:
                 bom = data_Structure.BOM(project, p, qty)
                 data_Structure.db.session.add(bom)    
-        # else:
-        #     flash("Part was not found in the database! Please add Part to the database and try again. Operation was cancelled!\n\n{}\n\n".format(a["EXB"]), "danger")
-        #     data_Structure.db.session.rollback()
-        #     return redirect(request.referrer or url_for("show_project", project_name=project_id))
+        else:
+            flash("Part was not found in the database! Please add Part to the database and try again. Operation was cancelled!\n\n{}\n\n".format(a["EXB"]), "danger")
+            data_Structure.db.session.rollback()
+            return redirect(request.referrer or url_for("show_project", project_name=project_id))
     for f in failed:
         flash("Part with the following information could not be identified as EXB or A5E or GWE Part\n***************\n{}\n**********************".format(f), "danger")
     data_Structure.db.session.commit()
