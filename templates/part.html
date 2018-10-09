@@ -38,7 +38,7 @@
                                 </div>
                                 <div class="col-xs-1">
                                     <form class="form-inline" action="{{url_for('start')}}" method="POST">
-                                        <input hidden value="{{part.a5e() or ''}}" name="search_field">
+                                        <input hidden value="{{part.a5e(number_only=True) or ''}}" name="search_field">
                                         <button class="btn btn-sm btn-info" type="submit">
                                            {{part.same_a5e()|length}}
                                         </button>

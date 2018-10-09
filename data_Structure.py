@@ -694,7 +694,6 @@ class Part(db.Model):
             elif self.a5e_number:
                 return "A5E%08d" % self.a5e_number
             else:
-                print("HERE")
                 return None
 
     def same_a5e(self):
