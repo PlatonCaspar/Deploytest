@@ -109,7 +109,6 @@ def read_bom(_file: str):
     # with open(_file) as file:
         # rows = file.readlines()
     header = rows[0].split(";")
-
     rows = rows[1:-1]
 
     for row in rows:

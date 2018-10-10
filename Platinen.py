@@ -56,7 +56,6 @@ def server_error(e):
 @app.errorhandler(404)
 def not_found_error(e):
     nav.nav.register_element("frontend_top", view.nav_bar())
-    print("**************\n\n{}\n\n*****************".format(e))
     return render_template("error.html",error=e, message=HTTPErrorTable.lookup(e)), 404
 
 @app.errorhandler(405)
@@ -1688,9 +1687,7 @@ def order_ordered(order_id):
 def bom_upload_do(project_id):
     try:
         bom_file = request.files['bom_upload']
-        # print(bom_file.stream.read())
-        exb, a5e, gwe, failed = helper.read_bom(str(bom_file.read()))
-        print(exb, a5e, failed)
+        exb, a5e, gwe, failed = helper.read_bom(str(bom_file.read()).replace("\"", "").replace("\'", ''))
     except Exception as e:
         flash("""An error occured in //bom_upload_do()//__1__\n{}""".format(e), "danger")
         return redirect(request.referrer or url_for("start"))
@@ -2282,7 +2279,7 @@ if __name__ == '__main__':
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
     
-    app.run(debug=False, port=80, host='0.0.0.0')
+    app.run(debug=False, port=8080, host='0.0.0.0')
     
 
     
