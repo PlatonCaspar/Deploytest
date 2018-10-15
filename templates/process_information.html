@@ -1,0 +1,62 @@
+{%- extends "base.html" %} {% block title %}Process {{process.id}} Information Page{% endblock %} {% block content %}
+    <!-- main part -->
+    <style>
+    .print_website {
+    visibility: visible!important;
+
+}
+    .red {
+        background-color: red;
+    }
+    </style>
+    <div class="container">
+        <table class="table table-bordered table-striped table-hover print_website_parent print_website">
+            <thead class="print_website">
+                <tr class="print_website">
+                    <th class="print_website">IDS</th>
+                    <th class="print_website">EXB</th>
+                    <th class="print_website">Type</th>
+                    <th class="print_website">Description</th>
+                    <th class="print_website">Amount</th>
+                    <th class="print_website">Available</th>
+                    <th class="print_website">Difference</th>
+                    <th class="print_website">Date</th>
+                    <!-- <th>Out</th> -->
+
+                </tr>
+            </thead>
+            <tbody class="print_website">
+                {% for child in process.children() if child %}
+                {% if process.ProcessType().lower() == "reservation" %}
+                <tr class="table_links print_website {% if child.number > (child.part.available()+child.number) %} red {% endif %}">
+                    <td class="print_website">{{child.part_ids}}</td>
+                    <td class="print_website">{{child.part.exb()}}</td>
+                {% elif process.ProcessType().lower() == "booking" %}
+                <tr class="table_links print_website {% if child.number > (child.part.available()+child.number) %} red {% endif %}" >
+                    <td class="print_website">{{child.container.part_ids}}</td>
+                    <td class="print_website">{{child.container.part.exb()}}</td>
+                    
+                {% endif %}
+                    <td class="print_website">{{child.part.part_type.name}}</td>
+                    <td class="print_website">{{child.part.description(human=True)}}</td>
+                    <td class="print_website">{{child.number}}</td>
+                    <td class="print_website">{{child.part.available()+child.number}}</td>
+                    <td class="print_website {% if child.number > (child.part.available()+child.number) %} red {% endif %}">{{child.part.available()}}</td>
+                    {% if child.duedate %}
+                    <td class="print_website">{{child.duedate.strftime('%d.%m.%Y')}}</td>
+                    {% else %}
+                    <td class="print_website"></td>
+                    {% endif %}
+                    <!-- <td> -->
+                        {#% if child.part.out and process.ProcessType().lower() == "reservation" %}
+                        <span class="label label-danger print_website">True</span>
+                        {% elif process.ProcessType().lower() == "reservation" %}
+                        <span class="label label-success print_website">False</span>
+                        {% endif %#}
+                    <!-- </td> -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}

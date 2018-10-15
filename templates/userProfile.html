@@ -93,7 +93,7 @@ person.username+"'s Profile" }} {% endblock %} {% block content %}
                                                 Process {{process.id}} ::
                                                 <a class="btn btn-default" href="{{process.project.link()}}"
                                                     role="button" onclick="window.document.location='{{process.project.link()}}'">
-                                                    {{process.project.project_name}}</a> :: {{process.ProcessType()}} :: Created {{process.datetime.strftime('%d.%m.%Y')}}
+                                                    {{process.project.project_name}}</a> :: {{process.ProcessType()}} :: Created {{process.datetime.strftime('%d.%m.%Y')}} :: <a class="btn btn-default" href="{{url_for('print_process_information', process_id=process.id)}}" target="_blank" rel="noopener noreferrer"><span class="glyphicon glyphicon-print"></span></a>
                                                 <span class="glyphicon glyphicon-menu-down pull-right"></span>
                                             </h4>
                                         </div>
@@ -136,6 +136,7 @@ person.username+"'s Profile" }} {% endblock %} {% block content %}
                                                             <th>IDS</th>
                                                             <th>EXB</th>
                                                             <th>Amount</th>
+                                                            <th>Available</th>  
                                                             <th>Date</th>
                                                             <!-- <th>Out</th> -->
 
@@ -144,16 +145,17 @@ person.username+"'s Profile" }} {% endblock %} {% block content %}
                                                     <tbody>
                                                         {% for child in process.children() if child %}
                                                         {% if process.ProcessType().lower() == "reservation" %}
-                                                        <tr class="table_links" onclick="window.document.location='{{child.part.link()}}'">
+                                                        <tr class="table_links" onclick="window.document.location='{{child.part.link()}}'" {% if child.number > child.part.available() %} style="background-color: red" {% endif %}>
                                                             <td>{{child.part_ids}}</td>
                                                             <td>{{child.part.exb()}}</td>
                                                         {% elif process.ProcessType().lower() == "booking" %}
-                                                        <tr class="table_links" onclick="window.document.location='{{child.container.part.link()}}'">
+                                                        <tr class="table_links" onclick="window.document.location='{{child.container.part.link()}}'" {% if child.number > child.part.available() %} style="background-color: red" {% endif %}>
                                                             <td>{{child.container.part_ids}}</td>
                                                             <td>{{child.container.part.exb()}}</td>
                                                             
                                                         {% endif %}
                                                             <td>{{child.number}}</td>
+                                                            <td>{{child.part.available()}}</td>
                                                             {% if child.duedate %}
                                                             <td>{{child.duedate.strftime('%d.%m.%Y')}}</td>
                                                             {% else %}

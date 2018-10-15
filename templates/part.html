@@ -1,5 +1,11 @@
 {%- extends 'base.html' %} {% block title %} {% if part %} IDS: {{part.ids}} {% else %} Part {% endif %}
 {% endblock %} {% block content %}
+<style>
+    body * {
+    visibility: visible!important;
+
+}
+</style>
 
     <div class="container col-xs-12 col-md-8 col-md-offset-2"> <!-- container -->
         <div class="row">

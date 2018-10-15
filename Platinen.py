@@ -1144,7 +1144,6 @@ def show_new_38mm_label():
 def print_new_38mm_label():
     nav.nav.register_element("frontend_top", view.nav_bar())
     data = request.form
-    # print(data)
     r = requests.post("http://printer02.internal.sdi.tools/print/label/38mm/", data=dumps(data))
     if "OK" in r.text:
         flash("Check labelprinter for your label!", "success")
@@ -1727,8 +1726,8 @@ def bom_upload_do(project_id):
             return redirect(request.referrer or url_for("show_project", project_name=project_id))
     for a in a5e:
         try:
-            a5e_nr = int(a["EXB"].strip("A5E"))
-            qty = int(a["Qty"])
+            a5e_nr = int(a["EXB"].replace("A5E",""))
+            qty = float(a["Qty"])
         except Exception as e:
             flash("""An error occured in //bom_upload_do()__4__//\n{}""".format(e), "danger")
             return redirect(request.referrer or url_for("start"))
@@ -2263,7 +2262,22 @@ def remove_container_from_place(part_ids, container_id):
         except Exception as e:
             flash("An error occured in //remove_container_from_place()//\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("show_part", ids=part.ids) or url_for("start"))
-            
+
+@app.route("/print/process/information/", methods=["GET"])
+@login_required
+def print_process_information():
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer or url_for("my_profile") or url_for("start"))
+    elif current_user.is_authenticated:
+        try:
+            process_id = int(request.args.get("process_id"))
+            process = data_Structure.Process.query.get(process_id)
+        except Exception as e:
+            flash("An error occured in //print_process_information()//\n{}".format(e), "danger")
+            return redirect(request.referrer or url_for("my_profile") or url_for("start"))
+        return render_template("process_information.html",process=process)
+
 if __name__ == '__main__':
     # app.secret_key = 'Test'
     test_queries()
