@@ -4,7 +4,7 @@ import markdown
 import logging
 import requests
 
-from flask import render_template, request, redirect, url_for, session, flash, send_from_directory, send_file, abort
+from flask import render_template, request, redirect, url_for, session, flash, send_from_directory, send_file, abort, Response
 from flask_bootstrap import Bootstrap
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_nav import register_renderer
@@ -2277,6 +2277,32 @@ def print_process_information():
             flash("An error occured in //print_process_information()//\n{}".format(e), "danger")
             return redirect(request.referrer or url_for("my_profile") or url_for("start"))
         return render_template("process_information.html",process=process)
+
+@app.route("/project/bom/export/<project_name>/", methods=["POST"])
+@login_required
+def export_bom(project_name):
+    if not current_user.is_authenticated:
+        flash("Please log in to contribute!", "info")
+        return redirect(request.referrer or url_for("show_project", project_name=project_name) or url_for("start"))
+    elif current_user.is_authenticated:
+        def generate(project_name):
+            try:
+                project = data_Structure.Project.query.get(project_name)
+            except Exception as e:
+                flash("An error occured in //export_bom()//\n{}".format(e), "danger")
+                return redirect(request.referrer or url_for("show_project", project_name=project_name) or url_for("start"))        
+            yield "IDS;EXB;QTY;Description\n"
+            for bom in project.bom:
+                yield "{ids};{exb};{qty};{desc}\n".format(
+                    ids=bom.part.ids,
+                    exb=bom.part.exb() or bom.part.a5e(),
+                    qty=bom.amount,
+                    desc=bom.part.args()
+                )
+
+        return Response(generate(project_name), mimetype='text/csv', headers={"Content-Disposition":
+                                    "attachment;filename={}_BOM.csv".format(project_name)})
+
 
 if __name__ == '__main__':
     # app.secret_key = 'Test'
