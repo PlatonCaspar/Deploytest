@@ -149,13 +149,13 @@ person.username+"'s Profile" }} {% endblock %} {% block content %}
                                                             <td>{{child.part_ids}}</td>
                                                             <td>{{child.part.exb()}}</td>
                                                         {% elif process.ProcessType().lower() == "booking" %}
-                                                        <tr class="table_links" onclick="window.document.location='{{child.container.part.link()}}'" {% if child.number > child.part.available() %} style="background-color: red" {% endif %}>
+                                                        <tr class="table_links" onclick="window.document.location='{{child.container.part.link()}}'" {% if child.number > child.container.part.available() %} style="background-color: red" {% endif %}>
                                                             <td>{{child.container.part_ids}}</td>
                                                             <td>{{child.container.part.exb()}}</td>
                                                             
                                                         {% endif %}
                                                             <td>{{child.number}}</td>
-                                                            <td>{{child.part.available()}}</td>
+                                                            <td>{{child.container.part.available()}}</td>
                                                             {% if child.duedate %}
                                                             <td>{{child.duedate.strftime('%d.%m.%Y')}}</td>
                                                             {% else %}
