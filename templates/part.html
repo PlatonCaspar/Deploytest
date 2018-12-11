@@ -339,8 +339,8 @@
             </div><!-- first column end -->
             <div class="col-xs-12 col-md-6"><!-- second column -->
                 <div class="row" style="margin-bottom: 1rem">
-                    <div class="col-xs-12 col-md-4">
-                        <h3><div class=
+                    <div class="col-12 col-lg-4">
+                        <h4><div class=
                         "
                         label 
                         {% if part.available()>0 %}
@@ -348,11 +348,11 @@
                         {% else %}
                         label-danger
                         {% endif %}
-                        col-xs-12">Available: {{part.available()}}</div></h3>
+                        col-xs-12">Available: {{part.available()}}</div></h4>
                     </div>
-                    <div class="col-xs-12 col-md-4">
+                    <div class="col-12 col-lg-4">
                         <form class="" action="{{url_for('change_recommended', part_ids=part.ids)}}" method="POST">
-                        <h3><div class="label label-warning col-xs-12">Rec.:<input type="number" id="recommended" name="recommended" value="{{part.recommended}}" 
+                        <h4><div class="label label-warning col-xs-12">Rec.:<input type="number" id="recommended" name="recommended" value="{{part.recommended}}" 
                             {% if current_user.is_authenticated %}
                             placeholder="Enter the value here..."                                            
                             {%endif%}
@@ -360,11 +360,11 @@
                             {% if not current_user.is_authenticated %}
                             disabled="true"
                             {%endif%}
-                            ></div></h3>    
+                            ></div></h4>    
                         </form>                    
                     </div>
-                    <div class="col-xs-12 col-md-4">
-                        <h3><div class="label label-info col-xs-12">Ordered: {{part.ordered()}}</div></h3>
+                    <div class="col-12 col-lg-4">
+                        <h4><div class="label label-info col-xs-12">Ordered: {{part.ordered()}}</div></h4>
                     </div>
                 </div>
                 <div class="panel panel-default">

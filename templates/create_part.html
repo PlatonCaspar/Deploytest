@@ -12,14 +12,14 @@
                 <div id="select-form">
                     <form id="parttype-form" action="{{url_for('create_part')}}" method="GET">
                         <div class="row">
-                            <div class="col-xs-12 col-md-11">
+                            <div class="col-xs-12 col-md-9">
                                 <select class="form-control" name="parttype_id">
                                     {% for pt in parttypes %}
                                     <option value="{{pt.id}}">{{pt.name}}</option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="col-xs-12 col-md-1">
+                            <div class="col-xs-12 col-md-3">
                                 <button class="btn btn-primary btn-block" type="submit">Go</button>
                             </div>
                         </div>
