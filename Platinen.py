@@ -1608,11 +1608,7 @@ def order_ordered(order_id):
 def bom_upload_do(project_id):
     try:
         bom_file = request.files['bom_upload']
-<<<<<<< HEAD
         exb, a5e, gwe, failed = helper.read_bom(str(bom_file.read()).replace("\"", "").replace("\'", ''))
-=======
-        exb, a5e, gwe, failed = helper.read_bom(str(bom_file.read()))
->>>>>>> made code a little more beautiful and added a few comments
     except Exception as e:
         flash("""An error occured in //bom_upload_do()//__1__\n{}""".format(e), "danger")
         return redirect(request.referrer or url_for("start"))
