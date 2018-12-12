@@ -103,8 +103,7 @@ def isNum(val):
 def read_bom(_file: str):
     rows = _file.strip("b'").replace("\\r\\n", '\n').split("\n")
     exb = []
-    a5e = []
-    gwe = []
+    ids = []
     failed = []
     # with open(_file) as file:
         # rows = file.readlines()
@@ -121,14 +120,14 @@ def read_bom(_file: str):
                 print("""__1__ :{0}\\{2}: {1}""".format(head, e, i), "\n\n {}".format(row))
         if "exb" in temp["EXB"].lower():
             exb.append(temp)
-        elif "a5e" in temp["EXB"].lower():
-            a5e.append(temp)
-        elif "gwe" in temp["EXB"].lower():
-            gwe.append(temp)
+        if "ids" in temp["EXB"].lower():
+            ids.append(temp)
+        if "ids" in temp["IDS"].lower():
+            ids.append(temp)
         else:
             failed.append(temp)
   
-    return exb, a5e, gwe, failed
+    return exb, ids, failed
 
 
 def clean_exb_scan(exb_scan):
