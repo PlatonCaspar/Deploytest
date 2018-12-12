@@ -577,6 +577,7 @@ class test_platos(TestCase):
 
     def test_create_part_type(self):
         fname = "create_part_type"
+        self.test_login()
         response = self.client.get(url_for(fname))
         self.assert200(response)
         data = {"name": "Test_PartType", "input:1": "arg1", "input:2": "arg2"}
