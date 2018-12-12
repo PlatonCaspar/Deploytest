@@ -49,7 +49,7 @@
                     <thead>
 
                     <th class="text-info">IDS</th>
-                    <th class="text-info">EXB/A5E</th>                    
+                    <th class="text-info">EXB</th>                    
                     <th class="text-info">PartType</th>
                     <th class="text-info">Attributes</th>
 
@@ -65,7 +65,7 @@
                             </td>
                             
                             <td class="text-justify">
-                                {{ part.exb() or part.a5e() or "N/A" }}
+                                {{ part.exb() or "N/A" }}
                             </td>
                             <td class="text-justify">
                                 {{ part.part_type.name }}
