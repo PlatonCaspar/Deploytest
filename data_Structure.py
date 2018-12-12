@@ -807,7 +807,7 @@ class Part(db.Model):
         data = dict(
             QR="IDS{}".format(self.ids),
             HEAD="IDS{}".format(self.ids),
-            SUBHEAD="{}".format(self.exb() or self.a5e() or None),
+            SUBHEAD="{}".format(self.exb() or None),
             ARGS=self.args()
         )
         r = requests.post("http://printer_ip_address/print/label/38mm/", data=json.dumps(data))
