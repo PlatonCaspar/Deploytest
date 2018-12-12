@@ -592,7 +592,6 @@ class Part(db.Model):
     ids = db.Column(db.Integer, primary_key=True)
     part_type_id = db.Column(db.Integer, db.ForeignKey('part_type.id'))
     exb_number = db.Column(db.Integer)
-    a5e_number = db.Column(db.Integer)
     json_attributes = db.Column(db.Text)
     out = db.Column(db.Boolean)
     recommended = db.Column(db.Integer)
@@ -635,13 +634,6 @@ class Part(db.Model):
             db.session.commit()
         return "EXB%06d" % self.exb_number
 
-    def same_a5e(self):
-        if self.a5e_number:
-            ret = Part.query.filter_by(a5e_number=self.a5e_number).all()
-            return ret
-        else:
-            return []
-
     def same_exb(self):
         if self.exb_number:
             ret = Part.query.filter_by(exb_number=self.exb_number).all()
@@ -665,7 +657,7 @@ class Part(db.Model):
             return ret
                     
         else:
-            if self.exb_number and not self.a5e_number:
+            if self.exb_number:
                 return """PartType:{part_type};{json_attributes};EXB:{exb_number};
                       EXB:{exb_nr_no};
                       out:{out};recommended:{recommended};IDS:{ids}""".format(
@@ -676,18 +668,6 @@ class Part(db.Model):
                           recommended=self.recommended,
                           ids=self.ids,
                           exb_nr_no=self.exb(number_only=True)
-                      )
-            elif not self.exb_number and self.a5e_number:
-                return """PartType:{part_type};{json_attributes};A5E:{exb_number};
-                      A5E:{exb_nr_no};
-                      out:{out};recommended:{recommended};IDS:{ids}""".format(
-                          part_type=self.part_type.name,
-                          json_attributes=self.ref_json(),
-                          exb_number=self.a5e(),
-                          out=self.out or False,
-                          recommended=self.recommended,
-                          ids=self.ids,
-                          exb_nr_no=self.a5e(number_only=True)
                       )
             else:
                 return """PartType:{part_type};{json_attributes};EXB:{exb_number};
