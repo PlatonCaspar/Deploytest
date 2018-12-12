@@ -36,29 +36,6 @@
                                 </div>
                             
                             </div>
-                            <div class="row form-group">
-                                <div class="col-xs-4">
-                                    <small>
-                                    A5E: {{part.a5e() or ''}}
-                                    </small>
-                                </div>
-                                <div class="col-xs-1">
-                                    <form class="form-inline" action="{{url_for('start')}}" method="POST">
-                                        <input hidden value="{{part.a5e(number_only=True) or ''}}" name="search_field">
-                                        <button class="btn btn-sm btn-info" type="submit">
-                                           {{part.same_a5e()|length}}
-                                        </button>
-                                    </form>
-                                </div>
-                                <div class=" col-xs-1">
-                                {% if current_user.is_authenticated %}
-                                    <button class="btn btn-default btn-sm" data-toggle="modal" data-target="#modalA5E">
-                                        <span class="glyphicon glyphicon-pencil"></span>        
-                                    </button>
-                                {% endif %}
-                                </div>
-                            
-                            </div>
                         </h3>                
                     </div>
                     {% if current_user.is_authenticated %}
@@ -80,29 +57,6 @@
                                     <div class="modal-footer">
                                         <button class="btn btn-success pull-left" type="submit">Edit</button>
                                         <button class="btn btn-primary" type="submit" name="new_exb">Assign a new EXB Number</button>
-                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Edit A5E Modal -->
-                    <div id="modalA5E" class="modal fade" role="dialog">
-                        <div class="modal-dialog">
-                            <!-- A5E Modal content-->
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                        <h4 class="modal-title">Edit A5E Number</h4>
-                                </div>
-                                <form action="{{url_for('edit_a5e', part_ids=part.ids)}}" method="POST">
-                                    <div class="modal-body">
-                                        <div class="form-group">
-                                            <input type="number" name="a5e" id="a5e_input" class="form-control">
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button class="btn btn-success pull-left" type="submit">Edit</button>
                                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                                     </div>
                                 </form>
