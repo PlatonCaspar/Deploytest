@@ -1507,22 +1507,6 @@ def edit_exb(part_ids):
         flash("EXB Number was changed successfully!", "success")
     return redirect(url_for('show_part', ids=part.ids))
 
-@app.route("/parts/part/a5e/edit/<part_ids>/", methods=["POST"])
-def edit_a5e(part_ids):
-    if not current_user.is_authenticated:
-        flash("Please log in to change reservations!", "info")
-        return redirect(request.referrer)
-    if current_user.is_authenticated:
-        try:
-            part = data_Structure.Part.query.get(int(part_ids))
-        except Exception as e:
-            flash("oops an error occured within //edit_a5e()//.\n\n{}".format(e), "danger")
-            return redirect(url_for("show_part"))
-    new_a5e = request.form.get("a5e")
-    part.a5e(a5e=new_a5e)
-    flash("A5E Number was changed successfully!", "success")
-    return redirect(url_for('show_part', ids=part.ids))
-
 @app.route("/parts/orders/open/", methods=["GET"])
 @login_required
 def show_orders():
@@ -2206,7 +2190,7 @@ def export_bom(project_name):
             for bom in project.bom:
                 yield "{ids};{exb};{qty};{desc}\n".format(
                     ids=bom.part.ids,
-                    exb=bom.part.exb() or bom.part.a5e(),
+                    exb=bom.part.exb(),
                     qty=bom.amount,
                     desc=bom.part.args()
                 )
