@@ -324,6 +324,7 @@ def start():
 
         if not results_board and not results_project and not results_component and not results_comments and not results_devices and not results_places and not results_rooms:
             flash('No results were found', 'warning')
+            print("No Results")
             return redirect(request.referrer or url_for("start"))
         return render_template('table.html', args=set(results_board), projects=set(results_project),
                                search_form=searchForm.SearchForm(), search_word=search_word, parts=set(results_component),
@@ -2212,7 +2213,7 @@ if __name__ == '__main__':
     # login_manager is initialized in nav because I have to learn how to organize and I did not know that im able to
     # implement more files per python file and in nav was enough space.
     
-    app.run(debug=False, port=80, host='0.0.0.0')
+    app.run(debug=False, port=8080, host='0.0.0.0')
     
 
     

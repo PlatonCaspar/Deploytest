@@ -28,7 +28,7 @@ class test_platos(TestCase):
 
     def create_app(self):
 
-        SQLALCHEMY_DATABASE_URI = 'sqlite:///static/Database/test_data.sql'
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///'
         data_Structure.app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
         data_Structure.app.config['TESTING'] = True
         data_Structure.app.config['BOOTSTRAP_LOCAL_SUBDOMAIN'] = 'test_'
@@ -163,6 +163,8 @@ class test_platos(TestCase):
         assert "200" in response.status
 
     def test_start(self):
+        self.test_add_project()
+        self.test_add_board_scripted()
         response = self.client.get('/')
         assert "200" in response.status
         search_dict = dict(search_field="", Selector="All")
