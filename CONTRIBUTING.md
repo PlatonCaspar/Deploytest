@@ -1,1 +1,1 @@
-(Stefan Steinmüller)[stefan.steinmueller@siemens.com]
+Stefan Steinmüller (stefan.steinmueller@siemens.com)
