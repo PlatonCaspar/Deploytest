@@ -41,7 +41,7 @@ def write_code_for_search_bar():
                         for opt in ["All", "Boards", "Projects", "Devices", "Part", "Room", "Place"]:
                             tags.option(opt, value=opt)
             with tags.div(Class="input-group"):
-                tags.input(Type="text", Class="form-control ", placeholder="Search", name="search_field")
+                tags.input_(Type="text", Class="form-control ", placeholder="Search", name="search_field")
                 with tags.div(Class="input-group-btn"):
                     tags.button(tags.i(Class="glyphicon glyphicon-search", style="color:#009999"),
                                 Class="btn btn-default",

@@ -22,9 +22,9 @@ def load_choices():
 
 
 class BoardForm(Form):
-    code = StringField('Code', [validators.data_required])
+    code = StringField('Code', [validators.data_required()])
     name = SelectField('Select Project')
-    ver = StringField('Version', [validators.data_required])
+    ver = StringField('Version', [validators.data_required()])
     submit = SubmitField('Create')
     hidden_tag = HiddenField('Blubb')
 
